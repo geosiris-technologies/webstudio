@@ -1,0 +1,178 @@
+<?xml version="1.0" encoding="utf-8"?>
+<xs:schema targetNamespace="http://www.energistics.org/energyml/data/resqmlv2" xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:resqml="http://www.energistics.org/energyml/data/resqmlv2" xmlns:eml="http://www.energistics.org/energyml/data/commonv2" elementFormDefault="qualified" version="2.2" attributeFormDefault="unqualified">
+	<!--														-->
+	<!-- Energistics License Agreement
+			This file is distributed under the Energistics Product License Agreement at
+			http://www.energistics.org/product-license-agreement
+			Use of this file constitutes agreement with the Energistics Product License Agreement.
+			Copyright (c) 2021 Energistics. All rights reserved.
+			Energistics, WITSML, PRODML and RESQML are trademarks or registered trademarks of Energistics.
+			-->
+	<!--														-->
+	<xs:annotation>
+		<xs:documentation>This package contains classes used to define and exchange property data in RESQML. 
+Individual property values are attached to a single type of element in the representation, either its topological elements, such as nodes or cells, or larger elements such as the entire representation or large parts of it, through patches and sub-representations.
+Each property value is also associated with a single property type, which provides global semantics about the meaning of these values. Property values can also be associated with facets, which provide additional context for the values.
+It is very common in subsurface/earth modeling workflows to follow the evolution of some property values through time or to consider them together as a group of property values attached to the same or different representations and property types. To capture this information, RESQML provides the notion of time series and a property group. 
+When spatial locations (geometry) need to be stored for specific elements in a representation, then property points are used.</xs:documentation>
+	</xs:annotation>
+	<!--														-->
+	<xs:import namespace="http://www.energistics.org/energyml/data/commonv2" schemaLocation="../../../common/v2.3/xsd_schemas/EmlAllObjects.xsd"/>
+	<!--														-->
+	<xs:include schemaLocation="Geometry.xsd"/>
+	<xs:include schemaLocation="Representations.xsd"/>
+	<xs:complexType name="AbstractProperty" abstract="true">
+		<xs:annotation>
+			<xs:documentation>Base class for storing all property values on representations, except current geometry location.
+Values attached to a given element can be either a scalar or a vector. The size of the vector is constant on all elements, and it is assumed that all elements of the vector have identical property types and share the same unit of measure.</xs:documentation>
+		</xs:annotation>
+		<xs:complexContent>
+			<xs:extension base="eml:AbstractObject">
+				<xs:sequence>
+					<xs:element name="IndexableElement" type="eml:IndexableElement" minOccurs="1" maxOccurs="1"/>
+					<xs:element name="Time" type="eml:GeologicTime" minOccurs="0" maxOccurs="1"/>
+					<xs:element name="RealizationIndices" type="eml:AbstractIntegerArray" minOccurs="0" maxOccurs="1">
+						<xs:annotation>
+							<xs:documentation>Provide the list of indices corresponding to realizations number. For example, if a user wants to send the realization corresponding to p10, p20, ... he would write the array 10, 20, ...
+If not provided, then the realization count (which could be 1) does not introduce a dimension to the multi-dimensional array storage.</xs:documentation>
+						</xs:annotation>
+					</xs:element>
+					<xs:element name="ValueCountPerIndexableElement" type="eml:PositiveLong" minOccurs="1" maxOccurs="unbounded">
+						<xs:annotation>
+							<xs:documentation>The count of value in one dimension for each indexable element. It is ordered as the values are ordered in the data set. REMINDER: First (left) given dimension is slowest and last (right) given dimension is fastest. The top XML element is slower than the bottom.</xs:documentation>
+						</xs:annotation>
+					</xs:element>
+					<xs:element name="PropertyKind" type="eml:DataObjectReference" minOccurs="1" maxOccurs="1">
+						<xs:annotation>
+							<xs:documentation>Pointer to a PropertyKind.  The Energistics dictionary can be found at http://w3.energistics.org/energyML/data/common/v2.1/ancillary/PropertyKindDictionary_v2.1.0.xml.</xs:documentation>
+						</xs:annotation>
+					</xs:element>
+					<xs:element name="LabelPerComponent" type="eml:String64" minOccurs="0" maxOccurs="unbounded">
+						<xs:annotation>
+							<xs:documentation>Labels for each component of a vector or tensor property in a linearized way. 
+REMINDER: First (left) given dimension is slowest and last (right) given dimension is fastest.</xs:documentation>
+						</xs:annotation>
+					</xs:element>
+					<xs:element name="SupportingRepresentation" type="eml:DataObjectReference" minOccurs="1" maxOccurs="1"/>
+					<xs:element name="LocalCrs" type="eml:DataObjectReference" minOccurs="0" maxOccurs="1"/>
+					<xs:element name="TimeOrIntervalSeries" type="eml:TimeOrIntervalSeries" minOccurs="0" maxOccurs="1"/>
+				</xs:sequence>
+			</xs:extension>
+		</xs:complexContent>
+	</xs:complexType>
+	<xs:complexType name="AbstractValuesProperty" abstract="true">
+		<xs:annotation>
+			<xs:documentation>Base class for property values. Each derived element provides specific property values, including point property in support of geometries.</xs:documentation>
+		</xs:annotation>
+		<xs:complexContent>
+			<xs:extension base="resqml:AbstractProperty">
+				<xs:sequence>
+					<xs:element name="ValuesForPatch" type="eml:AbstractValueArray" minOccurs="1" maxOccurs="unbounded">
+						<xs:annotation>
+							<xs:documentation>If the rep has no explicit patch, use only 1 ValuesForPatch.  If the rep has &gt; 1 explicit patch, use as many ValuesforPatch as patches of the rep. The ordering of ValuesForPatch matches the ordering of the patches in the xml document of the representation.  </xs:documentation>
+						</xs:annotation>
+					</xs:element>
+					<xs:element name="Facet" type="eml:PropertyKindFacet" minOccurs="0" maxOccurs="unbounded"/>
+				</xs:sequence>
+			</xs:extension>
+		</xs:complexContent>
+	</xs:complexType>
+	<xs:complexType name="BooleanArrayFromDiscretePropertyArray">
+		<xs:annotation>
+			<xs:documentation>An array of Boolean values that is explicitly defined by indicating which indices in the array are either true or false. This class is used to represent very sparse true or false data, based on a discrete property.</xs:documentation>
+		</xs:annotation>
+		<xs:complexContent>
+			<xs:extension base="eml:AbstractBooleanArray">
+				<xs:sequence>
+					<xs:element name="Value" type="xs:long" minOccurs="1" maxOccurs="1">
+						<xs:annotation>
+							<xs:documentation>Integer to match for the value to be considered true</xs:documentation>
+						</xs:annotation>
+					</xs:element>
+					<xs:element name="Property" type="eml:DataObjectReference" minOccurs="1" maxOccurs="1"/>
+				</xs:sequence>
+			</xs:extension>
+		</xs:complexContent>
+	</xs:complexType>
+	<xs:element name="BooleanProperty" type="resqml:BooleanProperty" substitutionGroup="eml:AbstractDataObject"/>
+	<xs:complexType name="BooleanProperty">
+		<xs:annotation>
+			<xs:documentation>Information specific to one Boolean property.
+Used to capture a choice between 2 and only 2 possible values/states for each indexable element of a data object, for example, identifying active cells of a grid..</xs:documentation>
+		</xs:annotation>
+		<xs:complexContent>
+			<xs:extension base="resqml:AbstractValuesProperty">
+				<xs:sequence/>
+			</xs:extension>
+		</xs:complexContent>
+	</xs:complexType>
+	<xs:element name="CommentProperty" type="resqml:CommentProperty" substitutionGroup="eml:AbstractDataObject"/>
+	<xs:complexType name="CommentProperty">
+		<xs:annotation>
+			<xs:documentation>Information specific to one comment property.
+Used to capture comments or annotations associated with a given element type in a data-object, for example, associating comments on the specific location of a well path.</xs:documentation>
+		</xs:annotation>
+		<xs:complexContent>
+			<xs:extension base="resqml:AbstractValuesProperty">
+				<xs:sequence>
+					<xs:element name="Language" type="eml:String64" minOccurs="0" maxOccurs="1">
+						<xs:annotation>
+							<xs:documentation>Identify the language (e.g., US English or French) of the string. It is recommended that language names conform to ISO 639.</xs:documentation>
+						</xs:annotation>
+					</xs:element>
+				</xs:sequence>
+			</xs:extension>
+		</xs:complexContent>
+	</xs:complexType>
+	<xs:element name="ContinuousProperty" type="resqml:ContinuousProperty" substitutionGroup="eml:AbstractDataObject"/>
+	<xs:complexType name="ContinuousProperty">
+		<xs:annotation>
+			<xs:documentation>Most common type of property used for storing rock or fluid attributes; all are represented as doubles. 
+Statistics about values such as maximum and minimum can be found in the statistics of each ValueForPatch.
+BUSINESS RULE: It also contains a unit of measure, which can be different from the unit of measure of its property type, but it must be convertible into this unit.</xs:documentation>
+		</xs:annotation>
+		<xs:complexContent>
+			<xs:extension base="resqml:AbstractValuesProperty">
+				<xs:sequence>
+					<xs:element name="Uom" type="eml:UnitOfMeasureExt" minOccurs="1" maxOccurs="1">
+						<xs:annotation>
+							<xs:documentation>Unit of measure for the property.</xs:documentation>
+						</xs:annotation>
+					</xs:element>
+					<xs:element name="CustomUnitDictionary" type="eml:DataObjectReference" minOccurs="0" maxOccurs="1"/>
+				</xs:sequence>
+			</xs:extension>
+		</xs:complexContent>
+	</xs:complexType>
+	<xs:element name="DiscreteProperty" type="resqml:DiscreteProperty" substitutionGroup="eml:AbstractDataObject"/>
+	<xs:complexType name="DiscreteProperty">
+		<xs:annotation>
+			<xs:documentation>Contains discrete integer values; typically used to store any type of index.
+Statistics about values such as maximum and minimum can be found in the statistics of each ValueForPatch.</xs:documentation>
+		</xs:annotation>
+		<xs:complexContent>
+			<xs:extension base="resqml:AbstractValuesProperty">
+				<xs:sequence>
+					<xs:element name="CategoryLookup" type="eml:DataObjectReference" minOccurs="0" maxOccurs="1"/>
+				</xs:sequence>
+			</xs:extension>
+		</xs:complexContent>
+	</xs:complexType>
+	<xs:element name="PointsProperty" type="resqml:PointsProperty" substitutionGroup="eml:AbstractDataObject"/>
+	<xs:complexType name="PointsProperty">
+		<xs:annotation>
+			<xs:documentation>Represents the geometric information that should *not* be used as representation geometry, but should be used in another context where the location or geometrical vectorial distances are needed.</xs:documentation>
+		</xs:annotation>
+		<xs:complexContent>
+			<xs:extension base="resqml:AbstractProperty">
+				<xs:sequence>
+					<xs:element name="PointsForPatch" type="resqml:AbstractPoint3dArray" minOccurs="1" maxOccurs="unbounded">
+						<xs:annotation>
+							<xs:documentation>Geometric points (or vectors) to be attached to the specified indexable elements.</xs:documentation>
+						</xs:annotation>
+					</xs:element>
+				</xs:sequence>
+			</xs:extension>
+		</xs:complexContent>
+	</xs:complexType>
+</xs:schema>

@@ -1,0 +1,761 @@
+<?xml version="1.0" encoding="utf-8"?>
+<xs:schema targetNamespace="http://www.energistics.org/energyml/data/prodmlv2" xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:prodml="http://www.energistics.org/energyml/data/prodmlv2" xmlns:eml="http://www.energistics.org/energyml/data/commonv2" elementFormDefault="qualified" version="2.2" attributeFormDefault="unqualified">
+	<!--														-->
+	<!-- Energistics License Agreement
+			This file is distributed under the Energistics Product License Agreement at
+			http://www.energistics.org/product-license-agreement
+			Use of this file constitutes agreement with the Energistics Product License Agreement.
+			Copyright (c) 2021 Energistics. All rights reserved.
+			Energistics, WITSML, PRODML and RESQML are trademarks or registered trademarks of Energistics.
+			-->
+	<!--														-->
+	<xs:annotation>
+		<xs:documentation>Pta models</xs:documentation>
+	</xs:annotation>
+	<!--														-->
+	<xs:import namespace="http://www.energistics.org/energyml/data/commonv2" schemaLocation="../../../common/v2.3/xsd_schemas/EmlAllObjects.xsd"/>
+	<!--														-->
+	<xs:include schemaLocation="PressureTransientAnalysis.xsd"/>
+	<xs:include schemaLocation="PtaParameters.xsd"/>
+	<xs:complexType name="AbstractModelSection" abstract="true">
+		<xs:annotation>
+			<xs:documentation>The abstract class of model section that forces a choice between a wellbore base or a reservoir base.</xs:documentation>
+		</xs:annotation>
+		<xs:sequence>
+			<xs:element name="Comment" type="eml:String2000" minOccurs="0" maxOccurs="1">
+				<xs:annotation>
+					<xs:documentation>The method used for this section of the results. Text description. No semantic meaning.</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element name="Method" type="eml:String64" minOccurs="0" maxOccurs="1">
+				<xs:annotation>
+					<xs:documentation>The method used for this section of the results. Text description. No semantic meaning.</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+		</xs:sequence>
+	</xs:complexType>
+	<xs:complexType name="BoundaryBaseModel" abstract="true">
+		<xs:annotation>
+			<xs:documentation>Abstract boundary model from which the other types are derived.</xs:documentation>
+		</xs:annotation>
+		<xs:complexContent>
+			<xs:extension base="prodml:AbstractModelSection">
+				<xs:sequence>
+					<xs:element name="RadiusOfInvestigation" type="prodml:RadiusOfInvestigation" minOccurs="0" maxOccurs="1"/>
+					<xs:element name="PoreVolumeOfInvestigation" type="prodml:PoreVolumeOfInvestigation" minOccurs="0" maxOccurs="1"/>
+				</xs:sequence>
+			</xs:extension>
+		</xs:complexContent>
+	</xs:complexType>
+	<xs:complexType name="ChangingStorageFairModel">
+		<xs:annotation>
+			<xs:documentation>Changing wellbore storage model using the Fair model.</xs:documentation>
+		</xs:annotation>
+		<xs:complexContent>
+			<xs:extension base="prodml:WellboreBaseModel">
+				<xs:sequence>
+					<xs:element name="RatioInitialToFinalWellboreStorage" type="prodml:RatioInitialToFinalWellboreStorage" minOccurs="1" maxOccurs="1"/>
+					<xs:element name="DeltaTimeStorageChanges" type="prodml:DeltaTimeStorageChanges" minOccurs="1" maxOccurs="1"/>
+				</xs:sequence>
+			</xs:extension>
+		</xs:complexContent>
+	</xs:complexType>
+	<xs:complexType name="ChangingStorageHegemanModel">
+		<xs:annotation>
+			<xs:documentation>Changing wellbore storage model using the Hegeman model.</xs:documentation>
+		</xs:annotation>
+		<xs:complexContent>
+			<xs:extension base="prodml:WellboreBaseModel">
+				<xs:sequence>
+					<xs:element name="RatioInitialToFinalWellboreStorage" type="prodml:RatioInitialToFinalWellboreStorage" minOccurs="1" maxOccurs="1"/>
+					<xs:element name="DeltaTimeStorageChanges" type="prodml:DeltaTimeStorageChanges" minOccurs="1" maxOccurs="1"/>
+				</xs:sequence>
+			</xs:extension>
+		</xs:complexContent>
+	</xs:complexType>
+	<xs:complexType name="ChangingStorageSpiveyFissuresModel">
+		<xs:annotation>
+			<xs:documentation>Changing wellbore storage model using the Spivey Packer model.</xs:documentation>
+		</xs:annotation>
+		<xs:complexContent>
+			<xs:extension base="prodml:WellboreBaseModel">
+				<xs:sequence>
+					<xs:element name="RatioInitialToFinalWellboreStorage" type="prodml:RatioInitialToFinalWellboreStorage" minOccurs="1" maxOccurs="1"/>
+					<xs:element name="LeakSkin" type="prodml:LeakSkin" minOccurs="1" maxOccurs="1"/>
+				</xs:sequence>
+			</xs:extension>
+		</xs:complexContent>
+	</xs:complexType>
+	<xs:complexType name="ChangingStorageSpiveyPackerModel">
+		<xs:annotation>
+			<xs:documentation>Changing wellbore storage model using the Spivey Fissures model.</xs:documentation>
+		</xs:annotation>
+		<xs:complexContent>
+			<xs:extension base="prodml:WellboreBaseModel">
+				<xs:sequence>
+					<xs:element name="RatioInitialToFinalWellboreStorage" type="prodml:RatioInitialToFinalWellboreStorage" minOccurs="1" maxOccurs="1"/>
+					<xs:element name="LeakSkin" type="prodml:LeakSkin" minOccurs="1" maxOccurs="1"/>
+				</xs:sequence>
+			</xs:extension>
+		</xs:complexContent>
+	</xs:complexType>
+	<xs:complexType name="ClosedCircleModel">
+		<xs:annotation>
+			<xs:documentation>Closed circle boundary model.</xs:documentation>
+		</xs:annotation>
+		<xs:complexContent>
+			<xs:extension base="prodml:BoundaryBaseModel">
+				<xs:sequence>
+					<xs:element name="Boundary1Type" type="prodml:Boundary1Type" minOccurs="1" maxOccurs="1"/>
+				</xs:sequence>
+			</xs:extension>
+		</xs:complexContent>
+	</xs:complexType>
+	<xs:complexType name="ClosedRectangleModel">
+		<xs:annotation>
+			<xs:documentation>Closed rectangle boundary model. Four faults bound the reservoir in a rectangular shape.</xs:documentation>
+		</xs:annotation>
+		<xs:complexContent>
+			<xs:extension base="prodml:BoundaryBaseModel">
+				<xs:sequence>
+					<xs:element name="DrainageAreaMeasured" type="prodml:DrainageAreaMeasured" minOccurs="0" maxOccurs="1"/>
+					<xs:element name="PoreVolumeMeasured" type="prodml:PoreVolumeMeasured" minOccurs="0" maxOccurs="1"/>
+					<xs:element name="DistanceToBoundary1" type="prodml:DistanceToBoundary1" minOccurs="1" maxOccurs="1"/>
+					<xs:element name="DistanceToBoundary2" type="prodml:DistanceToBoundary2" minOccurs="1" maxOccurs="1"/>
+					<xs:element name="DistanceToBoundary3" type="prodml:DistanceToBoundary3" minOccurs="1" maxOccurs="1"/>
+					<xs:element name="DistanceToBoundary4" type="prodml:DistanceToBoundary4" minOccurs="1" maxOccurs="1"/>
+					<xs:element name="OrientationOfNormalToBoundary1" type="prodml:OrientationOfNormalToBoundary1" minOccurs="0" maxOccurs="1"/>
+					<xs:element name="Boundary1Type" type="prodml:Boundary1Type" minOccurs="1" maxOccurs="1"/>
+					<xs:element name="Boundary2Type" type="prodml:Boundary2Type" minOccurs="1" maxOccurs="1"/>
+					<xs:element name="Boundary3Type" type="prodml:Boundary3Type" minOccurs="1" maxOccurs="1"/>
+					<xs:element name="Boundary4Type" type="prodml:Boundary4Type" minOccurs="1" maxOccurs="1"/>
+				</xs:sequence>
+			</xs:extension>
+		</xs:complexContent>
+	</xs:complexType>
+	<xs:complexType name="ConstantStorageModel">
+		<xs:annotation>
+			<xs:documentation>Constant wellbore storage model.</xs:documentation>
+		</xs:annotation>
+		<xs:complexContent>
+			<xs:extension base="prodml:WellboreBaseModel">
+				<xs:sequence/>
+			</xs:extension>
+		</xs:complexContent>
+	</xs:complexType>
+	<xs:complexType name="CustomBoundaryModel">
+		<xs:annotation>
+			<xs:documentation>Boundary Model allowing for the addition of custom parameters to support extension of the model library provided.</xs:documentation>
+		</xs:annotation>
+		<xs:complexContent>
+			<xs:extension base="prodml:BoundaryBaseModel">
+				<xs:sequence>
+					<xs:element name="ModelName" type="prodml:ModelName" minOccurs="1" maxOccurs="1"/>
+					<xs:element name="AnyParameter" type="prodml:AbstractParameter" minOccurs="0" maxOccurs="unbounded"/>
+					<xs:element name="CustomParameter" type="prodml:CustomParameter" minOccurs="0" maxOccurs="unbounded"/>
+				</xs:sequence>
+			</xs:extension>
+		</xs:complexContent>
+	</xs:complexType>
+	<xs:complexType name="CustomNearWellboreModel">
+		<xs:annotation>
+			<xs:documentation>Near Wellbore Model allowing for the addition of custom parameters to support extension of the model library provided.</xs:documentation>
+		</xs:annotation>
+		<xs:complexContent>
+			<xs:extension base="prodml:NearWellboreBaseModel">
+				<xs:sequence>
+					<xs:element name="ModelName" type="prodml:ModelName" minOccurs="1" maxOccurs="1"/>
+					<xs:element name="AnyParameter" type="prodml:AbstractParameter" minOccurs="0" maxOccurs="unbounded"/>
+					<xs:element name="CustomParameter" type="prodml:CustomParameter" minOccurs="0" maxOccurs="unbounded"/>
+				</xs:sequence>
+			</xs:extension>
+		</xs:complexContent>
+	</xs:complexType>
+	<xs:complexType name="CustomReservoirModel">
+		<xs:annotation>
+			<xs:documentation>Reservoir Model allowing for the addition of custom parameters to support extension of the model library provided.</xs:documentation>
+		</xs:annotation>
+		<xs:complexContent>
+			<xs:extension base="prodml:ReservoirBaseModel">
+				<xs:sequence>
+					<xs:element name="ModelName" type="prodml:ModelName" minOccurs="1" maxOccurs="1"/>
+					<xs:element name="AnyParameter" type="prodml:AbstractParameter" minOccurs="0" maxOccurs="unbounded"/>
+					<xs:element name="CustomParameter" type="prodml:CustomParameter" minOccurs="0" maxOccurs="unbounded"/>
+				</xs:sequence>
+			</xs:extension>
+		</xs:complexContent>
+	</xs:complexType>
+	<xs:complexType name="CustomWellboreModel">
+		<xs:annotation>
+			<xs:documentation>Wellbore Storage Model allowing for the addition of custom parameters to support extension of the model library provided.</xs:documentation>
+		</xs:annotation>
+		<xs:complexContent>
+			<xs:extension base="prodml:WellboreBaseModel">
+				<xs:sequence>
+					<xs:element name="ModelName" type="prodml:ModelName" minOccurs="1" maxOccurs="1"/>
+					<xs:element name="AnyParameter" type="prodml:AbstractParameter" minOccurs="0" maxOccurs="unbounded"/>
+					<xs:element name="CustomParameter" type="prodml:CustomParameter" minOccurs="0" maxOccurs="unbounded"/>
+				</xs:sequence>
+			</xs:extension>
+		</xs:complexContent>
+	</xs:complexType>
+	<xs:complexType name="DualPermeabilityWithCrossflowModel">
+		<xs:annotation>
+			<xs:documentation>Dual Permeability reservoir model, with Cross-Flow between the two layers.</xs:documentation>
+		</xs:annotation>
+		<xs:complexContent>
+			<xs:extension base="prodml:ReservoirBaseModel">
+				<xs:sequence>
+					<xs:element name="InterporosityFlowParameter" type="prodml:InterporosityFlowParameter" minOccurs="1" maxOccurs="1"/>
+					<xs:element name="StorativityRatio" type="prodml:StorativityRatio" minOccurs="1" maxOccurs="1"/>
+					<xs:element name="RatioLayer1ToTotalPermeabilityThicknessProduct" type="prodml:RatioLayer1ToTotalPermeabilityThicknessProduct" minOccurs="1" maxOccurs="1"/>
+					<xs:element name="Layer2Thickness" type="prodml:Layer2Thickness" minOccurs="0" maxOccurs="1"/>
+				</xs:sequence>
+			</xs:extension>
+		</xs:complexContent>
+	</xs:complexType>
+	<xs:complexType name="DualPorosityPseudoSteadyStateModel">
+		<xs:annotation>
+			<xs:documentation>Dual Porosity reservoir model, with Pseudo-Steady-State flow between the two porosity systems.</xs:documentation>
+		</xs:annotation>
+		<xs:complexContent>
+			<xs:extension base="prodml:ReservoirBaseModel">
+				<xs:sequence>
+					<xs:element name="InterporosityFlowParameter" type="prodml:InterporosityFlowParameter" minOccurs="1" maxOccurs="1"/>
+					<xs:element name="StorativityRatio" type="prodml:StorativityRatio" minOccurs="1" maxOccurs="1"/>
+				</xs:sequence>
+			</xs:extension>
+		</xs:complexContent>
+	</xs:complexType>
+	<xs:complexType name="DualPorosityTransientSlabsModel">
+		<xs:annotation>
+			<xs:documentation>Dual Porosity reservoir model, with transient flow between the two porosity systems, and assuming slab shaped matrix blocks.</xs:documentation>
+		</xs:annotation>
+		<xs:complexContent>
+			<xs:extension base="prodml:ReservoirBaseModel">
+				<xs:sequence>
+					<xs:element name="InterporosityFlowParameter" type="prodml:InterporosityFlowParameter" minOccurs="1" maxOccurs="1"/>
+					<xs:element name="StorativityRatio" type="prodml:StorativityRatio" minOccurs="1" maxOccurs="1"/>
+				</xs:sequence>
+			</xs:extension>
+		</xs:complexContent>
+	</xs:complexType>
+	<xs:complexType name="DualPorosityTransientSpheresModel">
+		<xs:annotation>
+			<xs:documentation>Dual Porosity reservoir model, with transient flow between the two porosity systems, and assuming spherical shaped matrix blocks.</xs:documentation>
+		</xs:annotation>
+		<xs:complexContent>
+			<xs:extension base="prodml:ReservoirBaseModel">
+				<xs:sequence>
+					<xs:element name="InterporosityFlowParameter" type="prodml:InterporosityFlowParameter" minOccurs="1" maxOccurs="1"/>
+					<xs:element name="StorativityRatio" type="prodml:StorativityRatio" minOccurs="1" maxOccurs="1"/>
+				</xs:sequence>
+			</xs:extension>
+		</xs:complexContent>
+	</xs:complexType>
+	<xs:complexType name="FiniteRadiusModel">
+		<xs:annotation>
+			<xs:documentation>Finite radius model with radial flow into wellbore with skin factor.</xs:documentation>
+		</xs:annotation>
+		<xs:complexContent>
+			<xs:extension base="prodml:NearWellboreBaseModel">
+				<xs:sequence>
+					<xs:element name="SkinLayer2RelativeToTotalThickness" type="prodml:SkinLayer2RelativeToTotalThickness" minOccurs="0" maxOccurs="1"/>
+				</xs:sequence>
+			</xs:extension>
+		</xs:complexContent>
+	</xs:complexType>
+	<xs:complexType name="FracturedFiniteConductivityModel">
+		<xs:annotation>
+			<xs:documentation>Fracture model, with vertical fracture flow.  Finite Conductivity Model.</xs:documentation>
+		</xs:annotation>
+		<xs:complexContent>
+			<xs:extension base="prodml:NearWellboreBaseModel">
+				<xs:sequence>
+					<xs:element name="SkinLayer2RelativeToTotalThickness" type="prodml:SkinLayer2RelativeToTotalThickness" minOccurs="0" maxOccurs="1"/>
+					<xs:element name="FractureHalfLength" type="prodml:FractureHalfLength" minOccurs="1" maxOccurs="1"/>
+					<xs:element name="FractureFaceSkin" type="prodml:FractureFaceSkin" minOccurs="0" maxOccurs="1"/>
+					<xs:element name="OrientationOfFracturePlane" type="prodml:OrientationOfFracturePlane" minOccurs="0" maxOccurs="1"/>
+					<xs:element name="FractureConductivity" type="prodml:FractureConductivity" minOccurs="1" maxOccurs="1"/>
+					<xs:element name="DistanceMidFractureHeightToBottomBoundary" type="prodml:DistanceMidFractureHeightToBottomBoundary" minOccurs="0" maxOccurs="1"/>
+					<xs:element name="FractureHeight" type="prodml:FractureHeight" minOccurs="0" maxOccurs="1"/>
+				</xs:sequence>
+			</xs:extension>
+		</xs:complexContent>
+	</xs:complexType>
+	<xs:complexType name="FracturedHorizontalFiniteConductivityModel">
+		<xs:annotation>
+			<xs:documentation>Fracture model, with  horizontal fracture (sometimes called "pancake fracture") flow.  Finite Conductivity Model.</xs:documentation>
+		</xs:annotation>
+		<xs:complexContent>
+			<xs:extension base="prodml:NearWellboreBaseModel">
+				<xs:sequence>
+					<xs:element name="FractureConductivity" type="prodml:FractureConductivity" minOccurs="1" maxOccurs="1"/>
+					<xs:element name="FractureRadius" type="prodml:FractureRadius" minOccurs="1" maxOccurs="1"/>
+					<xs:element name="DistanceFractureToBottomBoundary" type="prodml:DistanceFractureToBottomBoundary" minOccurs="1" maxOccurs="1"/>
+				</xs:sequence>
+			</xs:extension>
+		</xs:complexContent>
+	</xs:complexType>
+	<xs:complexType name="FracturedHorizontalInfiniteConductivityModel">
+		<xs:annotation>
+			<xs:documentation>Fracture model, with  horizontal fracture (sometimes called "pancake fracture") flow.  Infinite Conductivity Model.</xs:documentation>
+		</xs:annotation>
+		<xs:complexContent>
+			<xs:extension base="prodml:NearWellboreBaseModel">
+				<xs:sequence>
+					<xs:element name="FractureRadius" type="prodml:FractureRadius" minOccurs="1" maxOccurs="1"/>
+					<xs:element name="DistanceFractureToBottomBoundary" type="prodml:DistanceFractureToBottomBoundary" minOccurs="1" maxOccurs="1"/>
+				</xs:sequence>
+			</xs:extension>
+		</xs:complexContent>
+	</xs:complexType>
+	<xs:complexType name="FracturedHorizontalUniformFluxModel">
+		<xs:annotation>
+			<xs:documentation>Fracture model, with  horizontal fracture (sometimes called "pancake fracture") flow. Unform Flux Model.</xs:documentation>
+		</xs:annotation>
+		<xs:complexContent>
+			<xs:extension base="prodml:NearWellboreBaseModel">
+				<xs:sequence>
+					<xs:element name="FractureRadius" type="prodml:FractureRadius" minOccurs="1" maxOccurs="1"/>
+					<xs:element name="DistanceFractureToBottomBoundary" type="prodml:DistanceFractureToBottomBoundary" minOccurs="1" maxOccurs="1"/>
+				</xs:sequence>
+			</xs:extension>
+		</xs:complexContent>
+	</xs:complexType>
+	<xs:complexType name="FracturedInfiniteConductivityModel">
+		<xs:annotation>
+			<xs:documentation>Fracture model, with vertical fracture flow.  Infinite Conductivity Model.</xs:documentation>
+		</xs:annotation>
+		<xs:complexContent>
+			<xs:extension base="prodml:NearWellboreBaseModel">
+				<xs:sequence>
+					<xs:element name="SkinLayer2RelativeToTotalThickness" type="prodml:SkinLayer2RelativeToTotalThickness" minOccurs="0" maxOccurs="1"/>
+					<xs:element name="FractureHalfLength" type="prodml:FractureHalfLength" minOccurs="1" maxOccurs="1"/>
+					<xs:element name="FractureFaceSkin" type="prodml:FractureFaceSkin" minOccurs="0" maxOccurs="1"/>
+					<xs:element name="OrientationOfFracturePlane" type="prodml:OrientationOfFracturePlane" minOccurs="0" maxOccurs="1"/>
+					<xs:element name="DistanceMidFractureHeightToBottomBoundary" type="prodml:DistanceMidFractureHeightToBottomBoundary" minOccurs="0" maxOccurs="1"/>
+					<xs:element name="FractureHeight" type="prodml:FractureHeight" minOccurs="0" maxOccurs="1"/>
+				</xs:sequence>
+			</xs:extension>
+		</xs:complexContent>
+	</xs:complexType>
+	<xs:complexType name="FracturedUniformFluxModel">
+		<xs:annotation>
+			<xs:documentation>Fracture model, with vertical fracture flow. Unform Flux Model.</xs:documentation>
+		</xs:annotation>
+		<xs:complexContent>
+			<xs:extension base="prodml:NearWellboreBaseModel">
+				<xs:sequence>
+					<xs:element name="SkinLayer2RelativeToTotalThickness" type="prodml:SkinLayer2RelativeToTotalThickness" minOccurs="0" maxOccurs="1"/>
+					<xs:element name="FractureHalfLength" type="prodml:FractureHalfLength" minOccurs="1" maxOccurs="1"/>
+					<xs:element name="FractureFaceSkin" type="prodml:FractureFaceSkin" minOccurs="0" maxOccurs="1"/>
+					<xs:element name="OrientationOfFracturePlane" type="prodml:OrientationOfFracturePlane" minOccurs="0" maxOccurs="1"/>
+					<xs:element name="DistanceMidFractureHeightToBottomBoundary" type="prodml:DistanceMidFractureHeightToBottomBoundary" minOccurs="0" maxOccurs="1"/>
+					<xs:element name="FractureHeight" type="prodml:FractureHeight" minOccurs="0" maxOccurs="1"/>
+				</xs:sequence>
+			</xs:extension>
+		</xs:complexContent>
+	</xs:complexType>
+	<xs:complexType name="HomogeneousModel">
+		<xs:annotation>
+			<xs:documentation>Homogeneous reservoir model.</xs:documentation>
+		</xs:annotation>
+		<xs:complexContent>
+			<xs:extension base="prodml:ReservoirBaseModel">
+				<xs:sequence/>
+			</xs:extension>
+		</xs:complexContent>
+	</xs:complexType>
+	<xs:complexType name="HorizontalWellbore2LayerModel">
+		<xs:annotation>
+			<xs:documentation>Horizontal wellbore model with wellbore positioned at arbitary distance from lower surface of reservoir layer, and with additional upper layer parallel to layer containing wellbore.</xs:documentation>
+		</xs:annotation>
+		<xs:complexContent>
+			<xs:extension base="prodml:NearWellboreBaseModel">
+				<xs:sequence>
+					<xs:element name="ConvergenceSkinRelativeToTotalThickness" type="prodml:ConvergenceSkinRelativeToTotalThickness" minOccurs="0" maxOccurs="1"/>
+					<xs:element name="MechanicalSkinRelativeToTotalThickness" type="prodml:MechanicalSkinRelativeToTotalThickness" minOccurs="0" maxOccurs="1"/>
+					<xs:element name="OrientationWellTrajectory" type="prodml:OrientationWellTrajectory" minOccurs="0" maxOccurs="1"/>
+					<xs:element name="LengthHorizontalWellboreFlowing" type="prodml:LengthHorizontalWellboreFlowing" minOccurs="1" maxOccurs="1"/>
+					<xs:element name="DistanceWellboreToBottomBoundary" type="prodml:DistanceWellboreToBottomBoundary" minOccurs="1" maxOccurs="1"/>
+				</xs:sequence>
+			</xs:extension>
+		</xs:complexContent>
+	</xs:complexType>
+	<xs:complexType name="HorizontalWellboreModel">
+		<xs:annotation>
+			<xs:documentation>Horizontal wellbore model with wellbore positioned at arbitary distance from lower surface of reservoir layer.</xs:documentation>
+		</xs:annotation>
+		<xs:complexContent>
+			<xs:extension base="prodml:NearWellboreBaseModel">
+				<xs:sequence>
+					<xs:element name="ConvergenceSkinRelativeToTotalThickness" type="prodml:ConvergenceSkinRelativeToTotalThickness" minOccurs="0" maxOccurs="1"/>
+					<xs:element name="MechanicalSkinRelativeToTotalThickness" type="prodml:MechanicalSkinRelativeToTotalThickness" minOccurs="0" maxOccurs="1"/>
+					<xs:element name="OrientationWellTrajectory" type="prodml:OrientationWellTrajectory" minOccurs="0" maxOccurs="1"/>
+					<xs:element name="LengthHorizontalWellboreFlowing" type="prodml:LengthHorizontalWellboreFlowing" minOccurs="1" maxOccurs="1"/>
+					<xs:element name="DistanceWellboreToBottomBoundary" type="prodml:DistanceWellboreToBottomBoundary" minOccurs="1" maxOccurs="1"/>
+				</xs:sequence>
+			</xs:extension>
+		</xs:complexContent>
+	</xs:complexType>
+	<xs:complexType name="HorizontalWellboreMultipleEqualFracturedModel">
+		<xs:annotation>
+			<xs:documentation>Horizontal wellbore model with wellbore positioned at arbitary distance from lower surface of reservoir layer, containing a number "n" of equally spaced identical vertical fractures.</xs:documentation>
+		</xs:annotation>
+		<xs:complexContent>
+			<xs:extension base="prodml:NearWellboreBaseModel">
+				<xs:sequence>
+					<xs:element name="ConvergenceSkinRelativeToTotalThickness" type="prodml:ConvergenceSkinRelativeToTotalThickness" minOccurs="0" maxOccurs="1"/>
+					<xs:element name="MechanicalSkinRelativeToTotalThickness" type="prodml:MechanicalSkinRelativeToTotalThickness" minOccurs="0" maxOccurs="1"/>
+					<xs:element name="FractureHalfLength" type="prodml:FractureHalfLength" minOccurs="1" maxOccurs="1"/>
+					<xs:element name="FractureFaceSkin" type="prodml:FractureFaceSkin" minOccurs="0" maxOccurs="1"/>
+					<xs:element name="FractureConductivity" type="prodml:FractureConductivity" minOccurs="0" maxOccurs="1"/>
+					<xs:element name="OrientationWellTrajectory" type="prodml:OrientationWellTrajectory" minOccurs="0" maxOccurs="1"/>
+					<xs:element name="LengthHorizontalWellboreFlowing" type="prodml:LengthHorizontalWellboreFlowing" minOccurs="1" maxOccurs="1"/>
+					<xs:element name="DistanceWellboreToBottomBoundary" type="prodml:DistanceWellboreToBottomBoundary" minOccurs="0" maxOccurs="1"/>
+					<xs:element name="DistanceMidFractureHeightToBottomBoundary" type="prodml:DistanceMidFractureHeightToBottomBoundary" minOccurs="0" maxOccurs="1"/>
+					<xs:element name="NumberOfFractures" type="prodml:NumberOfFractures" minOccurs="1" maxOccurs="1"/>
+					<xs:element name="FractureHeight" type="prodml:FractureHeight" minOccurs="0" maxOccurs="1"/>
+					<xs:element name="FractureAngleToWellbore" type="prodml:FractureAngleToWellbore" minOccurs="1" maxOccurs="1"/>
+					<xs:element name="FractureStorativityRatio" type="prodml:FractureStorativityRatio" minOccurs="0" maxOccurs="1"/>
+					<xs:element name="FractureModelType" type="prodml:FractureModelType" minOccurs="1" maxOccurs="1"/>
+				</xs:sequence>
+			</xs:extension>
+		</xs:complexContent>
+	</xs:complexType>
+	<xs:complexType name="HorizontalWellboreMultipleVariableFracturedModel">
+		<xs:annotation>
+			<xs:documentation>Horizontal wellbore model with wellbore positioned at arbitary distance from lower surface of reservoir layer, containing a number "n" of non-identical vertical fractures. These may be unequally spaced and each may have its own orientation with respect to the wellbore, and its own height. Expected to be modelled numerically.</xs:documentation>
+		</xs:annotation>
+		<xs:complexContent>
+			<xs:extension base="prodml:NearWellboreBaseModel">
+				<xs:sequence>
+					<xs:element name="ConvergenceSkinRelativeToTotalThickness" type="prodml:ConvergenceSkinRelativeToTotalThickness" minOccurs="0" maxOccurs="1"/>
+					<xs:element name="MechanicalSkinRelativeToTotalThickness" type="prodml:MechanicalSkinRelativeToTotalThickness" minOccurs="0" maxOccurs="1"/>
+					<xs:element name="OrientationWellTrajectory" type="prodml:OrientationWellTrajectory" minOccurs="0" maxOccurs="1"/>
+					<xs:element name="LengthHorizontalWellboreFlowing" type="prodml:LengthHorizontalWellboreFlowing" minOccurs="1" maxOccurs="1"/>
+					<xs:element name="DistanceWellboreToBottomBoundary" type="prodml:DistanceWellboreToBottomBoundary" minOccurs="0" maxOccurs="1"/>
+					<xs:element name="NumberOfFractures" type="prodml:NumberOfFractures" minOccurs="1" maxOccurs="1"/>
+					<xs:element name="singleFractureSubModel" type="prodml:SingleFractureSubModel" minOccurs="0" maxOccurs="unbounded"/>
+				</xs:sequence>
+			</xs:extension>
+		</xs:complexContent>
+	</xs:complexType>
+	<xs:complexType name="InfiniteBoundaryModel">
+		<xs:annotation>
+			<xs:documentation>Infinite boundary model - there are no boundaries around the reservoir.</xs:documentation>
+		</xs:annotation>
+		<xs:complexContent>
+			<xs:extension base="prodml:BoundaryBaseModel">
+				<xs:sequence/>
+			</xs:extension>
+		</xs:complexContent>
+	</xs:complexType>
+	<xs:complexType name="LinearCompositeModel">
+		<xs:annotation>
+			<xs:documentation>Linear Composite reservoir model in which the producing wellbore is in a homogeneous reservoir, infinite in all directions except one where the reservoir and/or fluid characteristics change across a linear front. On the farther side of the interface the reservoir is homogeneous and infinite but with a different mobility and/or storativity.  There is no pressure loss at the interface between the two zones.</xs:documentation>
+		</xs:annotation>
+		<xs:complexContent>
+			<xs:extension base="prodml:ReservoirBaseModel">
+				<xs:sequence>
+					<xs:element name="InnerToOuterZoneMobilityRatio" type="prodml:InnerToOuterZoneMobilityRatio" minOccurs="1" maxOccurs="1"/>
+					<xs:element name="InnerToOuterZoneDiffusivityRatio" type="prodml:InnerToOuterZoneDiffusivityRatio" minOccurs="1" maxOccurs="1"/>
+					<xs:element name="DistanceToMobilityInterface" type="prodml:DistanceToMobilityInterface" minOccurs="1" maxOccurs="1"/>
+					<xs:element name="OrientationOfLinearFront" type="prodml:OrientationOfLinearFront" minOccurs="0" maxOccurs="1"/>
+				</xs:sequence>
+			</xs:extension>
+		</xs:complexContent>
+	</xs:complexType>
+	<xs:complexType name="LinearCompositeWithChangingThicknessAcrossLeakyFaultModel">
+		<xs:annotation>
+			<xs:documentation>Linear Composite reservoir model in which the producing wellbore is in a homogeneous reservoir, infinite in all directions except one where the reservoir and/or fluid characteristics change across a linear front. On the farther side of the interface the reservoir is homogeneous and infinite but with a different mobility and/or storativity and thickness.  There is a fault or barrier at the interface between the two zones, but this is "leaky", allowing flow across it.</xs:documentation>
+		</xs:annotation>
+		<xs:complexContent>
+			<xs:extension base="prodml:ReservoirBaseModel">
+				<xs:sequence>
+					<xs:element name="DistanceToMobilityInterface" type="prodml:DistanceToMobilityInterface" minOccurs="1" maxOccurs="1"/>
+					<xs:element name="OrientationOfLinearFront" type="prodml:OrientationOfLinearFront" minOccurs="0" maxOccurs="1"/>
+					<xs:element name="TransmissibilityReductionFactorOfLinearFront" type="prodml:TransmissibilityReductionFactorOfLinearFront" minOccurs="1" maxOccurs="1"/>
+					<xs:element name="Region2Thickness" type="prodml:Region2Thickness" minOccurs="1" maxOccurs="1"/>
+				</xs:sequence>
+			</xs:extension>
+		</xs:complexContent>
+	</xs:complexType>
+	<xs:complexType name="LinearCompositeWithConductiveFaultModel">
+		<xs:annotation>
+			<xs:documentation>Linear Composite reservoir model in which the producing wellbore is in a homogeneous reservoir, infinite in all directions except one where the reservoir and/or fluid characteristics change across a linear front. On the farther side of the interface the reservoir is homogeneous and infinite but with a different mobility and/or storativity.  There is a fault or barrier at the interface between the two zones, but this is "leaky", allowing flow across it and conductive, allowing flow along it. It can be thought of as a non-intersecting fracture.</xs:documentation>
+		</xs:annotation>
+		<xs:complexContent>
+			<xs:extension base="prodml:ReservoirBaseModel">
+				<xs:sequence>
+					<xs:element name="InnerToOuterZoneMobilityRatio" type="prodml:InnerToOuterZoneMobilityRatio" minOccurs="1" maxOccurs="1"/>
+					<xs:element name="InnerToOuterZoneDiffusivityRatio" type="prodml:InnerToOuterZoneDiffusivityRatio" minOccurs="1" maxOccurs="1"/>
+					<xs:element name="DistanceToMobilityInterface" type="prodml:DistanceToMobilityInterface" minOccurs="1" maxOccurs="1"/>
+					<xs:element name="OrientationOfLinearFront" type="prodml:OrientationOfLinearFront" minOccurs="0" maxOccurs="1"/>
+					<xs:element name="TransmissibilityReductionFactorOfLinearFront" type="prodml:TransmissibilityReductionFactorOfLinearFront" minOccurs="1" maxOccurs="1"/>
+					<xs:element name="FaultConductivity" type="prodml:FaultConductivity" minOccurs="1" maxOccurs="1"/>
+				</xs:sequence>
+			</xs:extension>
+		</xs:complexContent>
+	</xs:complexType>
+	<xs:complexType name="LinearCompositeWithLeakyFaultModel">
+		<xs:annotation>
+			<xs:documentation>Linear Composite reservoir model in which the producing wellbore is in a homogeneous reservoir, infinite in all directions except one where the reservoir and/or fluid characteristics change across a linear front. On the farther side of the interface the reservoir is homogeneous and infinite but with a different mobility and/or storativity.  There is a fault or barrier at the interface between the two zones, but this is "leaky", allowing flow across it.</xs:documentation>
+		</xs:annotation>
+		<xs:complexContent>
+			<xs:extension base="prodml:ReservoirBaseModel">
+				<xs:sequence>
+					<xs:element name="InnerToOuterZoneMobilityRatio" type="prodml:InnerToOuterZoneMobilityRatio" minOccurs="1" maxOccurs="1"/>
+					<xs:element name="InnerToOuterZoneDiffusivityRatio" type="prodml:InnerToOuterZoneDiffusivityRatio" minOccurs="1" maxOccurs="1"/>
+					<xs:element name="DistanceToMobilityInterface" type="prodml:DistanceToMobilityInterface" minOccurs="1" maxOccurs="1"/>
+					<xs:element name="OrientationOfLinearFront" type="prodml:OrientationOfLinearFront" minOccurs="0" maxOccurs="1"/>
+					<xs:element name="TransmissibilityReductionFactorOfLinearFront" type="prodml:TransmissibilityReductionFactorOfLinearFront" minOccurs="1" maxOccurs="1"/>
+				</xs:sequence>
+			</xs:extension>
+		</xs:complexContent>
+	</xs:complexType>
+	<xs:complexType name="NearWellboreBaseModel" abstract="true">
+		<xs:annotation>
+			<xs:documentation>Abstract near-wellbore response model from which the other near wellbore response model types are derived.</xs:documentation>
+		</xs:annotation>
+		<xs:complexContent>
+			<xs:extension base="prodml:AbstractModelSection">
+				<xs:sequence>
+					<xs:element name="SkinRelativeToTotalThickness" type="prodml:SkinRelativeToTotalThickness" minOccurs="1" maxOccurs="1"/>
+					<xs:element name="RateDependentSkinFactor" type="prodml:RateDependentSkinFactor" minOccurs="0" maxOccurs="1"/>
+					<xs:element name="DeltaPressureTotalSkin" type="prodml:DeltaPressureTotalSkin" minOccurs="0" maxOccurs="1"/>
+					<xs:element name="RatioDpSkinToTotalDrawdown" type="prodml:RatioDpSkinToTotalDrawdown" minOccurs="0" maxOccurs="1"/>
+				</xs:sequence>
+			</xs:extension>
+		</xs:complexContent>
+	</xs:complexType>
+	<xs:complexType name="NumericalBoundaryModel">
+		<xs:annotation>
+			<xs:documentation>Numerical boundary model in which any arbitrary outer shape of the reservoir boundary can be imposed by use of any number of straight line segments which together define the boundary.</xs:documentation>
+		</xs:annotation>
+		<xs:complexContent>
+			<xs:extension base="prodml:BoundaryBaseModel">
+				<xs:sequence>
+					<xs:element name="DrainageAreaMeasured" type="prodml:DrainageAreaMeasured" minOccurs="0" maxOccurs="1"/>
+					<xs:element name="PoreVolumeMeasured" type="prodml:PoreVolumeMeasured" minOccurs="0" maxOccurs="1"/>
+					<xs:element name="SingleBoundarySubModel" type="prodml:SingleBoundarySubModel" minOccurs="0" maxOccurs="unbounded"/>
+				</xs:sequence>
+			</xs:extension>
+		</xs:complexContent>
+	</xs:complexType>
+	<xs:complexType name="NumericalDualPorosityReservoirModel">
+		<xs:annotation>
+			<xs:documentation>Numerical model with dual porosity reservoir. This model may have constant value or reference a grid of geometrically distributed values for the following parameters: permeability (k), thickness (h), porosity (phi), depth (Z), vertical anisotropy (KvToKr) and horizontal anisotropy (KyTokx).  Internal faults can be positioned in this reservoir.</xs:documentation>
+		</xs:annotation>
+		<xs:complexContent>
+			<xs:extension base="prodml:ReservoirBaseModel">
+				<xs:sequence>
+					<xs:element name="InterporosityFlowParameter" type="prodml:InterporosityFlowParameter" minOccurs="1" maxOccurs="1"/>
+					<xs:element name="StorativityRatio" type="prodml:StorativityRatio" minOccurs="1" maxOccurs="1"/>
+					<xs:element name="InternalFaultSubModel" type="prodml:InternalFaultSubModel" minOccurs="0" maxOccurs="unbounded"/>
+					<xs:element name="DistributedParametersSubModel" type="prodml:DistributedParametersSubModel" minOccurs="1" maxOccurs="1"/>
+					<xs:element name="ReservoirZoneSubModel" type="prodml:ReservoirZoneSubModel" minOccurs="0" maxOccurs="unbounded"/>
+				</xs:sequence>
+			</xs:extension>
+		</xs:complexContent>
+	</xs:complexType>
+	<xs:complexType name="NumericalHomogeneousReservoirModel">
+		<xs:annotation>
+			<xs:documentation>Numerical model with homogeneous reservoir. This model may have constant value or reference a grid of geometrically distributed values for the following parameters: permeability (k), thickness (h), porosity (phi), depth (Z), vertical anisotropy (KvToKr) and horizontal anisotropy (KyTokx). Internal faults can be positioned in this reservoir.</xs:documentation>
+		</xs:annotation>
+		<xs:complexContent>
+			<xs:extension base="prodml:ReservoirBaseModel">
+				<xs:sequence>
+					<xs:element name="InternalFaultSubModel" type="prodml:InternalFaultSubModel" minOccurs="0" maxOccurs="unbounded"/>
+					<xs:element name="DistributedParametersSubModel" type="prodml:DistributedParametersSubModel" minOccurs="1" maxOccurs="1"/>
+					<xs:element name="ReservoirZoneSubModel" type="prodml:ReservoirZoneSubModel" minOccurs="0" maxOccurs="unbounded"/>
+				</xs:sequence>
+			</xs:extension>
+		</xs:complexContent>
+	</xs:complexType>
+	<xs:complexType name="PartiallyPenetratingModel">
+		<xs:annotation>
+			<xs:documentation>Partially Penetrating model, with flowing length of wellbore less than total thickness of reservoir layer (as measured along wellbore).</xs:documentation>
+		</xs:annotation>
+		<xs:complexContent>
+			<xs:extension base="prodml:NearWellboreBaseModel">
+				<xs:sequence>
+					<xs:element name="SkinLayer2RelativeToTotalThickness" type="prodml:SkinLayer2RelativeToTotalThickness" minOccurs="0" maxOccurs="1"/>
+					<xs:element name="ConvergenceSkinRelativeToTotalThickness" type="prodml:ConvergenceSkinRelativeToTotalThickness" minOccurs="0" maxOccurs="1"/>
+					<xs:element name="MechanicalSkinRelativeToTotalThickness" type="prodml:MechanicalSkinRelativeToTotalThickness" minOccurs="0" maxOccurs="1"/>
+					<xs:element name="PerforatedLength" type="prodml:PerforatedLength" minOccurs="1" maxOccurs="1"/>
+					<xs:element name="DistanceMidPerforationsToBottomBoundary" type="prodml:DistanceMidPerforationsToBottomBoundary" minOccurs="1" maxOccurs="1"/>
+				</xs:sequence>
+			</xs:extension>
+		</xs:complexContent>
+	</xs:complexType>
+	<xs:complexType name="PinchOutModel">
+		<xs:annotation>
+			<xs:documentation>Pinch Out boundary model. The upper and lower bounding surfaces of the reservoir are sub-parallel and intersect some distance from the wellbore. Other directions are unbounded.</xs:documentation>
+		</xs:annotation>
+		<xs:complexContent>
+			<xs:extension base="prodml:BoundaryBaseModel">
+				<xs:sequence>
+					<xs:element name="OrientationOfNormalToBoundary1" type="prodml:OrientationOfNormalToBoundary1" minOccurs="0" maxOccurs="1"/>
+					<xs:element name="DistanceToPinchOut" type="prodml:DistanceToPinchOut" minOccurs="1" maxOccurs="1"/>
+				</xs:sequence>
+			</xs:extension>
+		</xs:complexContent>
+	</xs:complexType>
+	<xs:complexType name="RadialCompositeModel">
+		<xs:annotation>
+			<xs:documentation>Radial Composite reservoir model, in which the wellbore is at the center of a circular homogeneous zone, communicating with an infinite homogeneous reservoir. The inner and outer zones have different reservoir and/or fluid characteristics. There is no pressure loss at the interface between the two zones.</xs:documentation>
+		</xs:annotation>
+		<xs:complexContent>
+			<xs:extension base="prodml:ReservoirBaseModel">
+				<xs:sequence>
+					<xs:element name="InnerToOuterZoneMobilityRatio" type="prodml:InnerToOuterZoneMobilityRatio" minOccurs="1" maxOccurs="1"/>
+					<xs:element name="InnerToOuterZoneDiffusivityRatio" type="prodml:InnerToOuterZoneDiffusivityRatio" minOccurs="1" maxOccurs="1"/>
+					<xs:element name="DistanceToMobilityInterface" type="prodml:DistanceToMobilityInterface" minOccurs="1" maxOccurs="1"/>
+				</xs:sequence>
+			</xs:extension>
+		</xs:complexContent>
+	</xs:complexType>
+	<xs:complexType name="ReservoirBaseModel" abstract="true">
+		<xs:annotation>
+			<xs:documentation>Abstract reservoir model from which the other types are derived.</xs:documentation>
+		</xs:annotation>
+		<xs:complexContent>
+			<xs:extension base="prodml:AbstractModelSection">
+				<xs:sequence>
+					<xs:element name="HorizontalRadialPermeability" type="prodml:HorizontalRadialPermeability" minOccurs="1" maxOccurs="1"/>
+					<xs:element name="TotalThickness" type="prodml:TotalThickness" minOccurs="1" maxOccurs="1"/>
+					<xs:element name="PermeabilityThicknessProduct" type="prodml:PermeabilityThicknessProduct" minOccurs="1" maxOccurs="1"/>
+					<xs:element name="Porosity" type="prodml:Porosity" minOccurs="1" maxOccurs="1"/>
+					<xs:element name="InitialPressure" type="prodml:InitialPressure" minOccurs="1" maxOccurs="1"/>
+					<xs:element name="PressureDatumTVD" type="prodml:PressureDatumTVD" minOccurs="0" maxOccurs="1"/>
+					<xs:element name="AveragePressure" type="prodml:AveragePressure" minOccurs="0" maxOccurs="1"/>
+					<xs:element name="VerticalAnisotropyKvToKr" type="prodml:VerticalAnisotropyKvToKr" minOccurs="0" maxOccurs="1"/>
+					<xs:element name="HorizontalAnisotropyKxToKy" type="prodml:HorizontalAnisotropyKxToKy" minOccurs="0" maxOccurs="1"/>
+					<xs:element name="OrientationOfAnisotropyXDirection" type="prodml:OrientationOfAnisotropyXDirection" minOccurs="0" maxOccurs="1"/>
+					<xs:element name="UpperBoundaryType" type="prodml:UpperBoundaryType" minOccurs="0" maxOccurs="1"/>
+					<xs:element name="LowerBoundaryType" type="prodml:LowerBoundaryType" minOccurs="0" maxOccurs="1"/>
+				</xs:sequence>
+			</xs:extension>
+		</xs:complexContent>
+	</xs:complexType>
+	<xs:complexType name="SingleFaultModel">
+		<xs:annotation>
+			<xs:documentation>Single fault boundary model. A single linear boundary runs along one side of the reservoir.</xs:documentation>
+		</xs:annotation>
+		<xs:complexContent>
+			<xs:extension base="prodml:BoundaryBaseModel">
+				<xs:sequence>
+					<xs:element name="DistanceToBoundary1" type="prodml:DistanceToBoundary1" minOccurs="1" maxOccurs="1"/>
+					<xs:element name="OrientationOfNormalToBoundary1" type="prodml:OrientationOfNormalToBoundary1" minOccurs="0" maxOccurs="1"/>
+					<xs:element name="Boundary1Type" type="prodml:Boundary1Type" minOccurs="1" maxOccurs="1"/>
+				</xs:sequence>
+			</xs:extension>
+		</xs:complexContent>
+	</xs:complexType>
+	<xs:complexType name="SlantedFullyPenetratingModel">
+		<xs:annotation>
+			<xs:documentation>Slanted wellbore model, with full penetrating length of wellbore open to flow.</xs:documentation>
+		</xs:annotation>
+		<xs:complexContent>
+			<xs:extension base="prodml:NearWellboreBaseModel">
+				<xs:sequence>
+					<xs:element name="WellboreDeviationAngle" type="prodml:WellboreDeviationAngle" minOccurs="1" maxOccurs="1"/>
+					<xs:element name="SkinLayer2RelativeToTotalThickness" type="prodml:SkinLayer2RelativeToTotalThickness" minOccurs="0" maxOccurs="1"/>
+					<xs:element name="ConvergenceSkinRelativeToTotalThickness" type="prodml:ConvergenceSkinRelativeToTotalThickness" minOccurs="0" maxOccurs="1"/>
+					<xs:element name="MechanicalSkinRelativeToTotalThickness" type="prodml:MechanicalSkinRelativeToTotalThickness" minOccurs="0" maxOccurs="1"/>
+					<xs:element name="OrientationWellTrajectory" type="prodml:OrientationWellTrajectory" minOccurs="0" maxOccurs="1"/>
+				</xs:sequence>
+			</xs:extension>
+		</xs:complexContent>
+	</xs:complexType>
+	<xs:complexType name="SlantedPartiallyPenetratingModel">
+		<xs:annotation>
+			<xs:documentation>Slanted wellbore model, with flowing length of wellbore less than total thickness of reservoir layer (as measured along wellbore).</xs:documentation>
+		</xs:annotation>
+		<xs:complexContent>
+			<xs:extension base="prodml:NearWellboreBaseModel">
+				<xs:sequence>
+					<xs:element name="WellboreDeviationAngle" type="prodml:WellboreDeviationAngle" minOccurs="1" maxOccurs="1"/>
+					<xs:element name="SkinLayer2RelativeToTotalThickness" type="prodml:SkinLayer2RelativeToTotalThickness" minOccurs="0" maxOccurs="1"/>
+					<xs:element name="ConvergenceSkinRelativeToTotalThickness" type="prodml:ConvergenceSkinRelativeToTotalThickness" minOccurs="0" maxOccurs="1"/>
+					<xs:element name="MechanicalSkinRelativeToTotalThickness" type="prodml:MechanicalSkinRelativeToTotalThickness" minOccurs="0" maxOccurs="1"/>
+					<xs:element name="PerforatedLength" type="prodml:PerforatedLength" minOccurs="1" maxOccurs="1"/>
+					<xs:element name="DistanceMidPerforationsToBottomBoundary" type="prodml:DistanceMidPerforationsToBottomBoundary" minOccurs="1" maxOccurs="1"/>
+					<xs:element name="OrientationWellTrajectory" type="prodml:OrientationWellTrajectory" minOccurs="0" maxOccurs="1"/>
+				</xs:sequence>
+			</xs:extension>
+		</xs:complexContent>
+	</xs:complexType>
+	<xs:complexType name="TwoIntersectingFaultsModel">
+		<xs:annotation>
+			<xs:documentation>Two intersecting faults boundary model. Two linear non-parallel boundaries run along adjacent sides of the reservoir and intersect at an arbitrary angle.</xs:documentation>
+		</xs:annotation>
+		<xs:complexContent>
+			<xs:extension base="prodml:BoundaryBaseModel">
+				<xs:sequence>
+					<xs:element name="DistanceToBoundary1" type="prodml:DistanceToBoundary1" minOccurs="1" maxOccurs="1"/>
+					<xs:element name="DistanceToBoundary2" type="prodml:DistanceToBoundary2" minOccurs="1" maxOccurs="1"/>
+					<xs:element name="OrientationOfNormalToBoundary1" type="prodml:OrientationOfNormalToBoundary1" minOccurs="0" maxOccurs="1"/>
+					<xs:element name="AngleBetweenBoundaries" type="prodml:AngleBetweenBoundaries" minOccurs="1" maxOccurs="1"/>
+					<xs:element name="Boundary1Type" type="prodml:Boundary1Type" minOccurs="1" maxOccurs="1"/>
+					<xs:element name="Boundary2Type" type="prodml:Boundary2Type" minOccurs="1" maxOccurs="1"/>
+				</xs:sequence>
+			</xs:extension>
+		</xs:complexContent>
+	</xs:complexType>
+	<xs:complexType name="TwoParallelFaultsModel">
+		<xs:annotation>
+			<xs:documentation>Two parallel faults boundary model. Two linear parallel boundaries run along opposite side of the reservoir.</xs:documentation>
+		</xs:annotation>
+		<xs:complexContent>
+			<xs:extension base="prodml:BoundaryBaseModel">
+				<xs:sequence>
+					<xs:element name="DistanceToBoundary1" type="prodml:DistanceToBoundary1" minOccurs="1" maxOccurs="1"/>
+					<xs:element name="DistanceToBoundary3" type="prodml:DistanceToBoundary3" minOccurs="1" maxOccurs="1"/>
+					<xs:element name="OrientationOfNormalToBoundary1" type="prodml:OrientationOfNormalToBoundary1" minOccurs="0" maxOccurs="1"/>
+					<xs:element name="Boundary1Type" type="prodml:Boundary1Type" minOccurs="1" maxOccurs="1"/>
+					<xs:element name="Boundary3Type" type="prodml:Boundary3Type" minOccurs="1" maxOccurs="1"/>
+				</xs:sequence>
+			</xs:extension>
+		</xs:complexContent>
+	</xs:complexType>
+	<xs:complexType name="UShapedFaultsModel">
+		<xs:annotation>
+			<xs:documentation>U-shaped faults boundary model. Three linear faults intersecting at 90 degrees bound the reservoir on three sides with the fourth side unbounded.</xs:documentation>
+		</xs:annotation>
+		<xs:complexContent>
+			<xs:extension base="prodml:BoundaryBaseModel">
+				<xs:sequence>
+					<xs:element name="DistanceToBoundary1" type="prodml:DistanceToBoundary1" minOccurs="1" maxOccurs="1"/>
+					<xs:element name="DistanceToBoundary2" type="prodml:DistanceToBoundary2" minOccurs="1" maxOccurs="1"/>
+					<xs:element name="DistanceToBoundary3" type="prodml:DistanceToBoundary3" minOccurs="1" maxOccurs="1"/>
+					<xs:element name="OrientationOfNormalToBoundary1" type="prodml:OrientationOfNormalToBoundary1" minOccurs="0" maxOccurs="1"/>
+					<xs:element name="Boundary1Type" type="prodml:Boundary1Type" minOccurs="1" maxOccurs="1"/>
+					<xs:element name="Boundary2Type" type="prodml:Boundary2Type" minOccurs="1" maxOccurs="1"/>
+					<xs:element name="Boundary3Type" type="prodml:Boundary3Type" minOccurs="1" maxOccurs="1"/>
+				</xs:sequence>
+			</xs:extension>
+		</xs:complexContent>
+	</xs:complexType>
+	<xs:complexType name="WellboreBaseModel" abstract="true">
+		<xs:annotation>
+			<xs:documentation>Abstract wellbore response model from which the other wellbore response model types are derived.</xs:documentation>
+		</xs:annotation>
+		<xs:complexContent>
+			<xs:extension base="prodml:AbstractModelSection">
+				<xs:sequence>
+					<xs:element name="WellboreRadius" type="prodml:WellboreRadius" minOccurs="1" maxOccurs="1"/>
+					<xs:element name="WellboreStorageCoefficient" type="prodml:WellboreStorageCoefficient" minOccurs="1" maxOccurs="1"/>
+					<xs:element name="WellboreVolume" type="prodml:WellboreVolume" minOccurs="0" maxOccurs="1"/>
+					<xs:element name="WellboreFluidCompressibility" type="prodml:WellboreFluidCompressibility" minOccurs="0" maxOccurs="1"/>
+					<xs:element name="TubingInteralDiameter" type="prodml:TubingInteralDiameter" minOccurs="0" maxOccurs="1"/>
+					<xs:element name="FluidDensity" type="prodml:FluidDensity" minOccurs="0" maxOccurs="1"/>
+					<xs:element name="WellboreDeviationAngle" type="prodml:WellboreDeviationAngle" minOccurs="0" maxOccurs="1"/>
+					<xs:element name="WellboreStorageMechanismType" type="prodml:WellboreStorageMechanismType" minOccurs="0" maxOccurs="1"/>
+				</xs:sequence>
+			</xs:extension>
+		</xs:complexContent>
+	</xs:complexType>
+</xs:schema>

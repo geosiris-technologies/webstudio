@@ -1,0 +1,67 @@
+<?xml version="1.0" encoding="utf-8"?>
+<xs:schema targetNamespace="http://www.energistics.org/energyml/data/commonv2" xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:eml="http://www.energistics.org/energyml/data/commonv2" elementFormDefault="qualified" version="2.0">
+	<xs:annotation>
+		<xs:documentation>This package contains the types and elements to allow an EnergyML Data Object to refer to another EnergyML Data Object (i.e. External References).</xs:documentation>
+	</xs:annotation>
+	<xs:include schemaLocation="BaseTypes.xsd"/>
+	<xs:include schemaLocation="Abstract.xsd"/>
+	<xs:complexType name="Hdf5Dataset">
+		<xs:sequence>
+			<xs:element name="PathInHdfFile" type="xs:string" minOccurs="1" maxOccurs="1">
+				<xs:annotation>
+					<xs:documentation>The path of the referenced dataset in the HDF file.
+
+The separator between groups and final dataset is a slash '/'</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element name="HdfProxy" type="eml:DataObjectReference" minOccurs="1" maxOccurs="1"/>
+		</xs:sequence>
+	</xs:complexType>
+	<xs:complexType name="obj_EpcExternalPartReference">
+		<xs:annotation>
+			<xs:documentation>It defines a proxy for external part of the EPC package. It must be used at least for external HDF parts.</xs:documentation>
+		</xs:annotation>
+		<xs:complexContent>
+			<xs:extension base="eml:AbstractCitedDataObject">
+				<xs:sequence>
+					<xs:element name="MimeType" type="xs:string" minOccurs="1" maxOccurs="1">
+						<xs:annotation>
+							<xs:documentation>IAMF registered, if one exists, or a free text field. Needs documentation on seismic especially.
+
+MIME type for HDF proxy is : application/x-hdf5 (by RESQML convention). </xs:documentation>
+						</xs:annotation>
+					</xs:element>
+				</xs:sequence>
+			</xs:extension>
+		</xs:complexContent>
+	</xs:complexType>
+	<xs:complexType name="DataObjectReference">
+		<xs:annotation>
+			<xs:documentation>It only applies for Energistics data object.</xs:documentation>
+		</xs:annotation>
+		<xs:sequence>
+			<xs:element name="ContentType" type="xs:string" minOccurs="1" maxOccurs="1">
+				<xs:annotation>
+					<xs:documentation>The content type of the referenced element.</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element name="Title" type="eml:DescriptionString" minOccurs="1" maxOccurs="1"/>
+			<xs:element name="UUID" type="eml:UuidString" minOccurs="1" maxOccurs="1">
+				<xs:annotation>
+					<xs:documentation>Reference to an object using its global UID.</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element name="UuidAuthority" type="xs:string" minOccurs="0" maxOccurs="1">
+				<xs:annotation>
+					<xs:documentation>The authority that issued and maintains the uuid of the referenced object.
+Used mainly in alias context.</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element name="VersionString" type="eml:NameString" minOccurs="0" maxOccurs="1">
+				<xs:annotation>
+					<xs:documentation>Indicates the version of the object which is referenced.</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+		</xs:sequence>
+	</xs:complexType>
+</xs:schema>

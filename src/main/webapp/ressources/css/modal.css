@@ -1,0 +1,55 @@
+.modal_tab_pane_content{
+    height: 600px;
+    overflow-y: auto;
+    margin-top:  5px;
+    margin-bottom: 5px;
+    padding: 5px;
+    border: 1px solid #c1c9d0;
+}
+
+.modal_progress_bar{
+    width:  100%;
+    min-height:  15px;
+}
+
+.modal_tab_table{
+    max-height: 530px;
+    overflow: auto;
+    margin-top:  5px;
+    margin-bottom: 5px;
+}
+
+.modal_tree_view{
+    height: 100%;
+    overflow: auto;
+    white-space: nowrap;
+}
+
+.modal_tree_view > ul {
+    display: contents;
+    padding-left: 0px;
+}
+
+.modal_RelationsView_CitationTable{
+    position: absolute;
+    left: 50%;
+    transform: translate(-50%, 0%);
+    bottom: 0px;
+    border: 1px solid black;
+}
+
+.bordered-black-1{
+    border: 1px solid black;
+}
+
+.jsonTreeDiv{
+    background-image: linear-gradient(to right, black 20%, rgba(255,255,255,0) 0%);
+    background-position: bottom;
+    background-size: 20px 1px;
+    background-repeat: repeat-x;
+    display: block;
+    padding-left: 20px;
+    border-left: 1px dashed black;
+    margin-bottom: 5px;
+    width: fit-content;
+}

@@ -1,0 +1,15 @@
+{
+    "energyml.common2_0" : "D:/Geosiris/Git/webstudio/webstudio-public/docker/config/data/xsd/energyml/common/v2.0/xsd_schemas/AllCommonObjects.xsd",
+    "energyml.common2_1" : "D:/Geosiris/Git/webstudio/webstudio-public/docker/config/data/xsd/energyml/common/v2.1/xsd_schemas/EmlAllObjects.xsd",
+    "energyml.common2_2" : "D:/Geosiris/Git/webstudio/webstudio-public/docker/config/data/xsd/energyml/common/v2.2/xsd_schemas/EmlAllObjects.xsd",
+    "energyml.common2_3" : "D:/Geosiris/Git/webstudio/webstudio-public/docker/config/data/xsd/energyml/common/v2.3/xsd_schemas/EmlAllObjects.xsd",
+
+    "energyml.resqml2_0_1" : "D:/Geosiris/Git/webstudio/webstudio-public/docker/config/data/xsd/energyml/resqml/v2.0.1/xsd_schemas/ResqmlAllObjects.xsd",
+    "energyml.resqml2_2" : "D:/Geosiris/Git/webstudio/webstudio-public/docker/config/data/xsd/energyml/resqml/v2.2/xsd_schemas/ResqmlAllObjects.xsd",
+    "energyml.resqml_dev3x_2_2" : "D:/Geosiris/Git/webstudio/webstudio-public/docker/config/data/xsd/energyml/resqml/v2.2_dev3/xsd_schemas/ResqmlAllObjects.xsd",
+
+    "energyml.witsml2_0" : "D:/Geosiris/Git/webstudio/webstudio-public/docker/config/data/xsd/energyml/witsml/v2.0/xsd_schemas/WitsmlAllObjects.xsd",
+    "energyml.witsml2_1" : "D:/Geosiris/Git/webstudio/webstudio-public/docker/config/data/xsd/energyml/witsml/v2.1/xsd_schemas/WitsmlAllObjects.xsd",
+
+    "energyml.prodml2_2" : "D:/Geosiris/Git/webstudio/webstudio-public/docker/config/data/xsd/energyml/prodml/v2.2/xsd_schemas/ProdmlAllObjects.xsd"
+}

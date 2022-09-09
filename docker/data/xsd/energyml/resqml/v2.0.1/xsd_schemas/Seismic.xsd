@@ -1,0 +1,87 @@
+<?xml version="1.0" encoding="utf-8"?>
+<xs:schema targetNamespace="http://www.energistics.org/energyml/data/resqmlv2" xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:resqml="http://www.energistics.org/energyml/data/resqmlv2" elementFormDefault="qualified" version="2.0" xmlns:eml="http://www.energistics.org/energyml/data/commonv2">
+	<xs:annotation>
+		<xs:documentation>A RESQML seismic survey representation makes use of previously defined representations, with the addition of seismic coordinates to their geometry. 
+A seismic survey is an organization of seismic lines. For the context of RESQML, a seismic survey does not refer to any vertical dimension information, but only areally at shot point locations or common midpoint gathers. The seismic traces, if needed by reservoir models, are transferred in an industry standard format such as SEGY. The SEGY format contains information about the number of samples in the seismic traces and whether the vertical domain is in time or depth. This section only discusses the areal aspects of seismic surveys.
+Seismic surveys are technical features that do not have interpretations. Any interpretations from seismic surveys are a feature of the structural information. 
+RESQML supports two basic kinds of seismic surveys: 
+
+	- seismic lattice (organization of the traces for the 3D acquisition and processing phases). 
+	- seismic line (organization of the traces for the 2D acquisition and processing phases). 
+
+Additionally, to transport several seismic surveys together: 
+
+	- Seismic lattices can be aggregated into a seismic lattice set. 
+	- Seismic lines can be aggregated into a seismic line set. 
+
+Thus there are four groupings of seismic surveys, which are represented in RESQML as follows:
+
+	- A seismic lattice is generally represented using a 2D grid representation. 
+	- A seismic lattice set is represented using a set of 2D grid representations.
+	- A seismic line is generally represented using a polyline representation. 
+	- The seismic line set is then represented by a set of polyline representations.</xs:documentation>
+	</xs:annotation>
+	<xs:import namespace="http://www.energistics.org/energyml/data/commonv2" schemaLocation="../../../common/v2.0/xsd_schemas/AllCommonObjects.xsd"/><xs:include schemaLocation="Properties.xsd"/>
+	<xs:include schemaLocation="Representations.xsd"/>
+	<xs:complexType name="Seismic3dCoordinates">
+		<xs:annotation>
+			<xs:documentation>The 1-to-1 mapping between geometry coordinates (usually X, Y, Z or X, Y, TWT) and trace or inter-trace positions on a seismic lattice.</xs:documentation>
+		</xs:annotation>
+		<xs:complexContent>
+			<xs:extension base="resqml:AbstractSeismicCoordinates">
+				<xs:sequence>
+					<xs:element name="CrosslineCoordinates" type="resqml:AbstractDoubleArray" minOccurs="1" maxOccurs="1">
+						<xs:annotation>
+							<xs:documentation>The sequence of trace or inter-trace crossline positions that correspond to the geometry coordinates.
+BUSINESS RULE: Both sequences must be in the same order.</xs:documentation>
+						</xs:annotation>
+					</xs:element>
+					<xs:element name="InlineCoordinates" type="resqml:AbstractDoubleArray" minOccurs="1" maxOccurs="1">
+						<xs:annotation>
+							<xs:documentation>The sequence of trace or inter-trace inline positions that correspond to the geometry coordinates.
+BUSINESS RULE: Both sequences must be in the same order.</xs:documentation>
+						</xs:annotation>
+					</xs:element>
+					<xs:element name="VerticalCoordinates" type="resqml:AbstractDoubleArray" minOccurs="0" maxOccurs="1">
+						<xs:annotation>
+							<xs:documentation>The sequence of vertical sample or inter-sample positions that correspond to the geometry coordinates.
+BUSINESS RULE: Sequence must be in the same order than two previous ones.</xs:documentation>
+						</xs:annotation>
+					</xs:element>
+				</xs:sequence>
+			</xs:extension>
+		</xs:complexContent>
+	</xs:complexType>
+	<xs:complexType name="AbstractSeismicCoordinates" abstract="true">
+		<xs:annotation>
+			<xs:documentation>Parent class is used to associate horizon and fault representations to seismic 2D and seismic 3D technical features. It stores a 1-to-1 mapping between geometry coordinates (usually X, Y, Z) and trace or inter-trace positions on a seismic survey. </xs:documentation>
+		</xs:annotation>
+		<xs:sequence>
+			<xs:element name="SeismicSupport" type="eml:DataObjectReference" minOccurs="1" maxOccurs="1"/>
+		</xs:sequence>
+	</xs:complexType>
+	<xs:complexType name="Seismic2dCoordinates">
+		<xs:annotation>
+			<xs:documentation>A group of 2D seismic coordinates that stores the 1-to-1 mapping between geometry patch coordinates (usually X, Y, Z) and trace or inter-trace positions on a seismic line.
+BUSINESS RULE: This patch must reference a geometry patch by its UUID. </xs:documentation>
+		</xs:annotation>
+		<xs:complexContent>
+			<xs:extension base="resqml:AbstractSeismicCoordinates">
+				<xs:sequence>
+					<xs:element name="LineAbscissa" type="resqml:AbstractDoubleArray" minOccurs="1" maxOccurs="1">
+						<xs:annotation>
+							<xs:documentation>The sequence of trace or inter-trace positions that correspond to the geometry coordinates.
+BUSINESS RULE: Both sequences must be in the same order.</xs:documentation>
+						</xs:annotation>
+					</xs:element>
+					<xs:element name="VerticalCoordinates" type="resqml:AbstractDoubleArray" minOccurs="0" maxOccurs="1">
+						<xs:annotation>
+							<xs:documentation>The sequence of vertical sample or inter-sample positions that correspond to the geometry coordinates.
+BUSINESS RULE: Sequence must be in the same order than previous one.</xs:documentation>
+						</xs:annotation>
+					</xs:element>
+				</xs:sequence>
+			</xs:extension>
+		</xs:complexContent>
+	</xs:complexType>
+</xs:schema>

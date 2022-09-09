@@ -1,0 +1,142 @@
+.table-top-fixed th {
+	position: sticky;
+	top: 0;
+	background-color: #c1c9d0;
+	padding: 0px;
+	z-index: 2;
+	border: 2px solid #dee2e6;
+/*	border : 1px solid black!important;
+	margin: 2px;*/
+}
+
+.table-top-fixed {
+	border-collapse: separate;
+  	border-spacing: 0;
+	white-space: nowrap;
+}
+
+.colName_num{
+	text-align: right;
+}
+.colName_uuid {
+	text-align: left;
+}
+.colName_title {
+	text-align: left;
+}
+.colName_type {
+	text-align: left;
+}
+
+.colName_schemaVersion {
+	text-align: center;
+}
+.colName_delete{
+	text-align: center;
+}
+
+tr.formInputObjectTree, td.formInputObjectTree, th.formInputObjectTree,
+	table.formInputObjectTree {
+	/*border:  1px solid black;*/
+	border: none;
+}
+
+table.formInputObjectTree {
+	width: 95%;
+}
+
+input.formInputObjectTree, select.formInputObjectTree {
+	/* min-width: 230px; */
+	width: 100%;
+}
+
+
+#tableContent td {
+	padding-left: 5px;
+	padding-right: 5px;
+}
+
+#objectEditorContainer {
+	width: 40%;
+	color: white;
+	margin-left: 10px;
+	left: 0%;
+	position: fixed;
+	height: 85%;
+	border: 1px solid black;
+}
+
+#tableContainer {
+	margin-left: 42%;
+	fixed: right;
+	right: 0px
+}
+
+#tableContainerData {
+	margin-top: 8px;
+}
+
+.dorLinkerForm, .tableInModal{
+	overflow-y: auto;
+	height: 500px;
+	padding: 0px;
+}
+
+.selected {
+	background-color: yellow;
+}
+
+a {
+	cursor: pointer;
+}
+
+fieldset, .depliable {
+	border: none;
+	border-left: 2px dashed red;
+	/* border-top: 2px dashed red; */
+}
+
+.depliable {
+	padding-left: 20px;
+}
+
+.depliableHeader:before {
+	content: ">";
+}
+
+#tableFilter {
+	width: 400px;
+}
+
+#createNewEpcElt {
+	display: inline-block;
+}
+
+table{
+	width: 100%;
+}
+
+.propertyTable, .propertyTable td, .propertyTable tr, .propertyTable thead, .propertyTable th{
+	border : 0px!important;
+	white-space: nowrap;
+}
+.propertyTable td:last-child{
+	width: 100%;
+}
+.propertyTable{
+	width: 100%;
+}
+
+.openedObject{
+	background: #007bff!important;
+	color: antiquewhite!important;
+}
+.openedObject:hover td{
+	background: #004bcd!important;
+	color: antiquewhite!important;
+}
+
+.table-hover tbody tr:hover td, .table-hover tbody tr:hover th {
+	/*background-color: green;*/
+	font-weight: bold;
+}

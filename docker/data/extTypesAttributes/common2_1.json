@@ -1,0 +1,572 @@
+{
+    "energyml.common2_1.APIGammaRayMeasureExt": {
+        "uom": "energyml.common2_1.APIGammaRayUomExt"
+    },
+    "energyml.common2_1.APIGravityMeasureExt": {
+        "uom": "energyml.common2_1.APIGravityUomExt"
+    },
+    "energyml.common2_1.APINeutronMeasureExt": {
+        "uom": "energyml.common2_1.APINeutronUomExt"
+    },
+    "energyml.common2_1.AbsolutePressure": {
+        "AbsolutePressure": "energyml.common2_1.PressureMeasureExt"
+    },
+    "energyml.common2_1.AbsorbedDoseMeasureExt": {
+        "uom": "energyml.common2_1.AbsorbedDoseUomExt"
+    },
+    "energyml.common2_1.ActivityOfRadioactivityMeasureExt": {
+        "uom": "energyml.common2_1.ActivityOfRadioactivityUomExt"
+    },
+    "energyml.common2_1.AmountOfSubstanceMeasureExt": {
+        "uom": "energyml.common2_1.AmountOfSubstanceUomExt"
+    },
+    "energyml.common2_1.AmountOfSubstancePerAmountOfSubstanceMeasureExt": {
+        "uom": "energyml.common2_1.AmountOfSubstancePerAmountOfSubstanceUomExt"
+    },
+    "energyml.common2_1.AmountOfSubstancePerAreaMeasureExt": {
+        "uom": "energyml.common2_1.AmountOfSubstancePerAreaUomExt"
+    },
+    "energyml.common2_1.AmountOfSubstancePerTimeMeasureExt": {
+        "uom": "energyml.common2_1.AmountOfSubstancePerTimeUomExt"
+    },
+    "energyml.common2_1.AmountOfSubstancePerTimePerAreaMeasureExt": {
+        "uom": "energyml.common2_1.AmountOfSubstancePerTimePerAreaUomExt"
+    },
+    "energyml.common2_1.AmountOfSubstancePerVolumeMeasureExt": {
+        "uom": "energyml.common2_1.AmountOfSubstancePerVolumeUomExt"
+    },
+    "energyml.common2_1.AnglePerLengthMeasureExt": {
+        "uom": "energyml.common2_1.AnglePerLengthUomExt"
+    },
+    "energyml.common2_1.AnglePerVolumeMeasureExt": {
+        "uom": "energyml.common2_1.AnglePerVolumeUomExt"
+    },
+    "energyml.common2_1.AngularAccelerationMeasureExt": {
+        "uom": "energyml.common2_1.AngularAccelerationUomExt"
+    },
+    "energyml.common2_1.AngularVelocityMeasureExt": {
+        "uom": "energyml.common2_1.AngularVelocityUomExt"
+    },
+    "energyml.common2_1.AreaMeasureExt": {
+        "uom": "energyml.common2_1.AreaUomExt"
+    },
+    "energyml.common2_1.AreaPerAmountOfSubstanceMeasureExt": {
+        "uom": "energyml.common2_1.AreaPerAmountOfSubstanceUomExt"
+    },
+    "energyml.common2_1.AreaPerAreaMeasureExt": {
+        "uom": "energyml.common2_1.AreaPerAreaUomExt"
+    },
+    "energyml.common2_1.AreaPerCountMeasureExt": {
+        "uom": "energyml.common2_1.AreaPerCountUomExt"
+    },
+    "energyml.common2_1.AreaPerMassMeasureExt": {
+        "uom": "energyml.common2_1.AreaPerMassUomExt"
+    },
+    "energyml.common2_1.AreaPerTimeMeasureExt": {
+        "uom": "energyml.common2_1.AreaPerTimeUomExt"
+    },
+    "energyml.common2_1.AreaPerVolumeMeasureExt": {
+        "uom": "energyml.common2_1.AreaPerVolumeUomExt"
+    },
+    "energyml.common2_1.AttenuationPerFrequencyIntervalMeasureExt": {
+        "uom": "energyml.common2_1.AttenuationPerFrequencyIntervalUomExt"
+    },
+    "energyml.common2_1.CapacitanceMeasureExt": {
+        "uom": "energyml.common2_1.CapacitanceUomExt"
+    },
+    "energyml.common2_1.CationExchangeCapacityMeasureExt": {
+        "uom": "energyml.common2_1.CationExchangeCapacityUomExt"
+    },
+    "energyml.common2_1.DataTransferSpeedMeasureExt": {
+        "uom": "energyml.common2_1.DataTransferSpeedUomExt"
+    },
+    "energyml.common2_1.DiffusionCoefficientMeasureExt": {
+        "uom": "energyml.common2_1.DiffusionCoefficientUomExt"
+    },
+    "energyml.common2_1.DiffusiveTimeOfFlightMeasureExt": {
+        "uom": "energyml.common2_1.DiffusiveTimeOfFlightUomExt"
+    },
+    "energyml.common2_1.DigitalStorageMeasureExt": {
+        "uom": "energyml.common2_1.DigitalStorageUomExt"
+    },
+    "energyml.common2_1.DimensionlessMeasureExt": {
+        "uom": "energyml.common2_1.DimensionlessUomExt"
+    },
+    "energyml.common2_1.DipoleMomentMeasureExt": {
+        "uom": "energyml.common2_1.DipoleMomentUomExt"
+    },
+    "energyml.common2_1.DoseEquivalentMeasureExt": {
+        "uom": "energyml.common2_1.DoseEquivalentUomExt"
+    },
+    "energyml.common2_1.DoubleQuantityParameter": {
+        "Uom": "energyml.common2_1.UnitOfMeasureExt"
+    },
+    "energyml.common2_1.DynamicViscosityMeasureExt": {
+        "uom": "energyml.common2_1.DynamicViscosityUomExt"
+    },
+    "energyml.common2_1.ElectricChargeMeasureExt": {
+        "uom": "energyml.common2_1.ElectricChargeUomExt"
+    },
+    "energyml.common2_1.ElectricChargePerAreaMeasureExt": {
+        "uom": "energyml.common2_1.ElectricChargePerAreaUomExt"
+    },
+    "energyml.common2_1.ElectricChargePerMassMeasureExt": {
+        "uom": "energyml.common2_1.ElectricChargePerMassUomExt"
+    },
+    "energyml.common2_1.ElectricChargePerVolumeMeasureExt": {
+        "uom": "energyml.common2_1.ElectricChargePerVolumeUomExt"
+    },
+    "energyml.common2_1.ElectricConductanceMeasureExt": {
+        "uom": "energyml.common2_1.ElectricConductanceUomExt"
+    },
+    "energyml.common2_1.ElectricConductivityMeasureExt": {
+        "uom": "energyml.common2_1.ElectricConductivityUomExt"
+    },
+    "energyml.common2_1.ElectricCurrentDensityMeasureExt": {
+        "uom": "energyml.common2_1.ElectricCurrentDensityUomExt"
+    },
+    "energyml.common2_1.ElectricCurrentMeasureExt": {
+        "uom": "energyml.common2_1.ElectricCurrentUomExt"
+    },
+    "energyml.common2_1.ElectricFieldStrengthMeasureExt": {
+        "uom": "energyml.common2_1.ElectricFieldStrengthUomExt"
+    },
+    "energyml.common2_1.ElectricPotentialDifferenceMeasureExt": {
+        "uom": "energyml.common2_1.ElectricPotentialDifferenceUomExt"
+    },
+    "energyml.common2_1.ElectricResistanceMeasureExt": {
+        "uom": "energyml.common2_1.ElectricResistanceUomExt"
+    },
+    "energyml.common2_1.ElectricResistancePerLengthMeasureExt": {
+        "uom": "energyml.common2_1.ElectricResistancePerLengthUomExt"
+    },
+    "energyml.common2_1.ElectricalResistivityMeasureExt": {
+        "uom": "energyml.common2_1.ElectricalResistivityUomExt"
+    },
+    "energyml.common2_1.ElectromagneticMomentMeasureExt": {
+        "uom": "energyml.common2_1.ElectromagneticMomentUomExt"
+    },
+    "energyml.common2_1.EnergyLengthPerAreaMeasureExt": {
+        "uom": "energyml.common2_1.EnergyLengthPerAreaUomExt"
+    },
+    "energyml.common2_1.EnergyLengthPerTimeAreaTemperatureMeasureExt": {
+        "uom": "energyml.common2_1.EnergyLengthPerTimeAreaTemperatureUomExt"
+    },
+    "energyml.common2_1.EnergyMeasureExt": {
+        "uom": "energyml.common2_1.EnergyUomExt"
+    },
+    "energyml.common2_1.EnergyPerAreaMeasureExt": {
+        "uom": "energyml.common2_1.EnergyPerAreaUomExt"
+    },
+    "energyml.common2_1.EnergyPerLengthMeasureExt": {
+        "uom": "energyml.common2_1.EnergyPerLengthUomExt"
+    },
+    "energyml.common2_1.EnergyPerMassMeasureExt": {
+        "uom": "energyml.common2_1.EnergyPerMassUomExt"
+    },
+    "energyml.common2_1.EnergyPerMassPerTimeMeasureExt": {
+        "uom": "energyml.common2_1.EnergyPerMassPerTimeUomExt"
+    },
+    "energyml.common2_1.EnergyPerVolumeMeasureExt": {
+        "uom": "energyml.common2_1.EnergyPerVolumeUomExt"
+    },
+    "energyml.common2_1.ForceAreaMeasureExt": {
+        "uom": "energyml.common2_1.ForceAreaUomExt"
+    },
+    "energyml.common2_1.ForceLengthPerLengthMeasureExt": {
+        "uom": "energyml.common2_1.ForceLengthPerLengthUomExt"
+    },
+    "energyml.common2_1.ForceMeasureExt": {
+        "uom": "energyml.common2_1.ForceUomExt"
+    },
+    "energyml.common2_1.ForcePerForceMeasureExt": {
+        "uom": "energyml.common2_1.ForcePerForceUomExt"
+    },
+    "energyml.common2_1.ForcePerLengthMeasureExt": {
+        "uom": "energyml.common2_1.ForcePerLengthUomExt"
+    },
+    "energyml.common2_1.ForcePerVolumeMeasureExt": {
+        "uom": "energyml.common2_1.ForcePerVolumeUomExt"
+    },
+    "energyml.common2_1.FrequencyIntervalMeasureExt": {
+        "uom": "energyml.common2_1.FrequencyIntervalUomExt"
+    },
+    "energyml.common2_1.FrequencyMeasureExt": {
+        "uom": "energyml.common2_1.FrequencyUomExt"
+    },
+    "energyml.common2_1.GaugePressure": {
+        "GaugePressure": "energyml.common2_1.PressureMeasureExt"
+    },
+    "energyml.common2_1.HeatCapacityMeasureExt": {
+        "uom": "energyml.common2_1.HeatCapacityUomExt"
+    },
+    "energyml.common2_1.HeatFlowRateMeasureExt": {
+        "uom": "energyml.common2_1.HeatFlowRateUomExt"
+    },
+    "energyml.common2_1.HeatTransferCoefficientMeasureExt": {
+        "uom": "energyml.common2_1.HeatTransferCoefficientUomExt"
+    },
+    "energyml.common2_1.IlluminanceMeasureExt": {
+        "uom": "energyml.common2_1.IlluminanceUomExt"
+    },
+    "energyml.common2_1.InductanceMeasureExt": {
+        "uom": "energyml.common2_1.InductanceUomExt"
+    },
+    "energyml.common2_1.IsothermalCompressibilityMeasureExt": {
+        "uom": "energyml.common2_1.IsothermalCompressibilityUomExt"
+    },
+    "energyml.common2_1.KinematicViscosityMeasureExt": {
+        "uom": "energyml.common2_1.KinematicViscosityUomExt"
+    },
+    "energyml.common2_1.LengthMeasureExt": {
+        "uom": "energyml.common2_1.LengthUomExt"
+    },
+    "energyml.common2_1.LengthPerLengthMeasureExt": {
+        "uom": "energyml.common2_1.LengthPerLengthUomExt"
+    },
+    "energyml.common2_1.LengthPerMassMeasureExt": {
+        "uom": "energyml.common2_1.LengthPerMassUomExt"
+    },
+    "energyml.common2_1.LengthPerPressureMeasureExt": {
+        "uom": "energyml.common2_1.LengthPerPressureUomExt"
+    },
+    "energyml.common2_1.LengthPerTemperatureMeasureExt": {
+        "uom": "energyml.common2_1.LengthPerTemperatureUomExt"
+    },
+    "energyml.common2_1.LengthPerTimeMeasureExt": {
+        "uom": "energyml.common2_1.LengthPerTimeUomExt"
+    },
+    "energyml.common2_1.LengthPerVolumeMeasureExt": {
+        "uom": "energyml.common2_1.LengthPerVolumeUomExt"
+    },
+    "energyml.common2_1.LightExposureMeasureExt": {
+        "uom": "energyml.common2_1.LightExposureUomExt"
+    },
+    "energyml.common2_1.LinearAccelerationMeasureExt": {
+        "uom": "energyml.common2_1.LinearAccelerationUomExt"
+    },
+    "energyml.common2_1.LinearThermalExpansionMeasureExt": {
+        "uom": "energyml.common2_1.LinearThermalExpansionUomExt"
+    },
+    "energyml.common2_1.LogarithmicPowerRatioMeasureExt": {
+        "uom": "energyml.common2_1.LogarithmicPowerRatioUomExt"
+    },
+    "energyml.common2_1.LogarithmicPowerRatioPerLengthMeasureExt": {
+        "uom": "energyml.common2_1.LogarithmicPowerRatioPerLengthUomExt"
+    },
+    "energyml.common2_1.LuminanceMeasureExt": {
+        "uom": "energyml.common2_1.LuminanceUomExt"
+    },
+    "energyml.common2_1.LuminousEfficacyMeasureExt": {
+        "uom": "energyml.common2_1.LuminousEfficacyUomExt"
+    },
+    "energyml.common2_1.LuminousFluxMeasureExt": {
+        "uom": "energyml.common2_1.LuminousFluxUomExt"
+    },
+    "energyml.common2_1.LuminousIntensityMeasureExt": {
+        "uom": "energyml.common2_1.LuminousIntensityUomExt"
+    },
+    "energyml.common2_1.MagneticDipoleMomentMeasureExt": {
+        "uom": "energyml.common2_1.MagneticDipoleMomentUomExt"
+    },
+    "energyml.common2_1.MagneticFieldStrengthMeasureExt": {
+        "uom": "energyml.common2_1.MagneticFieldStrengthUomExt"
+    },
+    "energyml.common2_1.MagneticFluxDensityMeasureExt": {
+        "uom": "energyml.common2_1.MagneticFluxDensityUomExt"
+    },
+    "energyml.common2_1.MagneticFluxDensityPerLengthMeasureExt": {
+        "uom": "energyml.common2_1.MagneticFluxDensityPerLengthUomExt"
+    },
+    "energyml.common2_1.MagneticFluxMeasureExt": {
+        "uom": "energyml.common2_1.MagneticFluxUomExt"
+    },
+    "energyml.common2_1.MagneticPermeabilityMeasureExt": {
+        "uom": "energyml.common2_1.MagneticPermeabilityUomExt"
+    },
+    "energyml.common2_1.MagneticVectorPotentialMeasureExt": {
+        "uom": "energyml.common2_1.MagneticVectorPotentialUomExt"
+    },
+    "energyml.common2_1.MassLengthMeasureExt": {
+        "uom": "energyml.common2_1.MassLengthUomExt"
+    },
+    "energyml.common2_1.MassMeasureExt": {
+        "uom": "energyml.common2_1.MassUomExt"
+    },
+    "energyml.common2_1.MassPerAreaMeasureExt": {
+        "uom": "energyml.common2_1.MassPerAreaUomExt"
+    },
+    "energyml.common2_1.MassPerEnergyMeasureExt": {
+        "uom": "energyml.common2_1.MassPerEnergyUomExt"
+    },
+    "energyml.common2_1.MassPerLengthMeasureExt": {
+        "uom": "energyml.common2_1.MassPerLengthUomExt"
+    },
+    "energyml.common2_1.MassPerMassMeasureExt": {
+        "uom": "energyml.common2_1.MassPerMassUomExt"
+    },
+    "energyml.common2_1.MassPerTimeMeasureExt": {
+        "uom": "energyml.common2_1.MassPerTimeUomExt"
+    },
+    "energyml.common2_1.MassPerTimePerAreaMeasureExt": {
+        "uom": "energyml.common2_1.MassPerTimePerAreaUomExt"
+    },
+    "energyml.common2_1.MassPerTimePerLengthMeasureExt": {
+        "uom": "energyml.common2_1.MassPerTimePerLengthUomExt"
+    },
+    "energyml.common2_1.MassPerVolumeMeasureExt": {
+        "uom": "energyml.common2_1.MassPerVolumeUomExt"
+    },
+    "energyml.common2_1.MassPerVolumePerLengthMeasureExt": {
+        "uom": "energyml.common2_1.MassPerVolumePerLengthUomExt"
+    },
+    "energyml.common2_1.MassPerVolumePerPressureMeasureExt": {
+        "uom": "energyml.common2_1.MassPerVolumePerPressureUomExt"
+    },
+    "energyml.common2_1.MassPerVolumePerTemperatureMeasureExt": {
+        "uom": "energyml.common2_1.MassPerVolumePerTemperatureUomExt"
+    },
+    "energyml.common2_1.MobilityMeasureExt": {
+        "uom": "energyml.common2_1.MobilityUomExt"
+    },
+    "energyml.common2_1.MolarEnergyMeasureExt": {
+        "uom": "energyml.common2_1.MolarEnergyUomExt"
+    },
+    "energyml.common2_1.MolarHeatCapacityMeasureExt": {
+        "uom": "energyml.common2_1.MolarHeatCapacityUomExt"
+    },
+    "energyml.common2_1.MolarVolumeMeasureExt": {
+        "uom": "energyml.common2_1.MolarVolumeUomExt"
+    },
+    "energyml.common2_1.MolecularWeightMeasureExt": {
+        "uom": "energyml.common2_1.MolecularWeightUomExt"
+    },
+    "energyml.common2_1.MomentOfForceMeasureExt": {
+        "uom": "energyml.common2_1.MomentOfForceUomExt"
+    },
+    "energyml.common2_1.MomentOfInertiaMeasureExt": {
+        "uom": "energyml.common2_1.MomentOfInertiaUomExt"
+    },
+    "energyml.common2_1.MomentumMeasureExt": {
+        "uom": "energyml.common2_1.MomentumUomExt"
+    },
+    "energyml.common2_1.NormalizedPowerMeasureExt": {
+        "uom": "energyml.common2_1.NormalizedPowerUomExt"
+    },
+    "energyml.common2_1.PermeabilityLengthMeasureExt": {
+        "uom": "energyml.common2_1.PermeabilityLengthUomExt"
+    },
+    "energyml.common2_1.PermeabilityRockMeasureExt": {
+        "uom": "energyml.common2_1.PermeabilityRockUomExt"
+    },
+    "energyml.common2_1.PermittivityMeasureExt": {
+        "uom": "energyml.common2_1.PermittivityUomExt"
+    },
+    "energyml.common2_1.PlaneAngleMeasureExt": {
+        "uom": "energyml.common2_1.PlaneAngleUomExt"
+    },
+    "energyml.common2_1.PotentialDifferencePerPowerDropMeasureExt": {
+        "uom": "energyml.common2_1.PotentialDifferencePerPowerDropUomExt"
+    },
+    "energyml.common2_1.PowerMeasureExt": {
+        "uom": "energyml.common2_1.PowerUomExt"
+    },
+    "energyml.common2_1.PowerPerAreaMeasureExt": {
+        "uom": "energyml.common2_1.PowerPerAreaUomExt"
+    },
+    "energyml.common2_1.PowerPerPowerMeasureExt": {
+        "uom": "energyml.common2_1.PowerPerPowerUomExt"
+    },
+    "energyml.common2_1.PowerPerVolumeMeasureExt": {
+        "uom": "energyml.common2_1.PowerPerVolumeUomExt"
+    },
+    "energyml.common2_1.PressureMeasureExt": {
+        "uom": "energyml.common2_1.PressureUomExt"
+    },
+    "energyml.common2_1.PressurePerPressureMeasureExt": {
+        "uom": "energyml.common2_1.PressurePerPressureUomExt"
+    },
+    "energyml.common2_1.PressurePerTimeMeasureExt": {
+        "uom": "energyml.common2_1.PressurePerTimeUomExt"
+    },
+    "energyml.common2_1.PressurePerVolumeMeasureExt": {
+        "uom": "energyml.common2_1.PressurePerVolumeUomExt"
+    },
+    "energyml.common2_1.PressureSquaredMeasureExt": {
+        "uom": "energyml.common2_1.PressureSquaredUomExt"
+    },
+    "energyml.common2_1.PressureSquaredPerForceTimePerAreaMeasureExt": {
+        "uom": "energyml.common2_1.PressureSquaredPerForceTimePerAreaUomExt"
+    },
+    "energyml.common2_1.PressureTimePerVolumeMeasureExt": {
+        "uom": "energyml.common2_1.PressureTimePerVolumeUomExt"
+    },
+    "energyml.common2_1.ProjectedCrs": {
+        "uom": "energyml.common2_1.LengthUomExt"
+    },
+    "energyml.common2_1.PropertyKind": {
+        "QuantityClass": "energyml.common2_1.QuantityClassKindExt"
+    },
+    "energyml.common2_1.QuantityOfLightMeasureExt": {
+        "uom": "energyml.common2_1.QuantityOfLightUomExt"
+    },
+    "energyml.common2_1.RadianceMeasureExt": {
+        "uom": "energyml.common2_1.RadianceUomExt"
+    },
+    "energyml.common2_1.RadiantIntensityMeasureExt": {
+        "uom": "energyml.common2_1.RadiantIntensityUomExt"
+    },
+    "energyml.common2_1.ReciprocalAreaMeasureExt": {
+        "uom": "energyml.common2_1.ReciprocalAreaUomExt"
+    },
+    "energyml.common2_1.ReciprocalElectricPotentialDifferenceMeasureExt": {
+        "uom": "energyml.common2_1.ReciprocalElectricPotentialDifferenceUomExt"
+    },
+    "energyml.common2_1.ReciprocalForceMeasureExt": {
+        "uom": "energyml.common2_1.ReciprocalForceUomExt"
+    },
+    "energyml.common2_1.ReciprocalLengthMeasureExt": {
+        "uom": "energyml.common2_1.ReciprocalLengthUomExt"
+    },
+    "energyml.common2_1.ReciprocalMassMeasureExt": {
+        "uom": "energyml.common2_1.ReciprocalMassUomExt"
+    },
+    "energyml.common2_1.ReciprocalMassTimeMeasureExt": {
+        "uom": "energyml.common2_1.ReciprocalMassTimeUomExt"
+    },
+    "energyml.common2_1.ReciprocalPressureMeasureExt": {
+        "uom": "energyml.common2_1.ReciprocalPressureUomExt"
+    },
+    "energyml.common2_1.ReciprocalTimeMeasureExt": {
+        "uom": "energyml.common2_1.ReciprocalTimeUomExt"
+    },
+    "energyml.common2_1.ReciprocalVolumeMeasureExt": {
+        "uom": "energyml.common2_1.ReciprocalVolumeUomExt"
+    },
+    "energyml.common2_1.ReferenceTemperaturePressure": {
+        "ReferenceTempPres": "energyml.common2_1.ReferenceConditionExt"
+    },
+    "energyml.common2_1.ReluctanceMeasureExt": {
+        "uom": "energyml.common2_1.ReluctanceUomExt"
+    },
+    "energyml.common2_1.SecondMomentOfAreaMeasureExt": {
+        "uom": "energyml.common2_1.SecondMomentOfAreaUomExt"
+    },
+    "energyml.common2_1.SignalingEventPerTimeMeasureExt": {
+        "uom": "energyml.common2_1.SignalingEventPerTimeUomExt"
+    },
+    "energyml.common2_1.SolidAngleMeasureExt": {
+        "uom": "energyml.common2_1.SolidAngleUomExt"
+    },
+    "energyml.common2_1.SpecificHeatCapacityMeasureExt": {
+        "uom": "energyml.common2_1.SpecificHeatCapacityUomExt"
+    },
+    "energyml.common2_1.TemperatureIntervalMeasureExt": {
+        "uom": "energyml.common2_1.TemperatureIntervalUomExt"
+    },
+    "energyml.common2_1.TemperatureIntervalPerLengthMeasureExt": {
+        "uom": "energyml.common2_1.TemperatureIntervalPerLengthUomExt"
+    },
+    "energyml.common2_1.TemperatureIntervalPerPressureMeasureExt": {
+        "uom": "energyml.common2_1.TemperatureIntervalPerPressureUomExt"
+    },
+    "energyml.common2_1.TemperatureIntervalPerTimeMeasureExt": {
+        "uom": "energyml.common2_1.TemperatureIntervalPerTimeUomExt"
+    },
+    "energyml.common2_1.ThermalConductanceMeasureExt": {
+        "uom": "energyml.common2_1.ThermalConductanceUomExt"
+    },
+    "energyml.common2_1.ThermalConductivityMeasureExt": {
+        "uom": "energyml.common2_1.ThermalConductivityUomExt"
+    },
+    "energyml.common2_1.ThermalDiffusivityMeasureExt": {
+        "uom": "energyml.common2_1.ThermalDiffusivityUomExt"
+    },
+    "energyml.common2_1.ThermalInsulanceMeasureExt": {
+        "uom": "energyml.common2_1.ThermalInsulanceUomExt"
+    },
+    "energyml.common2_1.ThermalResistanceMeasureExt": {
+        "uom": "energyml.common2_1.ThermalResistanceUomExt"
+    },
+    "energyml.common2_1.ThermodynamicTemperatureMeasureExt": {
+        "uom": "energyml.common2_1.ThermodynamicTemperatureUomExt"
+    },
+    "energyml.common2_1.ThermodynamicTemperaturePerThermodynamicTemperatureMeasureExt": {
+        "uom": "energyml.common2_1.ThermodynamicTemperaturePerThermodynamicTemperatureUomExt"
+    },
+    "energyml.common2_1.TimeMeasureExt": {
+        "uom": "energyml.common2_1.TimeUomExt"
+    },
+    "energyml.common2_1.TimePerLengthMeasureExt": {
+        "uom": "energyml.common2_1.TimePerLengthUomExt"
+    },
+    "energyml.common2_1.TimePerMassMeasureExt": {
+        "uom": "energyml.common2_1.TimePerMassUomExt"
+    },
+    "energyml.common2_1.TimePerTimeMeasureExt": {
+        "uom": "energyml.common2_1.TimePerTimeUomExt"
+    },
+    "energyml.common2_1.TimePerVolumeMeasureExt": {
+        "uom": "energyml.common2_1.TimePerVolumeUomExt"
+    },
+    "energyml.common2_1.VerticalCoordinateMeasureExt": {
+        "uom": "energyml.common2_1.VerticalCoordinateUomExt"
+    },
+    "energyml.common2_1.VerticalCrs": {
+        "uom": "energyml.common2_1.LengthUomExt"
+    },
+    "energyml.common2_1.VolumeFlowRatePerVolumeFlowRateMeasureExt": {
+        "uom": "energyml.common2_1.VolumeFlowRatePerVolumeFlowRateUomExt"
+    },
+    "energyml.common2_1.VolumeMeasureExt": {
+        "uom": "energyml.common2_1.VolumeUomExt"
+    },
+    "energyml.common2_1.VolumePerAreaMeasureExt": {
+        "uom": "energyml.common2_1.VolumePerAreaUomExt"
+    },
+    "energyml.common2_1.VolumePerLengthMeasureExt": {
+        "uom": "energyml.common2_1.VolumePerLengthUomExt"
+    },
+    "energyml.common2_1.VolumePerMassMeasureExt": {
+        "uom": "energyml.common2_1.VolumePerMassUomExt"
+    },
+    "energyml.common2_1.VolumePerPressureMeasureExt": {
+        "uom": "energyml.common2_1.VolumePerPressureUomExt"
+    },
+    "energyml.common2_1.VolumePerRotationMeasureExt": {
+        "uom": "energyml.common2_1.VolumePerRotationUomExt"
+    },
+    "energyml.common2_1.VolumePerTimeLengthMeasureExt": {
+        "uom": "energyml.common2_1.VolumePerTimeLengthUomExt"
+    },
+    "energyml.common2_1.VolumePerTimeMeasureExt": {
+        "uom": "energyml.common2_1.VolumePerTimeUomExt"
+    },
+    "energyml.common2_1.VolumePerTimePerAreaMeasureExt": {
+        "uom": "energyml.common2_1.VolumePerTimePerAreaUomExt"
+    },
+    "energyml.common2_1.VolumePerTimePerLengthMeasureExt": {
+        "uom": "energyml.common2_1.VolumePerTimePerLengthUomExt"
+    },
+    "energyml.common2_1.VolumePerTimePerPressureLengthMeasureExt": {
+        "uom": "energyml.common2_1.VolumePerTimePerPressureLengthUomExt"
+    },
+    "energyml.common2_1.VolumePerTimePerPressureMeasureExt": {
+        "uom": "energyml.common2_1.VolumePerTimePerPressureUomExt"
+    },
+    "energyml.common2_1.VolumePerTimePerTimeMeasureExt": {
+        "uom": "energyml.common2_1.VolumePerTimePerTimeUomExt"
+    },
+    "energyml.common2_1.VolumePerTimePerVolumeMeasureExt": {
+        "uom": "energyml.common2_1.VolumePerTimePerVolumeUomExt"
+    },
+    "energyml.common2_1.VolumePerVolumeMeasureExt": {
+        "uom": "energyml.common2_1.VolumePerVolumeUomExt"
+    },
+    "energyml.common2_1.VolumetricHeatTransferCoefficientMeasureExt": {
+        "uom": "energyml.common2_1.VolumetricHeatTransferCoefficientUomExt"
+    },
+    "energyml.common2_1.VolumetricThermalExpansionMeasureExt": {
+        "uom": "energyml.common2_1.VolumetricThermalExpansionUomExt"
+    }
+}

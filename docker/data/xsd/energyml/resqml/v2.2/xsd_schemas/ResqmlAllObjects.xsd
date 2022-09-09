@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" targetNamespace="http://www.energistics.org/energyml/data/resqmlv2" elementFormDefault="qualified" attributeFormDefault="unqualified" version="2.2">
+	<!--                                                         -->
+	<!-- Energistics License Agreement
+		This file is distributed under the Energistics Product License Agreement at
+		http://www.energistics.org/product-license-agreement
+		Use of this file constitutes agreement with the Energistics Product License Agreement.
+		Copyright (c) 2021 Energistics. All rights reserved.
+		Energistics, WITSML, PRODML and RESQML are trademarks or registered trademarks of Energistics.
+	-->
+	<!--                                                         -->
+	<xs:include schemaLocation="Features.xsd"/>
+	<xs:include schemaLocation="Geometry.xsd"/>
+	<xs:include schemaLocation="GraphicalInformationObject.xsd"/>
+	<xs:include schemaLocation="Grids.xsd"/>
+	<xs:include schemaLocation="Interpretations.xsd"/>
+	<xs:include schemaLocation="Properties.xsd"/>
+	<xs:include schemaLocation="Representations.xsd"/>
+	<xs:include schemaLocation="Seismic.xsd"/>
+	<xs:include schemaLocation="Streamlines.xsd"/>
+	<xs:include schemaLocation="Structural.xsd"/>
+	<xs:include schemaLocation="Wells.xsd"/></xs:schema>

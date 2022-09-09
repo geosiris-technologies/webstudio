@@ -1,0 +1,100 @@
+<?xml version="1.0" encoding="utf-8"?>
+<xs:schema targetNamespace="http://www.energistics.org/energyml/data/commonv2" xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:eml="http://www.energistics.org/energyml/data/commonv2" elementFormDefault="qualified" version="2.0">
+	<xs:annotation>
+		<xs:documentation>This Package contains the common re-usable structures and types commonly used by EnergyML Schemas.</xs:documentation>
+	</xs:annotation>
+	<xs:simpleType name="UuidString">
+		<xs:restriction base="xs:string">
+			<xs:pattern value="[a-fA-F0-9]{8}-[a-fA-F0-9]{4}-[a-fA-F0-9]{4}-[a-fA-F0-9]{4}-[a-fA-F0-9]{12}"/>
+		</xs:restriction>
+	</xs:simpleType>
+	<xs:simpleType name="DescriptionString">
+		<xs:annotation>
+			<xs:documentation>A textual description of something.</xs:documentation>
+		</xs:annotation>
+		<xs:restriction base="eml:String">
+			<xs:maxLength value="256"/>
+		</xs:restriction>
+	</xs:simpleType>
+	<xs:simpleType name="TypeEnum">
+		<xs:annotation>
+			<xs:documentation>The intended abstract supertype of all enumerated "types". This abstract type allows the maximum length of a type enumeration to be centrally defined. This type should not be used directly except to derive another type. It should also be used for uncontrolled strings which are candidates to become enumerations at a future date.</xs:documentation>
+		</xs:annotation>
+		<xs:restriction base="eml:String">
+			<xs:maxLength value="40"/>
+		</xs:restriction>
+	</xs:simpleType>
+	<xs:simpleType name="Measure">
+		<xs:annotation>
+			<xs:documentation>The intended abstract supertype of all quantities that have a value 
+                                                with a unit of measure. The unit of measure is in the uom attribute of the subtypes. 
+                                                This type allows all quantities to be profiled to be a 'float' instead of a 'double'.</xs:documentation>
+		</xs:annotation>
+		<xs:restriction base="xs:double"/>
+	</xs:simpleType>
+	<xs:simpleType name="NameString">
+		<xs:annotation>
+			<xs:documentation>The intended abstract supertype of all user assigned human recognizable contextual name types. 
+
+There should be no assumption that (interoperable) semantic information will be extracted from the name by a third party.
+
+This type of value is generally not guaranteed to be unique and is not a candidate to be replaced by an enumeration.</xs:documentation>
+		</xs:annotation>
+		<xs:restriction base="eml:String">
+			<xs:maxLength value="64"/>
+		</xs:restriction>
+	</xs:simpleType>
+	<xs:simpleType name="String">
+		<xs:annotation>
+			<xs:documentation>The intended abstract supertype of all strings. This abstract type allows the control over whitespace for all strings to be defined at a high level. This type should not be used directly except to derive another type.</xs:documentation>
+		</xs:annotation>
+		<xs:restriction base="xs:string">
+			<xs:minLength value="1"/>
+			<xs:whiteSpace value="collapse"/>
+		</xs:restriction>
+	</xs:simpleType>
+	<xs:simpleType name="UidString">
+		<xs:annotation>
+			<xs:documentation>The intended abstract supertype of all locally unique identifiers. 
+			The value is not intended to convey any semantic content (e.g., it may be computer generated). 
+			The value is only required to be unique within a context in a document (e.g., defined via key and keyref). 
+			There is no guarantee that the same data in multiple documents will utilize the same uid value 
+			unless enforced by the source of the document (e.g., a document server).
+			Spaces are not allowed.</xs:documentation>
+		</xs:annotation>
+		<xs:restriction base="eml:String">
+			<xs:pattern value="[^ ]*"/>
+			<xs:maxLength value="64"/>
+		</xs:restriction>
+	</xs:simpleType>
+	<xs:simpleType name="CommentString">
+		<xs:annotation>
+			<xs:documentation>The intended abstract supertype of all comments or remarks intended for human consumption. 
+
+There should be no assumption that semantics can be extracted from the field by a computer. 
+
+Neither should there be an assumption that any two humans will interpret the information in the same way (i.e., it may not be interoperable).</xs:documentation>
+		</xs:annotation>
+		<xs:restriction base="eml:MaximumLengthString"/>
+	</xs:simpleType>
+	<xs:simpleType name="MaximumLengthString">
+		<xs:annotation>
+			<xs:documentation>This defines the maximum acceptable length of a
+			string that can be stored in a data base.</xs:documentation>
+		</xs:annotation>
+		<xs:restriction base="eml:String">
+			<xs:maxLength value="4000"/>
+		</xs:restriction>
+	</xs:simpleType>
+	<xs:simpleType name="UomEnum">
+		<xs:annotation>
+			<xs:documentation>The intended abstract supertype of all "units of measure".
+			This abstract type allows the maximum length of a UOM enumeration to be centrally defined. 
+			This type is abstract in the sense that it should not be used directly 
+			except to derive another type.</xs:documentation>
+		</xs:annotation>
+		<xs:restriction base="eml:String">
+			<xs:maxLength value="32"/>
+		</xs:restriction>
+	</xs:simpleType>
+</xs:schema>

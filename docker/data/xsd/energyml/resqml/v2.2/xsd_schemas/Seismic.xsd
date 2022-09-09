@@ -1,0 +1,291 @@
+<?xml version="1.0" encoding="utf-8"?>
+<xs:schema targetNamespace="http://www.energistics.org/energyml/data/resqmlv2" xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:resqml="http://www.energistics.org/energyml/data/resqmlv2" xmlns:eml="http://www.energistics.org/energyml/data/commonv2" elementFormDefault="qualified" version="2.2" attributeFormDefault="unqualified">
+	<!--														-->
+	<!-- Energistics License Agreement
+			This file is distributed under the Energistics Product License Agreement at
+			http://www.energistics.org/product-license-agreement
+			Use of this file constitutes agreement with the Energistics Product License Agreement.
+			Copyright (c) 2021 Energistics. All rights reserved.
+			Energistics, WITSML, PRODML and RESQML are trademarks or registered trademarks of Energistics.
+			-->
+	<!--														-->
+	<xs:annotation>
+		<xs:documentation>This package contains classes for features, interpretations, representations and related objects used to define and exchange seismic survey data in RESQML.
+A RESQML seismic survey representation makes use of previously defined representations, with the addition of seismic coordinates to their geometry. 
+A seismic survey is an organization of seismic lines. For the context of RESQML, a seismic survey does not refer to any vertical dimension information, but only areally at shot point locations or common midpoint gathers. The seismic traces, if needed by reservoir models, are transferred in an industry standard format such as SEGY. The SEGY format contains information about the number of samples in the seismic traces and whether the vertical domain is in time or depth. This section only discusses the areal aspects of seismic surveys.
+RESQML supports two basic kinds of seismic surveys: 
+	- seismic lattice (organization of the traces for the 3D acquisition and processing phases).
+	- seismic line (organization of the traces for the 2D acquisition and processing phases).
+Additionally, to transport several seismic surveys together: 
+	- Seismic lattices can be aggregated into a seismic lattice set.
+	- Seismic lines can be aggregated into a seismic line set.
+Thus there are four groupings of seismic surveys, which are represented in RESQML as follows:
+	- A seismic lattice is generally represented using a 2D grid representation.
+	- A seismic lattice set is represented using a set of 2D grid representations.
+	- A seismic line is generally represented using a polyline representation.
+	- The seismic line set is then represented by a set of polyline representations.
+
+In RESQML seismic surveys are technical features that do not have multiple interpretations. Although it is possible to re-interpret a seismic survey for improved physical properties or for positioning, these types of relationships are not included within the RESQML knowledge hierarchy.</xs:documentation>
+	</xs:annotation>
+	<!--														-->
+	<xs:import namespace="http://www.energistics.org/energyml/data/commonv2" schemaLocation="../../../common/v2.3/xsd_schemas/EmlAllObjects.xsd"/>
+	<!--														-->
+	<xs:include schemaLocation="Structural.xsd"/>
+	<xs:include schemaLocation="Grids.xsd"/>
+	<xs:include schemaLocation="Features.xsd"/>
+	<xs:include schemaLocation="Representations.xsd"/>
+	<xs:complexType name="AbstractSeismicCoordinates" abstract="true">
+		<xs:annotation>
+			<xs:documentation>Parent class that is used to associate horizon and fault representations to seismic 2D and seismic 3D technical features. It stores a 1-to-1 mapping between geometry coordinates (usually X, Y, Z) and trace or inter-trace positions on a seismic survey. </xs:documentation>
+		</xs:annotation>
+		<xs:sequence>
+			<xs:element name="SeismicSupport" type="eml:DataObjectReference" minOccurs="1" maxOccurs="1"/>
+		</xs:sequence>
+	</xs:complexType>
+	<xs:complexType name="AbstractSeismicLineFeature" abstract="true">
+		<xs:annotation>
+			<xs:documentation>Location of the line used in a 2D seismic acquisition.
+
+Defined by one lateral dimension: trace (lateral).
+
+To specify its location, the seismic feature can be associated with the seismic coordinates of the points of a representation.
+
+Represented by a PolylineRepresentation.</xs:documentation>
+		</xs:annotation>
+		<xs:complexContent>
+			<xs:extension base="resqml:AbstractSeismicSurveyFeature">
+				<xs:sequence>
+					<xs:element name="TraceLabels" type="eml:StringExternalArray" minOccurs="0" maxOccurs="1"/>
+					<xs:element name="IsPartOf" type="eml:DataObjectReference" minOccurs="0" maxOccurs="1"/>
+				</xs:sequence>
+			</xs:extension>
+		</xs:complexContent>
+	</xs:complexType>
+	<xs:complexType name="AbstractSeismicSurveyFeature" abstract="true">
+		<xs:annotation>
+			<xs:documentation>An organization of seismic lines. For the context of RESQML, a seismic survey does not refer to any vertical dimension information, but only areally at shot point locations or common midpoint gathers. The seismic traces, if needed by reservoir models, are transferred in an industry standard format such as SEGY.
+RESQML supports these basic types of seismic surveys: 
+	- seismic lattice (organization of the traces for the 3D acquisition and processing phases).
+	- seismic line (organization of the traces for the 2D acquisition and processing phases).
+Additionally, these seismic lattices and seismic lines can be aggregated into sets.</xs:documentation>
+		</xs:annotation>
+		<xs:complexContent>
+			<xs:extension base="resqml:AbstractTechnicalFeature">
+				<xs:sequence/>
+			</xs:extension>
+		</xs:complexContent>
+	</xs:complexType>
+	<xs:element name="CmpLineFeature" type="resqml:CmpLineFeature" substitutionGroup="eml:AbstractDataObject"/>
+	<xs:complexType name="CmpLineFeature">
+		<xs:annotation>
+			<xs:documentation>Location of a single line of common mid-points (CMP) resulting from a 2D seismic acquisition</xs:documentation>
+		</xs:annotation>
+		<xs:complexContent>
+			<xs:extension base="resqml:AbstractSeismicLineFeature">
+				<xs:sequence>
+					<xs:element name="NearestShotPointIndices" type="eml:AbstractIntegerArray" minOccurs="1" maxOccurs="1">
+						<xs:annotation>
+							<xs:documentation>Index of closest shot point (inside the associated CmpPointLineFeature) for each cmp. </xs:documentation>
+						</xs:annotation>
+					</xs:element>
+					<xs:element name="ShotPointLineFeature" type="eml:DataObjectReference" minOccurs="0" maxOccurs="1"/>
+				</xs:sequence>
+			</xs:extension>
+		</xs:complexContent>
+	</xs:complexType>
+	<xs:complexType name="Seismic2dCoordinates">
+		<xs:annotation>
+			<xs:documentation>A group of 2D seismic coordinates that stores the 1-to-1 mapping between geometry patch coordinates (usually X, Y, Z) and trace or inter-trace positions on a seismic line.
+BUSINESS RULE: This patch must reference a geometry patch by its UUID. </xs:documentation>
+		</xs:annotation>
+		<xs:complexContent>
+			<xs:extension base="resqml:AbstractSeismicCoordinates">
+				<xs:sequence>
+					<xs:element name="LineAbscissa" type="eml:AbstractFloatingPointArray" minOccurs="1" maxOccurs="1">
+						<xs:annotation>
+							<xs:documentation>The sequence of trace or inter-trace positions that correspond to the geometry coordinates.
+BUSINESS RULE: Both sequences must be in the same order.</xs:documentation>
+						</xs:annotation>
+					</xs:element>
+					<xs:element name="VerticalCoordinates" type="eml:AbstractFloatingPointArray" minOccurs="0" maxOccurs="1">
+						<xs:annotation>
+							<xs:documentation>The sequence of vertical sample or inter-sample positions that corresponds to the geometry coordinates.
+BUSINESS RULE: Sequence must be in the same order as the previous one.</xs:documentation>
+						</xs:annotation>
+					</xs:element>
+				</xs:sequence>
+			</xs:extension>
+		</xs:complexContent>
+	</xs:complexType>
+	<xs:element name="Seismic2dPostStackRepresentation" type="resqml:Seismic2dPostStackRepresentation" substitutionGroup="eml:AbstractDataObject"/>
+	<xs:complexType name="Seismic2dPostStackRepresentation">
+		<xs:annotation>
+			<xs:documentation>The feature of this representation should be the same survey feature as the associated PolylineRepresentation represents..
+
+The indexing convention (mainly for associated properties) is :
+	- Trace sample goes fastest
+	- Then polyline node slowest
+The indexing convention only applies to HDF datasets (not SEGY file).
+A whole SEGY file can be referenced in properties of this representation, but not partial files.</xs:documentation>
+		</xs:annotation>
+		<xs:complexContent>
+			<xs:extension base="resqml:AbstractRepresentation">
+				<xs:sequence>
+					<xs:element name="SeismicLineSubSampling" type="eml:IntegerLatticeArray" minOccurs="1" maxOccurs="1">
+						<xs:annotation>
+							<xs:documentation>This array must be one dimension and count must be the node count in the associated seismic line i.e., polylineRepresentation.
+
+The index is based on array indexing, not on index labeling of traces.
+
+The values of the integer lattice array are the increments between 2 consecutive subsampled nodes.</xs:documentation>
+						</xs:annotation>
+					</xs:element>
+					<xs:element name="TraceSampling" type="eml:FloatingPointLatticeArray" minOccurs="1" maxOccurs="1">
+						<xs:annotation>
+							<xs:documentation>Defines the sampling in the vertical dimension of the representation.
+
+This array must be one dimension.
+
+The values are given with respect to the associated local CRS.</xs:documentation>
+						</xs:annotation>
+					</xs:element>
+					<xs:element name="SeismicLineRepresentation" type="eml:DataObjectReference" minOccurs="1" maxOccurs="1"/>
+					<xs:element name="LocalCrs" type="eml:DataObjectReference" minOccurs="1" maxOccurs="1"/>
+				</xs:sequence>
+			</xs:extension>
+		</xs:complexContent>
+	</xs:complexType>
+	<xs:complexType name="Seismic3dCoordinates">
+		<xs:annotation>
+			<xs:documentation>The 1-to-1 mapping between geometry coordinates (usually X, Y, Z or X, Y, TWT) and trace or inter-trace positions on a seismic lattice.</xs:documentation>
+		</xs:annotation>
+		<xs:complexContent>
+			<xs:extension base="resqml:AbstractSeismicCoordinates">
+				<xs:sequence>
+					<xs:element name="CrosslineCoordinates" type="eml:AbstractFloatingPointArray" minOccurs="1" maxOccurs="1">
+						<xs:annotation>
+							<xs:documentation>The sequence of trace or inter-trace crossline positions that correspond to the geometry coordinates.
+BUSINESS RULE: Both sequences must be in the same order.</xs:documentation>
+						</xs:annotation>
+					</xs:element>
+					<xs:element name="InlineCoordinates" type="eml:AbstractFloatingPointArray" minOccurs="1" maxOccurs="1">
+						<xs:annotation>
+							<xs:documentation>The sequence of trace or inter-trace inline positions that correspond to the geometry coordinates.
+BUSINESS RULE: Both sequences must be in the same order.</xs:documentation>
+						</xs:annotation>
+					</xs:element>
+					<xs:element name="VerticalCoordinates" type="eml:AbstractFloatingPointArray" minOccurs="0" maxOccurs="1">
+						<xs:annotation>
+							<xs:documentation>The sequence of vertical sample or inter-sample positions that corresponds to the geometry coordinates.
+BUSINESS RULE: Sequence must be in the same order as the two previous ones.</xs:documentation>
+						</xs:annotation>
+					</xs:element>
+				</xs:sequence>
+			</xs:extension>
+		</xs:complexContent>
+	</xs:complexType>
+	<xs:element name="Seismic3dPostStackRepresentation" type="resqml:Seismic3dPostStackRepresentation" substitutionGroup="eml:AbstractDataObject"/>
+	<xs:complexType name="Seismic3dPostStackRepresentation">
+		<xs:annotation>
+			<xs:documentation>The feature of this representation should be the same survey feature as the associated Grid2Representation represents.
+
+The indexing convention (mainly for associated properties) is:
+	- Trace sample goes fastest
+	- Then inline
+	- And crossline goes slowest
+The indexing convention only applies to HDF datasets (not SEGY file).
+A whole SEGY file can be referenced in properties of this representation, but not partial files.</xs:documentation>
+		</xs:annotation>
+		<xs:complexContent>
+			<xs:extension base="resqml:AbstractGridRepresentation">
+				<xs:sequence>
+					<xs:element name="SeismicLatticeSubSampling" type="eml:IntegerLatticeArray" minOccurs="1" maxOccurs="1">
+						<xs:annotation>
+							<xs:documentation>This array must be two dimensions:
+- Fastest Axis is inline.
+- Slowest Axis is crossline.
+
+The index is based on array indexing, not on index labeling of inlines/crosslines.
+
+The values of the integer lattice array are the increments between 2 consecutive subsampled nodes.</xs:documentation>
+						</xs:annotation>
+					</xs:element>
+					<xs:element name="TraceSampling" type="eml:FloatingPointLatticeArray" minOccurs="1" maxOccurs="1">
+						<xs:annotation>
+							<xs:documentation>Defines the sampling in the vertical dimension of the representation.
+
+This array must be one dimension.
+
+The values are given with respect to the associated Local Crs.</xs:documentation>
+						</xs:annotation>
+					</xs:element>
+					<xs:element name="SeismicLatticeRepresentation" type="eml:DataObjectReference" minOccurs="1" maxOccurs="1"/>
+					<xs:element name="LocalCrs" type="eml:DataObjectReference" minOccurs="1" maxOccurs="1"/>
+				</xs:sequence>
+			</xs:extension>
+		</xs:complexContent>
+	</xs:complexType>
+	<xs:element name="SeismicLatticeFeature" type="resqml:SeismicLatticeFeature" substitutionGroup="eml:AbstractDataObject"/>
+	<xs:complexType name="SeismicLatticeFeature">
+		<xs:annotation>
+			<xs:documentation>Defined by two lateral ordered dimensions: inline (lateral), crossline (lateral and orthogonal to the inline dimension), which are fixed.
+
+To specify its location, a seismic feature can be associated with the seismic coordinates of the points of a representation.
+
+Represented by a 2D grid representation.</xs:documentation>
+		</xs:annotation>
+		<xs:complexContent>
+			<xs:extension base="resqml:AbstractSeismicSurveyFeature">
+				<xs:sequence>
+					<xs:element name="CrosslineLabels" type="eml:IntegerLatticeArray" minOccurs="0" maxOccurs="1">
+						<xs:annotation>
+							<xs:documentation>The labels (as they would be found in SEGY trace headers for example) of the crosslines of the 3D seismic survey.
+
+BUSINESS RULE: Count of this array must be the same as the count of nodes in the slowest axis of the associated grid 2D representations.</xs:documentation>
+						</xs:annotation>
+					</xs:element>
+					<xs:element name="InlineLabels" type="eml:IntegerLatticeArray" minOccurs="0" maxOccurs="1">
+						<xs:annotation>
+							<xs:documentation>The labels (as they would be found in SEGY trace headers for example) of the inlines of the 3D seismic survey.
+
+BUSINESS RULE: Count of this array must be the same as the count of nodes in the fastest axis of the associated grid 2D representations.</xs:documentation>
+						</xs:annotation>
+					</xs:element>
+					<xs:element name="IsPartOf" type="resqml:SeismicLatticeSetFeature" minOccurs="0" maxOccurs="1"/>
+				</xs:sequence>
+			</xs:extension>
+		</xs:complexContent>
+	</xs:complexType>
+	<xs:complexType name="SeismicLatticeSetFeature">
+		<xs:annotation>
+			<xs:documentation>An unordered set of several seismic lattices. Generally, it has no direct interpretation or representation.</xs:documentation>
+		</xs:annotation>
+		<xs:complexContent>
+			<xs:extension base="resqml:AbstractSeismicSurveyFeature">
+				<xs:sequence/>
+			</xs:extension>
+		</xs:complexContent>
+	</xs:complexType>
+	<xs:element name="SeismicLineSetFeature" type="resqml:SeismicLineSetFeature" substitutionGroup="eml:AbstractDataObject"/>
+	<xs:complexType name="SeismicLineSetFeature">
+		<xs:annotation>
+			<xs:documentation>An unordered set of several seismic lines. Generally, it has no direct interpretation or representation.</xs:documentation>
+		</xs:annotation>
+		<xs:complexContent>
+			<xs:extension base="resqml:AbstractSeismicSurveyFeature">
+				<xs:sequence/>
+			</xs:extension>
+		</xs:complexContent>
+	</xs:complexType>
+	<xs:element name="ShotPointLineFeature" type="resqml:ShotPointLineFeature" substitutionGroup="eml:AbstractDataObject"/>
+	<xs:complexType name="ShotPointLineFeature">
+		<xs:annotation>
+			<xs:documentation>Location of a single line of shot points in a 2D seismic acquisition.</xs:documentation>
+		</xs:annotation>
+		<xs:complexContent>
+			<xs:extension base="resqml:AbstractSeismicLineFeature">
+				<xs:sequence/>
+			</xs:extension>
+		</xs:complexContent>
+	</xs:complexType>
+</xs:schema>

@@ -1,0 +1,108 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xsd:schema
+	elementFormDefault="qualified" 
+	attributeFormDefault="unqualified" 
+	targetNamespace="http://www.energistics.org/energyml/data/resqmlv2" 
+	xmlns:resqml="http://www.energistics.org/energyml/data/resqmlv2" 
+	xmlns:xsd="http://www.w3.org/2001/XMLSchema"
+	xmlns:eml="http://www.energistics.org/energyml/data/commonv2"
+	version="1.5.0">
+	<!--                                                         -->
+	<!-- Energistics License Agreement
+	This file is distributed under the Energistics License Agreement at
+	http://www.energistics.org
+	Use of this file constitutes agreement with the Energistics License Agreement.
+	-->
+	<!--                                                         -->
+	<xsd:import namespace="http://www.energistics.org/energyml/data/commonv2" schemaLocation="../../../common/v2.0/xsd_schemas/BaseTypes.xsd"/>
+	<!--                                                         -->
+	<xsd:annotation>
+		<xsd:documentation>Schema for listing standardized values as an alternative 
+		to using an enumeration in XML Schema. This schema is not intended to be part 
+		of a resqml data object.</xsd:documentation>
+	</xsd:annotation>
+	<!--                                                         -->
+	<xsd:element name="enumListSet" type="resqml:enumListSet">
+		<xsd:annotation>
+			<xsd:documentation>A container for enumeration lists.</xsd:documentation>
+		</xsd:annotation>
+	</xsd:element>
+	<!--                                                         -->
+	<xsd:complexType name="enumListSet">
+		<xsd:sequence>
+			<xsd:element name="enumList" type="resqml:enumList" minOccurs="1" maxOccurs="unbounded">
+				<xsd:annotation>
+					<xsd:documentation>A single enumeration list.</xsd:documentation>
+				</xsd:annotation>
+			</xsd:element>
+		</xsd:sequence>
+		<xsd:attribute name="version" type="xsd:string" use="required">
+			<xsd:annotation>
+			<xsd:documentation>Data object schema version.  The fourth level must match the 
+			version of the schema constraints (enumerations and XML loader files) that are assumed
+			by the document instance.</xsd:documentation>
+			</xsd:annotation>
+		</xsd:attribute>
+	</xsd:complexType>
+	<!--                                                         -->
+	<xsd:complexType name="enumList">
+		<xsd:sequence>
+			<xsd:element name="name" type="eml:NameString" minOccurs="1" maxOccurs="1">
+				<xsd:annotation>
+					<xsd:documentation>The name of the list.</xsd:documentation>
+				</xsd:annotation>
+			</xsd:element>
+			<xsd:element name="description" type="eml:CommentString" minOccurs="0" maxOccurs="1">
+				<xsd:annotation>
+					<xsd:documentation>A description of the list. 
+					This specifies what the individual values represent.</xsd:documentation>
+				</xsd:annotation>
+			</xsd:element>
+			<xsd:element name="namingSystem" type="eml:NameString" minOccurs="0" maxOccurs="1">
+				<xsd:annotation>
+					<xsd:documentation>The naming system within which the terms are defined.</xsd:documentation>
+				</xsd:annotation>
+			</xsd:element>
+			<xsd:element name="value" type="resqml:enumValue" minOccurs="1" maxOccurs="unbounded">
+				<xsd:annotation>
+					<xsd:documentation>A description of an enumeration value.</xsd:documentation>
+				</xsd:annotation>
+			</xsd:element>
+		</xsd:sequence>
+	</xsd:complexType>
+	<!--                                                         -->
+	<xsd:complexType name="enumValue">
+		<xsd:sequence>
+			<xsd:element name="name" type="eml:NameString" minOccurs="1" maxOccurs="1">
+				<xsd:annotation>
+					<xsd:documentation>The name of the value.</xsd:documentation>
+				</xsd:annotation>
+			</xsd:element>
+			<xsd:element name="description" type="eml:CommentString" minOccurs="0" maxOccurs="1">
+				<xsd:annotation>
+					<xsd:documentation>A description of the value. </xsd:documentation>
+				</xsd:annotation>
+			</xsd:element>
+			<xsd:element name="version" type="eml:NameString" minOccurs="0" maxOccurs="1">
+				<xsd:annotation>
+					<xsd:documentation>The version when the value was added.
+					The string should match the content of the root version attribute of the schema.
+					For example, "1.4.0.0".</xsd:documentation>
+				</xsd:annotation>
+			</xsd:element>
+			<!-- For use with "ResqmlPropertyKind". -->
+			<xsd:element name="isAbstract" type="xsd:boolean" minOccurs="0" maxOccurs="1">
+				<xsd:annotation>
+					<xsd:documentation>True ("1" or "true") indicates that the property is abstract and cannot be used to characterize a value.
+					False ("0" or "false") or not given indicates a non-abstract property that can be instantiated.</xsd:documentation>
+				</xsd:annotation>
+			</xsd:element>
+			<xsd:element name="parentKind" type="eml:NameString" minOccurs="0" maxOccurs="1">
+				<xsd:annotation>
+					<xsd:documentation>Points to a parent property kind</xsd:documentation>
+				</xsd:annotation>
+			</xsd:element>
+		</xsd:sequence>
+	</xsd:complexType>
+	<!--                                                         -->
+</xsd:schema>

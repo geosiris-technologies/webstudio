@@ -1,0 +1,766 @@
+<?xml version="1.0" encoding="utf-8"?>
+<xs:schema targetNamespace="http://www.energistics.org/energyml/data/resqmlv2" xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:resqml="http://www.energistics.org/energyml/data/resqmlv2" xmlns:eml="http://www.energistics.org/energyml/data/commonv2" elementFormDefault="qualified" version="2.0">
+	<xs:annotation>
+		<xs:documentation>RESQML uses the definition of "interpretation" by David Gawith, which states that "An interpretation is a single consistent description of a feature. An interpretation is very strongly attached to the intellectual activity of the project team members. The project precedes the realization; initial curiosity and reasoning initiates the early pre-screening campaign (remote sensing, surveys). Hypotheses are made and these sets of hypotheses consist of as many Interpretations as necessary to describe the features."
+NOTE: The formal name is actually "FeatureInterpretation" and many of the class names use this full term. For conciseness of documentation, we use simply "interpretation" where this usage is not confusing.
+RESQML now uses the term “interpretation” instead of alternative terms that were used in V1.1, such as “version” or “opinion".
+Most of the information contained as attributes or enumerations in individual interpretation or organization interpretation will help users understand how the representations of the geological objects should be built or have been built, if the representation is already associated to the given interpretation.</xs:documentation>
+	</xs:annotation>
+	<xs:import namespace="http://www.energistics.org/energyml/data/commonv2" schemaLocation="../../../common/v2.0/xsd_schemas/AllCommonObjects.xsd"/><xs:include schemaLocation="Geologic.xsd"/>
+	<xs:include schemaLocation="Features.xsd"/>
+	<xs:include schemaLocation="Common.xsd"/>
+	<xs:complexType name="AbstractFeatureInterpretation" abstract="true">
+		<xs:annotation>
+			<xs:documentation>The main class that contains all of the other feature interpretations included in this interpreted model.</xs:documentation>
+		</xs:annotation>
+		<xs:complexContent>
+			<xs:extension base="resqml:AbstractResqmlDataObject">
+				<xs:sequence>
+					<xs:element name="Domain" type="resqml:Domain" minOccurs="1" maxOccurs="1"/>
+					<xs:element name="InterpretedFeature" type="eml:DataObjectReference" minOccurs="1" maxOccurs="1"/>
+					<xs:element name="HasOccuredDuring" type="resqml:TimeInterval" minOccurs="0" maxOccurs="1"/>
+				</xs:sequence>
+			</xs:extension>
+		</xs:complexContent>
+	</xs:complexType>
+	<xs:simpleType name="ThrowKind">
+		<xs:annotation>
+			<xs:documentation>Enumerations that characterize the throw of the fault interpretation.</xs:documentation>
+		</xs:annotation>
+		<xs:restriction base="xs:string">
+			<xs:enumeration value="reverse"/>
+			<xs:enumeration value="normal"/>
+			<xs:enumeration value="thrust"/>
+			<xs:enumeration value="strike and slip"/>
+			<xs:enumeration value="scissor"/>
+			<xs:enumeration value="variable"/>
+		</xs:restriction>
+	</xs:simpleType>
+	<xs:complexType name="obj_RockFluidOrganizationInterpretation">
+		<xs:annotation>
+			<xs:documentation>Interpretation of the fluid organization units.</xs:documentation>
+		</xs:annotation>
+		<xs:complexContent>
+			<xs:extension base="resqml:AbstractOrganizationInterpretation">
+				<xs:sequence>
+					<xs:element name="RockFluidUnitIndex" type="resqml:RockFluidUnitInterpretationIndex" minOccurs="1" maxOccurs="1"/>
+				</xs:sequence>
+			</xs:extension>
+		</xs:complexContent>
+	</xs:complexType>
+	<xs:simpleType name="SequenceStratigraphySurface">
+		<xs:annotation>
+			<xs:documentation>The enumerated attributes of a horizon.</xs:documentation>
+		</xs:annotation>
+		<xs:restriction base="xs:string">
+			<xs:enumeration value="flooding"/>
+			<xs:enumeration value="ravinement"/>
+			<xs:enumeration value="maximum flooding"/>
+			<xs:enumeration value="transgressive"/>
+		</xs:restriction>
+	</xs:simpleType>
+	<xs:complexType name="TimeInterval">
+		<xs:annotation>
+			<xs:documentation>Geological time during which a geological event (e.g., deposition, erosion, fracturation, faulting, intrusion) occurred. 
+
+BUSINESS RULE: All rock features that are present in the global chronostratigraphic column feature must have a time interval.</xs:documentation>
+		</xs:annotation>
+		<xs:sequence>
+			<xs:element name="ChronoBottom" type="eml:DataObjectReference" minOccurs="1" maxOccurs="1"/>
+			<xs:element name="ChronoTop" type="eml:DataObjectReference" minOccurs="1" maxOccurs="1"/>
+		</xs:sequence>
+	</xs:complexType>
+	<xs:complexType name="AbstractOrganizationInterpretation" abstract="true">
+		<xs:annotation>
+			<xs:documentation>The main class used to group features into meaningful units as a step in working towards the goal of building an earth model (the organization of all other organizations in RESQML). 
+An organization interpretation:
+
+	- Is typically comprised of one stack of its contained elements.
+
+
+	- May be built on other organization interpretations. 
+
+
+Typically contains:
+
+	- contacts between the elements of this stack among themselves.
+	- contacts between the stack elements and other organization elements.</xs:documentation>
+		</xs:annotation>
+		<xs:complexContent>
+			<xs:extension base="resqml:AbstractFeatureInterpretation">
+				<xs:sequence>
+					<xs:element name="ContactInterpretation" type="resqml:AbstractContactInterpretationPart" minOccurs="0" maxOccurs="unbounded"/>
+				</xs:sequence>
+			</xs:extension>
+		</xs:complexContent>
+	</xs:complexType>
+	<xs:simpleType name="ContactRelationship">
+		<xs:annotation>
+			<xs:documentation>The enumerations that specify the role of the contacts in a contact interpretation as described in the attributes below.</xs:documentation>
+		</xs:annotation>
+		<xs:restriction base="xs:string">
+			<xs:enumeration value="frontier feature to frontier feature">
+				<xs:annotation>
+					<xs:documentation>A contact between two frontier features to close a volume of interest.</xs:documentation>
+				</xs:annotation>
+			</xs:enumeration>
+			<xs:enumeration value="genetic boundary to frontier feature">
+				<xs:annotation>
+					<xs:documentation>A linear contact between a genetic boundary interpretation and a frontier feature (horizon/frontier contact). </xs:documentation>
+				</xs:annotation>
+			</xs:enumeration>
+			<xs:enumeration value="genetic boundary to genetic boundary">
+				<xs:annotation>
+					<xs:documentation>A linear contact between two genetic boundary interpretations (horizon/horizon contact).</xs:documentation>
+				</xs:annotation>
+			</xs:enumeration>
+			<xs:enumeration value="genetic boundary to tectonic boundary">
+				<xs:annotation>
+					<xs:documentation>A linear contact between a genetic boundary interpretation and a tectonic boundary interpretation (horizon/fault contact).</xs:documentation>
+				</xs:annotation>
+			</xs:enumeration>
+			<xs:enumeration value="stratigraphic unit to frontier feature">
+				<xs:annotation>
+					<xs:documentation>A surface contact between a stratigraphic unit interpretation and a frontier feature (contact closing a volume on a frontier feature that is a technical feature). </xs:documentation>
+				</xs:annotation>
+			</xs:enumeration>
+			<xs:enumeration value="stratigraphic unit to stratigraphic unit">
+				<xs:annotation>
+					<xs:documentation>A surface contact between two stratigraphic unit interpretations (unit/unit contact). </xs:documentation>
+				</xs:annotation>
+			</xs:enumeration>
+			<xs:enumeration value="tectonic boundary to frontier feature">
+				<xs:annotation>
+					<xs:documentation>A linear contact between a tectonic boundary interpretation and a frontier feature (fault/frontier contact). </xs:documentation>
+				</xs:annotation>
+			</xs:enumeration>
+			<xs:enumeration value="tectonic boundary to genetic boundary">
+				<xs:annotation>
+					<xs:documentation>A linear contact between a tectonic boundary interpretation and a genetic boundary interpretation (fault/horizon contact). </xs:documentation>
+				</xs:annotation>
+			</xs:enumeration>
+			<xs:enumeration value="tectonic boundary to tectonic boundary">
+				<xs:annotation>
+					<xs:documentation>A linear contact between two tectonic boundary interpretations (fault/fault contact). </xs:documentation>
+				</xs:annotation>
+			</xs:enumeration>
+		</xs:restriction>
+	</xs:simpleType>
+	<xs:complexType name="BinaryContactInterpretationPart">
+		<xs:annotation>
+			<xs:documentation>The main class for data describing an opinion of the contact between two geologic feature interpretations. A contact interpretation between two surface geological boundaries is usually a line.
+A contact interpretation between two volumes (rock feature interpretation) is usually a surface. 
+
+This class allows you to build a formal sentence—in the pattern of subject-verb-direct object—which is used to describe the construction of a node, line, or surface contact. It is also possible to attach a primary and a secondary qualifier to the subject and to the direct object.
+
+
+For example, one contact interpretation can be described by a sentence such as:
+The interpreted fault named F1 interp on its hanging wall side splits the interpreted horizon named H1 Interp on both its sides. 
+
+Subject = F1 Interp, with qualifier "hanging wall side"
+Verb = splits
+Direct Object = H1 Interp, with qualifier "on both sides"</xs:documentation>
+		</xs:annotation>
+		<xs:complexContent>
+			<xs:extension base="resqml:AbstractContactInterpretationPart">
+				<xs:sequence>
+					<xs:element name="DirectObject" type="resqml:ContactElementReference" minOccurs="1" maxOccurs="1">
+						<xs:annotation>
+							<xs:documentation>Data-object reference (by UUID link) to a geologic feature interpretation, which is the direct object of the sentence that defines how the contact was constructed.</xs:documentation>
+						</xs:annotation>
+					</xs:element>
+					<xs:element name="Verb" type="resqml:ContactVerb" minOccurs="1" maxOccurs="1"/>
+					<xs:element name="Subject" type="resqml:ContactElementReference" minOccurs="1" maxOccurs="1">
+						<xs:annotation>
+							<xs:documentation>Data-object reference (by UUID link) to a geologic feature interpretation, which is the subject of the sentence that defines how the contact was constructed.</xs:documentation>
+						</xs:annotation>
+					</xs:element>
+				</xs:sequence>
+			</xs:extension>
+		</xs:complexContent>
+	</xs:complexType>
+	<xs:simpleType name="DepositionMode">
+		<xs:annotation>
+			<xs:documentation>The enumerated attributes of a horizon.</xs:documentation>
+		</xs:annotation>
+		<xs:restriction base="xs:string">
+			<xs:enumeration value="proportional between top and bottom"/>
+			<xs:enumeration value="parallel to bottom"/>
+			<xs:enumeration value="parallel to top"/>
+			<xs:enumeration value="parallel to another boundary"/>
+		</xs:restriction>
+	</xs:simpleType>
+	<xs:complexType name="StratigraphicUnitInterpretationIndex">
+		<xs:annotation>
+			<xs:documentation>Element that lets you index and order stratigraphic unit interpretations. For possible ordering criteria, see OrderingCriteria.</xs:documentation>
+		</xs:annotation>
+		<xs:sequence>
+			<xs:element name="Index" type="xs:nonNegativeInteger" minOccurs="1" maxOccurs="1">
+				<xs:annotation>
+					<xs:documentation>An index value associated to an instance of this type of interpretation, given a specific ordering criteria.</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element name="Unit" type="eml:DataObjectReference" minOccurs="1" maxOccurs="1"/>
+		</xs:sequence>
+	</xs:complexType>
+	<xs:complexType name="ContactElementReference">
+		<xs:annotation>
+			<xs:documentation>A reference to either a geologic feature interpretation or a frontier feature.
+
+BUSINESS RULE: The ContentType of the corresponding data-object reference must be a geological feature interpretation or a frontier feature.</xs:documentation>
+		</xs:annotation>
+		<xs:complexContent>
+			<xs:extension base="eml:DataObjectReference">
+				<xs:sequence>
+					<xs:element name="Qualifier" type="resqml:ContactSide" minOccurs="0" maxOccurs="1"/>
+					<xs:element name="SecondaryQualifier" type="resqml:ContactMode" minOccurs="0" maxOccurs="1"/>
+				</xs:sequence>
+			</xs:extension>
+		</xs:complexContent>
+	</xs:complexType>
+	<xs:simpleType name="GeologicUnitComposition">
+		<xs:restriction base="xs:string">
+			<xs:enumeration value="intrusive clay "/>
+			<xs:enumeration value="organic"/>
+			<xs:enumeration value="intrusive mud "/>
+			<xs:enumeration value="evaporite salt"/>
+			<xs:enumeration value="evaporite non salt"/>
+			<xs:enumeration value="sedimentary siliclastic"/>
+			<xs:enumeration value="carbonate"/>
+			<xs:enumeration value="magmatic intrusive granitoid"/>
+			<xs:enumeration value="magmatic intrusive pyroclastic"/>
+			<xs:enumeration value="magmatic extrusive lava flow"/>
+			<xs:enumeration value="other chemichal rock"/>
+			<xs:enumeration value="sedimentary turbidite"/>
+		</xs:restriction>
+	</xs:simpleType>
+	<xs:simpleType name="Domain">
+		<xs:annotation>
+			<xs:documentation>Enumeration for the feature interpretation to specify if the measurement is in the seismic time or depth domain or if it is derived from a laboratory measurement. </xs:documentation>
+		</xs:annotation>
+		<xs:restriction base="xs:string">
+			<xs:enumeration value="depth">
+				<xs:annotation>
+					<xs:documentation>Position defined by measurements in the depth domain.</xs:documentation>
+				</xs:annotation>
+			</xs:enumeration>
+			<xs:enumeration value="time">
+				<xs:annotation>
+					<xs:documentation>Position based on geophysical measurements in two-way time (TWT).</xs:documentation>
+				</xs:annotation>
+			</xs:enumeration>
+			<xs:enumeration value="mixed"/>
+		</xs:restriction>
+	</xs:simpleType>
+	<xs:simpleType name="BoundaryRelation">
+		<xs:annotation>
+			<xs:documentation>The enumerated attributes of a horizon.</xs:documentation>
+		</xs:annotation>
+		<xs:restriction base="xs:string">
+			<xs:enumeration value="conformable">
+				<xs:annotation>
+					<xs:documentation>If used uniquely, then it means the horizon is conformable above and below.
+If used with unconformity, then it means partial unconformity.</xs:documentation>
+				</xs:annotation>
+			</xs:enumeration>
+			<xs:enumeration value="unconformable below and above"/>
+			<xs:enumeration value="unconformable above">
+				<xs:annotation>
+					<xs:documentation>If used with conformable, then it means partial unconformity.</xs:documentation>
+				</xs:annotation>
+			</xs:enumeration>
+			<xs:enumeration value="unconformable below">
+				<xs:annotation>
+					<xs:documentation>If used with conformable, then it means partial unconformity.</xs:documentation>
+				</xs:annotation>
+			</xs:enumeration>
+		</xs:restriction>
+	</xs:simpleType>
+	<xs:complexType name="obj_RockFluidUnitInterpretation">
+		<xs:annotation>
+			<xs:documentation>A type of rock fluid feature interpretation , this class identifies if a rock fluid feature by its phase</xs:documentation>
+		</xs:annotation>
+		<xs:complexContent>
+			<xs:extension base="resqml:obj_GeologicUnitInterpretation">
+				<xs:sequence>
+					<xs:element name="Phase" type="resqml:Phase" minOccurs="0" maxOccurs="1"/>
+				</xs:sequence>
+			</xs:extension>
+		</xs:complexContent>
+	</xs:complexType>
+	<xs:complexType name="obj_GenericFeatureInterpretation">
+		<xs:complexContent>
+			<xs:extension base="resqml:AbstractFeatureInterpretation">
+				<xs:sequence/>
+			</xs:extension>
+		</xs:complexContent>
+	</xs:complexType>
+	<xs:complexType name="obj_WellboreInterpretation">
+		<xs:annotation>
+			<xs:documentation>This class contains the data describing an opinion of a borehole. This interpretation is relative to one particular well trajectory. </xs:documentation>
+		</xs:annotation>
+		<xs:complexContent>
+			<xs:extension base="resqml:AbstractFeatureInterpretation">
+				<xs:sequence>
+					<xs:element name="IsDrilled" type="xs:boolean" minOccurs="1" maxOccurs="1">
+						<xs:annotation>
+							<xs:documentation>Used to indicate that this wellbore has been, or is being, drilled. This distinguishes from planned wells. For one wellbore feature we may expect to have multiple wellbore interpretations: IsDrilled=TRUE for instance will be used for updated drilled trajectories. IsDrilled=FALSE for planned trajectories.</xs:documentation>
+						</xs:annotation>
+					</xs:element>
+				</xs:sequence>
+			</xs:extension>
+		</xs:complexContent>
+	</xs:complexType>
+	<xs:complexType name="GeologicUnitInterpretationIndex">
+		<xs:annotation>
+			<xs:documentation>Element that lets you index and order rock feature interpretations. For possible ordering criteria, see OrderingCriteria.</xs:documentation>
+		</xs:annotation>
+		<xs:sequence>
+			<xs:element name="Index" type="xs:nonNegativeInteger" minOccurs="1" maxOccurs="1">
+				<xs:annotation>
+					<xs:documentation>An index value associated to an instance of this type interpretation, given a specific ordering criteria.</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element name="Unit" type="eml:DataObjectReference" minOccurs="1" maxOccurs="1"/>
+		</xs:sequence>
+	</xs:complexType>
+	<xs:complexType name="obj_GeobodyBoundaryInterpretation">
+		<xs:annotation>
+			<xs:documentation>A type of boundary feature, this class identifies if the boundary is a geobody and the type of the boundary.</xs:documentation>
+		</xs:annotation>
+		<xs:complexContent>
+			<xs:extension base="resqml:obj_BoundaryFeatureInterpretation">
+				<xs:sequence>
+					<xs:element name="BoundaryRelation" type="resqml:BoundaryRelation" minOccurs="0" maxOccurs="unbounded"/>
+				</xs:sequence>
+			</xs:extension>
+		</xs:complexContent>
+	</xs:complexType>
+	<xs:simpleType name="ContactMode">
+		<xs:restriction base="xs:string">
+			<xs:enumeration value="baselap"/>
+			<xs:enumeration value="erosion"/>
+			<xs:enumeration value="extended"/>
+			<xs:enumeration value="proportional"/>
+		</xs:restriction>
+	</xs:simpleType>
+	<xs:complexType name="obj_StructuralOrganizationInterpretation">
+		<xs:annotation>
+			<xs:documentation>One of the main types of RESQML organizations, this class gathers boundary interpretations (e.g., horizons and faults) plus frontier features and their relationships (contacts interpretations), which when taken together define the structure of a part of the earth.</xs:documentation>
+		</xs:annotation>
+		<xs:complexContent>
+			<xs:extension base="resqml:AbstractOrganizationInterpretation">
+				<xs:sequence>
+					<xs:element name="OrderingCriteria" type="resqml:OrderingCriteria" minOccurs="1" maxOccurs="1"/>
+					<xs:element name="Faults" type="eml:DataObjectReference" minOccurs="0" maxOccurs="unbounded"/>
+					<xs:element name="Horizons" type="resqml:HorizonInterpretationIndex" minOccurs="0" maxOccurs="unbounded"/>
+					<xs:element name="Sides" type="eml:DataObjectReference" minOccurs="0" maxOccurs="unbounded"/>
+					<xs:element name="TopFrontier" type="eml:DataObjectReference" minOccurs="0" maxOccurs="unbounded"/>
+					<xs:element name="BottomFrontier" type="eml:DataObjectReference" minOccurs="0" maxOccurs="unbounded"/>
+				</xs:sequence>
+			</xs:extension>
+		</xs:complexContent>
+	</xs:complexType>
+	<xs:complexType name="MultipleContactInterpretationPart">
+		<xs:annotation>
+			<xs:documentation>Describes multiple interface contacts of geologic feature interpretations (compared to a binary contact). A composition of several contact interpretations.</xs:documentation>
+		</xs:annotation>
+		<xs:complexContent>
+			<xs:extension base="resqml:AbstractContactInterpretationPart">
+				<xs:sequence>
+					<xs:element name="With" type="xs:nonNegativeInteger" minOccurs="1" maxOccurs="unbounded">
+						<xs:annotation>
+							<xs:documentation>Indicates a list of binary contacts (by their UUIDs) that participate in this multiple contact.</xs:documentation>
+						</xs:annotation>
+					</xs:element>
+				</xs:sequence>
+			</xs:extension>
+		</xs:complexContent>
+	</xs:complexType>
+	<xs:complexType name="HorizonInterpretationIndex">
+		<xs:annotation>
+			<xs:documentation>Element that lets you index and order horizon interpretations. For possible ordering criteria, see OrderingCriteria.</xs:documentation>
+		</xs:annotation>
+		<xs:sequence>
+			<xs:element name="Index" type="xs:nonNegativeInteger" minOccurs="1" maxOccurs="1">
+				<xs:annotation>
+					<xs:documentation>An index value associated to an instance of this type of interpretation, given a specific ordering criteria</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element name="StratigraphicRank" type="xs:nonNegativeInteger" minOccurs="0" maxOccurs="1">
+				<xs:annotation>
+					<xs:documentation>Number of the stratigraphic rank on which the previous indices have been defined. </xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element name="Horizon" type="eml:DataObjectReference" minOccurs="1" maxOccurs="1"/>
+		</xs:sequence>
+	</xs:complexType>
+	<xs:complexType name="obj_FaultInterpretation">
+		<xs:annotation>
+			<xs:documentation>A type of boundary feature, this class contains the data describing an opinion about the characterization of the fault, which includes the attributes listed below. </xs:documentation>
+		</xs:annotation>
+		<xs:complexContent>
+			<xs:extension base="resqml:obj_BoundaryFeatureInterpretation">
+				<xs:sequence>
+					<xs:element name="IsListric" type="xs:boolean" minOccurs="0" maxOccurs="1">
+						<xs:annotation>
+							<xs:documentation>Indicates if the normal fault is listric or not. 
+BUSINESS RULE: Must be present if the fault is normal. Must not be present if the fault is not normal.</xs:documentation>
+						</xs:annotation>
+					</xs:element>
+					<xs:element name="MaximumThrow" type="eml:LengthMeasure" minOccurs="0" maxOccurs="1"/>
+					<xs:element name="MeanAzimuth" type="eml:PlaneAngleMeasure" minOccurs="0" maxOccurs="1"/>
+					<xs:element name="MeanDip" type="eml:PlaneAngleMeasure" minOccurs="0" maxOccurs="1"/>
+					<xs:element name="ThrowInterpretation" type="resqml:FaultThrow" minOccurs="0" maxOccurs="unbounded"/>
+				</xs:sequence>
+			</xs:extension>
+		</xs:complexContent>
+	</xs:complexType>
+	<xs:complexType name="obj_StratigraphicColumn">
+		<xs:annotation>
+			<xs:documentation>A global interpretation of the stratigraphy, which can be made up of several ranks of stratigraphic unit interpretations.
+
+BUSINESS RULE: All stratigraphic column rank interpretations that make up a stratigraphic column must be ordered by age.</xs:documentation>
+		</xs:annotation>
+		<xs:complexContent>
+			<xs:extension base="resqml:AbstractResqmlDataObject">
+				<xs:sequence>
+					<xs:element name="Ranks" type="eml:DataObjectReference" minOccurs="1" maxOccurs="unbounded"/>
+				</xs:sequence>
+			</xs:extension>
+		</xs:complexContent>
+	</xs:complexType>
+	<xs:complexType name="obj_GeobodyInterpretation">
+		<xs:annotation>
+			<xs:documentation>A type of rock feature, this class identifies if a rock feature is a geobody with any qualifications on the interpretation of the geobody. </xs:documentation>
+		</xs:annotation>
+		<xs:complexContent>
+			<xs:extension base="resqml:obj_GeologicUnitInterpretation">
+				<xs:sequence>
+					<xs:element name="Geobody3dShape" type="resqml:Geobody3dShape" minOccurs="0" maxOccurs="1"/>
+				</xs:sequence>
+			</xs:extension>
+		</xs:complexContent>
+	</xs:complexType>
+	<xs:complexType name="obj_BoundaryFeatureInterpretation">
+		<xs:annotation>
+			<xs:documentation>The main class for data describing an opinion of a surface feature between two volumes.
+
+BUSINESS RULE: The data-object reference (of type "interprets") must reference only a boundary feature.</xs:documentation>
+		</xs:annotation>
+		<xs:complexContent>
+			<xs:extension base="resqml:AbstractFeatureInterpretation">
+				<xs:sequence/>
+			</xs:extension>
+		</xs:complexContent>
+	</xs:complexType>
+	<xs:complexType name="AbstractContactInterpretationPart" abstract="true">
+		<xs:annotation>
+			<xs:documentation>The parent class of an atomic, linear, or surface geologic contact description.
+
+When the contact is between two surface representations (e.g., fault/fault, horizon/fault, horizon/horizon), then the contact is a line.
+When the contact is between two volume representations (stratigraphic unit/stratigraphic unit), then the contact is a surface.
+A contact interpretation can be associated with other contact interpretations in an organization interpretation.
+To define a contact representation, you must first define a contact interpretation. </xs:documentation>
+		</xs:annotation>
+		<xs:sequence>
+			<xs:element name="ContactRelationship" type="resqml:ContactRelationship" minOccurs="1" maxOccurs="1"/>
+			<xs:element name="Index" type="xs:nonNegativeInteger" minOccurs="1" maxOccurs="1">
+				<xs:annotation>
+					<xs:documentation>contact index</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element name="PartOf" type="eml:DataObjectReference" minOccurs="0" maxOccurs="1"/>
+		</xs:sequence>
+	</xs:complexType>
+	<xs:complexType name="obj_EarthModelInterpretation">
+		<xs:annotation>
+			<xs:documentation>An earth model interpretation has a specific role: it gathers a maximum of one of each of these other organization interpretations: structural organization interpretation, stratigraphic organization interpretation, and/or fluid organization interpretation.
+
+BUSINESS RULE: An earth model Interpretation interprets only an earth model feature. </xs:documentation>
+		</xs:annotation>
+		<xs:complexContent>
+			<xs:extension base="resqml:AbstractFeatureInterpretation">
+				<xs:sequence>
+					<xs:element name="StratigraphicOccurrences" type="eml:DataObjectReference" minOccurs="0" maxOccurs="unbounded"/>
+					<xs:element name="StratigraphicColumn" type="eml:DataObjectReference" minOccurs="0" maxOccurs="1"/>
+					<xs:element name="Structure" type="eml:DataObjectReference" minOccurs="0" maxOccurs="1"/>
+					<xs:element name="Fluid" type="eml:DataObjectReference" minOccurs="0" maxOccurs="1"/>
+				</xs:sequence>
+			</xs:extension>
+		</xs:complexContent>
+	</xs:complexType>
+	<xs:simpleType name="OrderingCriteria">
+		<xs:annotation>
+			<xs:documentation>Enumeration used to specify the order of an abstract stratigraphic organization or a structural organization interpretation. </xs:documentation>
+		</xs:annotation>
+		<xs:restriction base="xs:string">
+			<xs:enumeration value="age">
+				<xs:annotation>
+					<xs:documentation>From youngest to oldest period (increasing age).</xs:documentation>
+				</xs:annotation>
+			</xs:enumeration>
+			<xs:enumeration value="apparent depth">
+				<xs:annotation>
+					<xs:documentation>From surface to subsurface.</xs:documentation>
+				</xs:annotation>
+			</xs:enumeration>
+			<xs:enumeration value="measured depth">
+				<xs:annotation>
+					<xs:documentation>From well head to wellbore bottom/total depth (TD). </xs:documentation>
+				</xs:annotation>
+			</xs:enumeration>
+		</xs:restriction>
+	</xs:simpleType>
+	<xs:complexType name="FaultThrow">
+		<xs:annotation>
+			<xs:documentation>Identifies the characteristic of the throw of a fault interpretation.</xs:documentation>
+		</xs:annotation>
+		<xs:sequence>
+			<xs:element name="Throw" type="resqml:ThrowKind" minOccurs="1" maxOccurs="unbounded"/>
+			<xs:element name="HasOccuredDuring" type="resqml:TimeInterval" minOccurs="0" maxOccurs="1"/>
+		</xs:sequence>
+	</xs:complexType>
+	<xs:complexType name="obj_StratigraphicColumnRankInterpretation">
+		<xs:annotation>
+			<xs:documentation>A global hierarchy containing an ordered list of stratigraphic unit interpretations.</xs:documentation>
+		</xs:annotation>
+		<xs:complexContent>
+			<xs:extension base="resqml:AbstractStratigraphicOrganizationInterpretation">
+				<xs:sequence>
+					<xs:element name="Index" type="xs:nonNegativeInteger" minOccurs="1" maxOccurs="1"/>
+					<xs:element name="StratigraphicUnits" type="resqml:StratigraphicUnitInterpretationIndex" minOccurs="1" maxOccurs="unbounded"/>
+				</xs:sequence>
+			</xs:extension>
+		</xs:complexContent>
+	</xs:complexType>
+	<xs:simpleType name="Geobody3dShape">
+		<xs:annotation>
+			<xs:documentation>The enumerated attributes of a horizon.</xs:documentation>
+		</xs:annotation>
+		<xs:restriction base="xs:string">
+			<xs:enumeration value="dyke"/>
+			<xs:enumeration value="silt"/>
+			<xs:enumeration value="dome"/>
+			<xs:enumeration value="sheeth"/>
+			<xs:enumeration value="diapir"/>
+			<xs:enumeration value="batholith"/>
+			<xs:enumeration value="channel"/>
+			<xs:enumeration value="delta"/>
+			<xs:enumeration value="dune"/>
+			<xs:enumeration value="fan"/>
+			<xs:enumeration value="reef"/>
+			<xs:enumeration value="wedge"/>
+		</xs:restriction>
+	</xs:simpleType>
+	<xs:simpleType name="ContactVerb">
+		<xs:annotation>
+			<xs:documentation>Enumerations for the verbs that can be used to define the impact on the construction of the model of the geological event that created the binary contact. </xs:documentation>
+		</xs:annotation>
+		<xs:restriction base="xs:string">
+			<xs:enumeration value="splits">
+				<xs:annotation>
+					<xs:documentation>Specifies that the fault has opened a pair of fault lips in a horizon.</xs:documentation>
+				</xs:annotation>
+			</xs:enumeration>
+			<xs:enumeration value="interrupts">
+				<xs:annotation>
+					<xs:documentation>Operation on which an “unconformable” genetic boundary interpretation interrupts another genetic boundary interpretation or a stratigraphic unit interpretation. </xs:documentation>
+				</xs:annotation>
+			</xs:enumeration>
+			<xs:enumeration value="contains">
+				<xs:annotation>
+					<xs:documentation>Precise use of this attribute to be determined during testing.</xs:documentation>
+				</xs:annotation>
+			</xs:enumeration>
+			<xs:enumeration value="conforms">
+				<xs:annotation>
+					<xs:documentation>Defines surface contact between two stratigraphic units. </xs:documentation>
+				</xs:annotation>
+			</xs:enumeration>
+			<xs:enumeration value="erodes">
+				<xs:annotation>
+					<xs:documentation>Defines surface contact between two stratigraphic units.</xs:documentation>
+				</xs:annotation>
+			</xs:enumeration>
+			<xs:enumeration value="stops at">
+				<xs:annotation>
+					<xs:documentation>Defines if a tectonic boundary interpretation stops at another tectonic boundary interpretation. 
+Also used for genetic unit to frontier feature, fault to frontier feature, and sedimentary unit to frontier feature. </xs:documentation>
+				</xs:annotation>
+			</xs:enumeration>
+			<xs:enumeration value="crosses">
+				<xs:annotation>
+					<xs:documentation>Defines if a tectonic boundary interpretation crosses another tectonic boundary interpretation. </xs:documentation>
+				</xs:annotation>
+			</xs:enumeration>
+			<xs:enumeration value="includes">
+				<xs:annotation>
+					<xs:documentation>Precise use of this attribute will be determined during testing.</xs:documentation>
+				</xs:annotation>
+			</xs:enumeration>
+		</xs:restriction>
+	</xs:simpleType>
+	<xs:complexType name="AbstractStratigraphicOrganizationInterpretation" abstract="true">
+		<xs:annotation>
+			<xs:documentation>The main class that defines the relationships between the stratigraphic units and provides the stratigraphic hierarchy of the Earth.
+
+BUSINESS RULE: A stratigraphic organization must be in a ranked order from a lower rank to an upper rank. For example, it is possible to find previous unit containment relationships between several ranks.</xs:documentation>
+		</xs:annotation>
+		<xs:complexContent>
+			<xs:extension base="resqml:AbstractOrganizationInterpretation">
+				<xs:sequence>
+					<xs:element name="OrderingCriteria" type="resqml:OrderingCriteria" minOccurs="1" maxOccurs="1"/>
+				</xs:sequence>
+			</xs:extension>
+		</xs:complexContent>
+	</xs:complexType>
+	<xs:complexType name="RockFluidUnitInterpretationIndex">
+		<xs:annotation>
+			<xs:documentation>An element that allows ordering of fluid feature interpretations in a fluid organization interpretation.</xs:documentation>
+		</xs:annotation>
+		<xs:sequence>
+			<xs:element name="Index" type="xs:nonNegativeInteger" minOccurs="1" maxOccurs="1">
+				<xs:annotation>
+					<xs:documentation>Index of the fluid feature interpretation.</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element name="RockFluidUnit" type="eml:DataObjectReference" minOccurs="1" maxOccurs="1"/>
+		</xs:sequence>
+	</xs:complexType>
+	<xs:complexType name="obj_HorizonInterpretation">
+		<xs:annotation>
+			<xs:documentation>A type of boundary feature, the class specifies if the boundary feature is a horizon.
+
+Maximum Flooding Surface
+
+	- Transgressive Surface ( for erosion or intrusion ?)
+	- Sequence Boundary
+
+
+	- Stratigraphic Limit </xs:documentation>
+		</xs:annotation>
+		<xs:complexContent>
+			<xs:extension base="resqml:obj_BoundaryFeatureInterpretation">
+				<xs:sequence>
+					<xs:element name="BoundaryRelation" type="resqml:BoundaryRelation" minOccurs="0" maxOccurs="unbounded"/>
+					<xs:element name="SequenceStratigraphySurface" type="resqml:SequenceStratigraphySurface" minOccurs="0" maxOccurs="1"/>
+				</xs:sequence>
+			</xs:extension>
+		</xs:complexContent>
+	</xs:complexType>
+	<xs:simpleType name="ContactSide">
+		<xs:annotation>
+			<xs:documentation>Enumeration that specifies the location of the contacts, chosen from the attributes listed below. For example, if you specify contact between a horizon and a fault, you can specify if the contact is on the foot wall side or the hanging wall side of the fault, and if the fault is splitting both sides of a horizon or the older side only. 
+
+
+From Wikipedia: http://en.wikipedia.org/wiki/Foot_wall  
+CC-BY-SA-3.0-MIGRATED; GFDL-WITH-DISCLAIMERS
+Released under the GNU Free Documentation License.</xs:documentation>
+		</xs:annotation>
+		<xs:restriction base="xs:string">
+			<xs:enumeration value="footwall">
+				<xs:annotation>
+					<xs:documentation>The footwall side of the fault. See picture.</xs:documentation>
+				</xs:annotation>
+			</xs:enumeration>
+			<xs:enumeration value="hanging wall">
+				<xs:annotation>
+					<xs:documentation>The hanging wall side of the fault. See picture.</xs:documentation>
+				</xs:annotation>
+			</xs:enumeration>
+			<xs:enumeration value="north">
+				<xs:annotation>
+					<xs:documentation>For a vertical fault, specification of the north side.</xs:documentation>
+				</xs:annotation>
+			</xs:enumeration>
+			<xs:enumeration value="south">
+				<xs:annotation>
+					<xs:documentation>For a vertical fault, specification of the south side. </xs:documentation>
+				</xs:annotation>
+			</xs:enumeration>
+			<xs:enumeration value="east">
+				<xs:annotation>
+					<xs:documentation>For a vertical fault, specification of the east side. </xs:documentation>
+				</xs:annotation>
+			</xs:enumeration>
+			<xs:enumeration value="west">
+				<xs:annotation>
+					<xs:documentation>For a vertical fault, specification of the west side. </xs:documentation>
+				</xs:annotation>
+			</xs:enumeration>
+			<xs:enumeration value="younger">
+				<xs:annotation>
+					<xs:documentation>Indicates that a fault splits a genetic boundary on its younger side. </xs:documentation>
+				</xs:annotation>
+			</xs:enumeration>
+			<xs:enumeration value="older">
+				<xs:annotation>
+					<xs:documentation>Indicates that a fault splits a genetic boundary on its older side. </xs:documentation>
+				</xs:annotation>
+			</xs:enumeration>
+			<xs:enumeration value="both">
+				<xs:annotation>
+					<xs:documentation>Indicates that a fault splits both sides of a genetic feature.</xs:documentation>
+				</xs:annotation>
+			</xs:enumeration>
+		</xs:restriction>
+	</xs:simpleType>
+	<xs:simpleType name="GeologicUnitMaterialImplacement">
+		<xs:annotation>
+			<xs:documentation>The enumerated attributes of a horizon.</xs:documentation>
+		</xs:annotation>
+		<xs:restriction base="xs:string">
+			<xs:enumeration value="autochtonous"/>
+			<xs:enumeration value="allochtonous"/>
+		</xs:restriction>
+	</xs:simpleType>
+	<xs:complexType name="obj_GeologicUnitInterpretation">
+		<xs:annotation>
+			<xs:documentation>The main class for data describing an opinion of a volume-based geologic feature or unit.</xs:documentation>
+		</xs:annotation>
+		<xs:complexContent>
+			<xs:extension base="resqml:AbstractFeatureInterpretation">
+				<xs:sequence>
+					<xs:element name="GeologicUnitComposition" type="resqml:GeologicUnitComposition" minOccurs="0" maxOccurs="1"/>
+					<xs:element name="GeologicUnitMaterialImplacement" type="resqml:GeologicUnitMaterialImplacement" minOccurs="0" maxOccurs="1"/>
+				</xs:sequence>
+			</xs:extension>
+		</xs:complexContent>
+	</xs:complexType>
+	<xs:complexType name="obj_StratigraphicUnitInterpretation">
+		<xs:annotation>
+			<xs:documentation>Interpretation of a stratigraphic unit which includes the knowledge of the top, the bottom, the deposition mode.</xs:documentation>
+		</xs:annotation>
+		<xs:complexContent>
+			<xs:extension base="resqml:obj_GeologicUnitInterpretation">
+				<xs:sequence>
+					<xs:element name="DepositionMode" type="resqml:DepositionMode" minOccurs="0" maxOccurs="1">
+						<xs:annotation>
+							<xs:documentation>BUSINESS RULE / The Deposition mode for a Geological Unit MUST be conssitent with the Boundary Relations of A Genetic Boundary. If it is not the case the Boundary Relation declaration is retained.</xs:documentation>
+						</xs:annotation>
+					</xs:element>
+					<xs:element name="MaxThickness" type="eml:LengthMeasure" minOccurs="0" maxOccurs="1"/>
+					<xs:element name="MinThickness" type="eml:LengthMeasure" minOccurs="0" maxOccurs="1"/>
+				</xs:sequence>
+			</xs:extension>
+		</xs:complexContent>
+	</xs:complexType>
+	<xs:complexType name="obj_StratigraphicOccurrenceInterpretation">
+		<xs:annotation>
+			<xs:documentation>A local Interpretation—it could be along a well, on a 2D map, or on a 2D section or on a part of the global volume of an earth model—of a succession of rock feature elements.
+
+The stratigraphic column rank interpretation composing a stratigraphic occurrence can be ordered by the criteria listed in OrderingCriteria.
+
+BUSINESS RULE: A representation of a stratigraphic occurrence interpretation can be a wellbore marker or a wellbore frame.</xs:documentation>
+		</xs:annotation>
+		<xs:complexContent>
+			<xs:extension base="resqml:AbstractStratigraphicOrganizationInterpretation">
+				<xs:sequence>
+					<xs:element name="IsOccurrenceOf" type="eml:DataObjectReference" minOccurs="0" maxOccurs="1"/>
+					<xs:element name="GeologicUnitIndex" type="resqml:GeologicUnitInterpretationIndex" minOccurs="0" maxOccurs="unbounded"/>
+				</xs:sequence>
+			</xs:extension>
+		</xs:complexContent>
+	</xs:complexType>
+</xs:schema>

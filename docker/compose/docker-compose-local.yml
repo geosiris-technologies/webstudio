@@ -1,0 +1,74 @@
+version: "3.3"
+networks:
+  reseau:
+
+services:
+
+  ws_webstudio:
+    container_name: ws-public-webstudio-local
+    build: 
+      context: "../../"
+      dockerfile: docker/webstudio-local.dockerfile
+    ports:
+      - "80:80"
+      - "443:443"
+    environment:
+      webstudio_enableUserDB: false
+      webstudio_enableWorkspace: true
+      workspace_databaseType: s3
+      s3_localstackEndpoint: http://my-workspace:9000 
+      s3_accessKey: myAdminLogin
+      s3_secretKey: myAdminPassword
+      userdb_host: database-postgres
+      userdb_password: psql_password_Demo
+    networks:
+      reseau:
+        aliases:
+          - webstudio
+
+    volumes:
+      - ws_h5_data:/store-local
+  
+  minio:
+    container_name: ws-public-workspace-storage-minio-s3-local
+    image: bitnami/minio:latest
+    volumes:
+      - ws_workspace_data_minio:/webstudio-public-local/minio/data
+    environment:
+      MINIO_ROOT_USER: myAdminLogin
+      MINIO_ROOT_PASSWORD: myAdminPassword
+    ports:
+      - "9000:9000"
+      - "9001:9001"
+    networks:
+      reseau:
+        aliases:
+          - my-workspace
+
+  ws_dbuser:
+    container_name: ws-public-userdb-local
+    build: userDB/.
+    ports:
+      - "5432:5432"
+      - "8053:8080"
+    environment:
+      POSTGRES_PASSWORD: psql_password_Demo
+    networks:
+      reseau:
+        aliases:
+          - database-postgres
+    volumes:
+      - ws_dbuser_data:/webstudio-public-local/psql/data
+
+volumes:
+  ws_workspace_data_minio:
+    external: false
+  ws_dbuser_data:
+    external: false
+  ws_h5_data:
+    external: false
+
+
+# docker-compose -f docker-compose-local.yml -p webstudio-public-local pull
+# docker-compose -f docker-compose-local.yml -p webstudio-public-local build
+# docker-compose -f docker-compose-local.yml -p webstudio-public-local up -d

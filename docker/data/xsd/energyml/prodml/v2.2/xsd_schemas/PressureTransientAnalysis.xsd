@@ -1,0 +1,1121 @@
+<?xml version="1.0" encoding="utf-8"?>
+<xs:schema targetNamespace="http://www.energistics.org/energyml/data/prodmlv2" xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:prodml="http://www.energistics.org/energyml/data/prodmlv2" xmlns:eml="http://www.energistics.org/energyml/data/commonv2" elementFormDefault="qualified" version="2.2" attributeFormDefault="unqualified">
+	<!--														-->
+	<!-- Energistics License Agreement
+			This file is distributed under the Energistics Product License Agreement at
+			http://www.energistics.org/product-license-agreement
+			Use of this file constitutes agreement with the Energistics Product License Agreement.
+			Copyright (c) 2021 Energistics. All rights reserved.
+			Energistics, WITSML, PRODML and RESQML are trademarks or registered trademarks of Energistics.
+			-->
+	<!--														-->
+	<xs:annotation>
+		<xs:documentation>Schema of pressure transient analysis</xs:documentation>
+	</xs:annotation>
+	<!--														-->
+	<xs:import namespace="http://www.energistics.org/energyml/data/commonv2" schemaLocation="../../../common/v2.3/xsd_schemas/EmlAllObjects.xsd"/>
+	<!--														-->
+	<xs:include schemaLocation="FluidCharacterization.xsd"/>
+	<xs:include schemaLocation="PtaModels.xsd"/>
+	<xs:include schemaLocation="PtaParameters.xsd"/>
+	<xs:include schemaLocation="FlowTestActivity.xsd"/>
+	<xs:simpleType name="FluidPhaseKind">
+		<xs:restriction base="eml:TypeEnum">
+			<xs:enumeration value="multiphase gas+water"/>
+			<xs:enumeration value="multiphase oil+gas"/>
+			<xs:enumeration value="multiphase oil+water"/>
+			<xs:enumeration value="multiphase oil+water+gas"/>
+			<xs:enumeration value="single phase gas"/>
+			<xs:enumeration value="single phase oil"/>
+			<xs:enumeration value="single phase water"/>
+		</xs:restriction>
+	</xs:simpleType>
+	<xs:simpleType name="LogLogPressureTransform">
+		<xs:annotation>
+			<xs:documentation>Enum of the pressure axis transform of a log-log plot. "Pressure Function" refers to the pressure as transformed according to the choice of pseudo pressure.  See enum PressureNonLinearTransformType in the pvtForPTA section for details on this choice.</xs:documentation>
+		</xs:annotation>
+		<xs:restriction base="eml:TypeEnum">
+			<xs:enumeration value="delta pressure function">
+				<xs:annotation>
+					<xs:documentation>X axis is delta pressure function (which may be a pseudo pressure function).</xs:documentation>
+				</xs:annotation>
+			</xs:enumeration>
+			<xs:enumeration value="delta pressure function/rate">
+				<xs:annotation>
+					<xs:documentation>X axis is delta pressure function (which may be a pseudo pressure function) divided by flowrate.</xs:documentation>
+				</xs:annotation>
+			</xs:enumeration>
+			<xs:enumeration value="integral rate normal delta p funct/time">
+				<xs:annotation>
+					<xs:documentation>X axis is integral of rate normalized delta pressure function (which may be a pseudo pressure function) divided by time.</xs:documentation>
+				</xs:annotation>
+			</xs:enumeration>
+			<xs:enumeration value="rate normalized delta p function/rate">
+				<xs:annotation>
+					<xs:documentation>X axis is rate normalized delta pressure function (which may be a pseudo pressure function) divided by rate.</xs:documentation>
+				</xs:annotation>
+			</xs:enumeration>
+			<xs:enumeration value="other"/>
+		</xs:restriction>
+	</xs:simpleType>
+	<xs:simpleType name="LogLogTimeTransform">
+		<xs:annotation>
+			<xs:documentation>Enum of the time axis transform of a log-log plot. The choices are between different ways of dealing with superposition effects from variable flowrates.</xs:documentation>
+		</xs:annotation>
+		<xs:restriction base="eml:TypeEnum">
+			<xs:enumeration value="agarwal time"/>
+			<xs:enumeration value="delta time"/>
+			<xs:enumeration value="equivalent time cumulative/flowrate"/>
+			<xs:enumeration value="superposition time"/>
+		</xs:restriction>
+	</xs:simpleType>
+	<xs:simpleType name="PressureNonLinearTransformKind">
+		<xs:annotation>
+			<xs:documentation>Optional enum for gas or multiphase pseudo pressure analyses using pressure transforms.</xs:documentation>
+		</xs:annotation>
+		<xs:restriction base="eml:TypeEnum">
+			<xs:enumeration value="pressure (un-transformed)"/>
+			<xs:enumeration value="pressure squared"/>
+			<xs:enumeration value="gas pseudo-pressure"/>
+			<xs:enumeration value="normalised gas pseudo-pressure"/>
+			<xs:enumeration value="normalised multi-phase pseudo-pressure"/>
+		</xs:restriction>
+	</xs:simpleType>
+	<xs:simpleType name="PseudoPressureEffectApplied">
+		<xs:annotation>
+			<xs:documentation>Recurring enum used to list all the transforms which have been included in the pseudo pressure transform. If "Other" is selected, a comment should be used to explain.</xs:documentation>
+		</xs:annotation>
+		<xs:restriction base="eml:TypeEnum">
+			<xs:enumeration value="gas properties with pressure"/>
+			<xs:enumeration value="multiphase flow properties with pressure"/>
+			<xs:enumeration value="other"/>
+			<xs:enumeration value="variable desorption with pressure"/>
+			<xs:enumeration value="variable poroperm with pressure"/>
+		</xs:restriction>
+	</xs:simpleType>
+	<xs:simpleType name="TimeNonLinearTransformKind">
+		<xs:annotation>
+			<xs:documentation>Optional enum for gas pseudo time analyses using time transforms.</xs:documentation>
+		</xs:annotation>
+		<xs:restriction base="eml:TypeEnum">
+			<xs:enumeration value="material balance pseudo-time"/>
+			<xs:enumeration value="pseudo-time transform"/>
+			<xs:enumeration value="time (un-transformed)"/>
+		</xs:restriction>
+	</xs:simpleType>
+	<xs:complexType name="AbstractAnalysis" abstract="true">
+		<xs:annotation>
+			<xs:documentation>Forces a choice between pressure analysis (PTA) with flow as a boundary condition, and flowrate analysis (RTA) with pressure as a boundary condition. Applies to the measured data and to the simulation.</xs:documentation>
+		</xs:annotation>
+		<xs:sequence/>
+	</xs:complexType>
+	<xs:complexType name="AbstractDeconvolutionOutput" abstract="true">
+		<xs:annotation>
+			<xs:documentation>Forces a choice between: in some deconvolution methods, multiple individual deconvolution outputs are generated, each specific to a corresponding individual Test Period. In such cases multiple instances of the deconvolutionOutput element will recur. In other cases, there will be only one such output across all Test Periods.</xs:documentation>
+		</xs:annotation>
+		<xs:sequence/>
+	</xs:complexType>
+	<xs:complexType name="AbstractPtaPressureData" abstract="true">
+		<xs:annotation>
+			<xs:documentation>The abstract class of pressure data from which all flow test data components inherit.</xs:documentation>
+		</xs:annotation>
+		<xs:complexContent>
+			<xs:extension base="prodml:AbstractFlowTestData">
+				<xs:sequence>
+					<xs:element name="PressureChannel" type="eml:DataObjectReference" minOccurs="1" maxOccurs="1">
+						<xs:annotation>
+							<xs:documentation>A channel is a series of individual data points. A channel is comparable to a log curve; more generally, it is comparable to a tag in a process historian. Channels organize their data points according to one or more channel indexes, in this case, pressure.</xs:documentation>
+						</xs:annotation>
+					</xs:element>
+					<xs:element name="PressureDerivativeChannel" type="eml:DataObjectReference" minOccurs="0" maxOccurs="1">
+						<xs:annotation>
+							<xs:documentation>A channel is a series of individual data points. A channel is comparable to a log curve; more generally, it is comparable to a tag in a process historian. Channels organize their data points according to one or more channel indexes, in this case, derived from another pressure channel.</xs:documentation>
+						</xs:annotation>
+					</xs:element>
+					<xs:element name="PressureReferenceDepth" type="eml:LengthMeasure" minOccurs="0" maxOccurs="1">
+						<xs:annotation>
+							<xs:documentation>A depth relative to a base or datum.</xs:documentation>
+						</xs:annotation>
+					</xs:element>
+					<xs:element name="Datum" type="eml:ReferencePointKind" minOccurs="0" maxOccurs="1">
+						<xs:annotation>
+							<xs:documentation>The datum (which is an enum of type Datum in WITSML) from which the element PressureReferenceDepth is measured.</xs:documentation>
+						</xs:annotation>
+					</xs:element>
+				</xs:sequence>
+			</xs:extension>
+		</xs:complexContent>
+	</xs:complexType>
+	<xs:complexType name="AbstractRateHistory" abstract="true">
+		<xs:annotation>
+			<xs:documentation>Forces a choice between a single flowrate and producing time, or a time series of rates, for the Rate History of a pressure transient result.</xs:documentation>
+		</xs:annotation>
+		<xs:sequence/>
+	</xs:complexType>
+	<xs:complexType name="AnalysisLine">
+		<xs:annotation>
+			<xs:documentation>Describes a straight line on any analysis plot.</xs:documentation>
+		</xs:annotation>
+		<xs:sequence>
+			<xs:element name="LineName" type="eml:String64" minOccurs="1" maxOccurs="1">
+				<xs:annotation>
+					<xs:documentation>The name of the line.</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element name="Slope" type="xs:double" minOccurs="1" maxOccurs="1">
+				<xs:annotation>
+					<xs:documentation>The slope of the line.</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element name="Intercept" type="xs:double" minOccurs="1" maxOccurs="1">
+				<xs:annotation>
+					<xs:documentation>The intercept of the line.</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element name="Remark" type="eml:String2000" minOccurs="0" maxOccurs="1">
+				<xs:annotation>
+					<xs:documentation>Textual description about the value of this field.</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+		</xs:sequence>
+	</xs:complexType>
+	<xs:complexType name="ChannelFlowrateData">
+		<xs:annotation>
+			<xs:documentation>This choice should be made when the Rate History is a multiple rate history, ie a time series of flowrates.</xs:documentation>
+		</xs:annotation>
+		<xs:complexContent>
+			<xs:extension base="prodml:AbstractRateHistory">
+				<xs:sequence>
+					<xs:element name="InputFlowrate" type="prodml:AbstractPtaFlowData" minOccurs="1" maxOccurs="1">
+						<xs:annotation>
+							<xs:documentation>Flow data.</xs:documentation>
+						</xs:annotation>
+					</xs:element>
+				</xs:sequence>
+			</xs:extension>
+		</xs:complexContent>
+	</xs:complexType>
+	<xs:complexType name="CompressibilityParameters">
+		<xs:annotation>
+			<xs:documentation>Compressibility and saturation values</xs:documentation>
+		</xs:annotation>
+		<xs:sequence>
+			<xs:element name="FormationCompressibility" type="eml:ReciprocalPressureMeasureExt" minOccurs="0" maxOccurs="1">
+				<xs:annotation>
+					<xs:documentation>Formation Compressibility of the reservoir.</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element name="OilPhaseSaturation" type="eml:VolumePerVolumeMeasure" minOccurs="0" maxOccurs="1">
+				<xs:annotation>
+					<xs:documentation>Oil Phase Saturation in the reservoir.</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element name="GasPhaseSaturation" type="eml:VolumePerVolumeMeasure" minOccurs="0" maxOccurs="1">
+				<xs:annotation>
+					<xs:documentation>Gas Phase Saturation in the reservoir.</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element name="WaterPhaseSaturation" type="eml:VolumePerVolumeMeasure" minOccurs="0" maxOccurs="1">
+				<xs:annotation>
+					<xs:documentation>Water Phase Saturation in the reservoir.</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element name="TotalCompressibility" type="eml:ReciprocalPressureMeasureExt" minOccurs="0" maxOccurs="1">
+				<xs:annotation>
+					<xs:documentation>Total system compressibility - formation compressibility + saturation-weighted fluid compressibilities.</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+		</xs:sequence>
+	</xs:complexType>
+	<xs:complexType name="DeconvolutionMultipleOutput">
+		<xs:annotation>
+			<xs:documentation>This element is chosen when separate individual deconvolution outputs apply to corresponding individual Test Periods.</xs:documentation>
+		</xs:annotation>
+		<xs:complexContent>
+			<xs:extension base="prodml:AbstractDeconvolutionOutput">
+				<xs:sequence>
+					<xs:element name="TestPeriodOutputRefId" type="eml:String64" minOccurs="1" maxOccurs="1">
+						<xs:annotation>
+							<xs:documentation>Where deconvolution has been performed to generate deconvolved pressure over multiple time periods, this is the uid of the time period for this deconvolved pressure channel.</xs:documentation>
+						</xs:annotation>
+					</xs:element>
+					<xs:element name="DeconvolutionMultipleOutput" type="prodml:DeconvolutionOutput" minOccurs="1" maxOccurs="1"/>
+				</xs:sequence>
+			</xs:extension>
+		</xs:complexContent>
+	</xs:complexType>
+	<xs:complexType name="DeconvolutionOutput">
+		<xs:annotation>
+			<xs:documentation>This contains the output curves from a deconvolution. </xs:documentation>
+		</xs:annotation>
+		<xs:sequence>
+			<xs:element name="DeconvolvedPressure" type="prodml:DeconvolvedPressureData" minOccurs="0" maxOccurs="1">
+				<xs:annotation>
+					<xs:documentation>The result of deconvolution: a deconvolved pressure which corresponds to the constant rate drawdown response at the reference flow condition.</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element name="DeconvolutionReferenceFlowrateValue" type="eml:VolumePerTimeMeasure" minOccurs="1" maxOccurs="1">
+				<xs:annotation>
+					<xs:documentation>The reference flow condition at which the corresponding deconvolved pressure constant drawdown response is calculated.</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+		</xs:sequence>
+	</xs:complexType>
+	<xs:complexType name="DeconvolutionSingleOutput">
+		<xs:annotation>
+			<xs:documentation>This element is chosen when a single deconvolution output applies across all Test Periods.</xs:documentation>
+		</xs:annotation>
+		<xs:complexContent>
+			<xs:extension base="prodml:AbstractDeconvolutionOutput">
+				<xs:sequence>
+					<xs:element name="DeconvolutionSingleOutput" type="prodml:DeconvolutionOutput" minOccurs="1" maxOccurs="1"/>
+				</xs:sequence>
+			</xs:extension>
+		</xs:complexContent>
+	</xs:complexType>
+	<xs:complexType name="DeconvolvedFlowData">
+		<xs:complexContent>
+			<xs:extension base="prodml:AbstractPtaFlowData">
+				<xs:sequence>
+					<xs:element name="Deconvolution" type="eml:DataObjectReference" minOccurs="1" maxOccurs="1">
+						<xs:annotation>
+							<xs:documentation>In cases where the abstract Pta pressure data has type: deconvolved pressure data, this is a reference, using data object reference, to the Deconvolution data-object containing details of the deconvolution process.</xs:documentation>
+						</xs:annotation>
+					</xs:element>
+				</xs:sequence>
+			</xs:extension>
+		</xs:complexContent>
+	</xs:complexType>
+	<xs:complexType name="DeconvolvedPressureData">
+		<xs:complexContent>
+			<xs:extension base="prodml:AbstractPtaPressureData">
+				<xs:sequence>
+					<xs:element name="Deconvolution" type="eml:DataObjectReference" minOccurs="1" maxOccurs="1">
+						<xs:annotation>
+							<xs:documentation>In cases where the abstract Pta pressure data has type: deconvolved pressure data, this is a reference, using data object reference, to the Deconvolution data-object containing details of the deconvolution process.</xs:documentation>
+						</xs:annotation>
+					</xs:element>
+				</xs:sequence>
+			</xs:extension>
+		</xs:complexContent>
+	</xs:complexType>
+	<xs:complexType name="DistributedParametersSubModel">
+		<xs:annotation>
+			<xs:documentation>For a Reservoir model in which parameters are spatially distributed, this is the model sub class which identifies which parameters have been spatially sampled, and provides a reference to the RESQML object containing the sampled data.  This is expected to be a numerical model.</xs:documentation>
+		</xs:annotation>
+		<xs:sequence>
+			<xs:element name="IsPermeabilityGridded" type="xs:boolean" minOccurs="1" maxOccurs="1">
+				<xs:annotation>
+					<xs:documentation>Boolean. If True then parameter Permeability is defined by values distributed on a grid in a RESQML model.  In this case the PermeabilityArrayRefIDelement will provide the location of the gridded properties in the RESQML model.</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element name="PermeabilityArrayRefID" type="prodml:ResqmlModelRef" minOccurs="0" maxOccurs="1">
+				<xs:annotation>
+					<xs:documentation>Reference to RESQML grid containing Permeability values.</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element name="IsThicknessGridded" type="xs:boolean" minOccurs="1" maxOccurs="1">
+				<xs:annotation>
+					<xs:documentation>Boolean. If True then parameter Thickness is defined by values distributed on a grid in a RESQML model.  In this case the ThicknessArrayRefID element will provide the location of the gridded properties in the RESQML model.</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element name="ThicknessArrayRefID" type="prodml:ResqmlModelRef" minOccurs="0" maxOccurs="1">
+				<xs:annotation>
+					<xs:documentation>Reference to RESQML grid containing Thickness values.</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element name="IsPorosityGridded" type="xs:boolean" minOccurs="1" maxOccurs="1">
+				<xs:annotation>
+					<xs:documentation>Boolean. If True then parameter Porosity is defined by values distributed on a grid in a RESQML model.  In this case the PorosityArrayRefID element will provide the location of the gridded properties in the RESQML model.</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element name="PorosityArrayRefID" type="prodml:ResqmlModelRef" minOccurs="0" maxOccurs="1">
+				<xs:annotation>
+					<xs:documentation>Reference to RESQML grid containing Porosity values.</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element name="IsDepthGridded" type="xs:boolean" minOccurs="1" maxOccurs="1">
+				<xs:annotation>
+					<xs:documentation>Boolean. If True then parameter Depth is defined by values distributed on a grid in a RESQML model.  In this case the DepthArrayRefID element will provide the location of the gridded properties in the RESQML model.</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element name="DepthArrayRefID" type="prodml:ResqmlModelRef" minOccurs="0" maxOccurs="1">
+				<xs:annotation>
+					<xs:documentation>Reference to RESQML grid containing Depth values.</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element name="IsKvToKrGridded" type="xs:boolean" minOccurs="1" maxOccurs="1">
+				<xs:annotation>
+					<xs:documentation>Boolean. If True then parameter KvToKr is defined by values distributed on a grid in a RESQML model.  In this case the KvToKrArrayRefID element will provide the location of the gridded properties in the RESQML model.</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element name="KvToKrArrayRefID" type="prodml:ResqmlModelRef" minOccurs="0" maxOccurs="1">
+				<xs:annotation>
+					<xs:documentation>Reference to RESQML grid containing KvToKr values.</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element name="IsKxToKyGridded" type="xs:boolean" minOccurs="1" maxOccurs="1">
+				<xs:annotation>
+					<xs:documentation>Boolean. If True then parameter KxToKy is defined by values distributed on a grid in a RESQML model.  In this case the KxToKyArrayRefID element will provide the location of the gridded properties in the RESQML model.</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element name="KxToKyArrayRefID" type="prodml:ResqmlModelRef" minOccurs="0" maxOccurs="1">
+				<xs:annotation>
+					<xs:documentation>Reference to RESQML grid containing KxToKy values.</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+		</xs:sequence>
+	</xs:complexType>
+	<xs:complexType name="InterferingFlowTestInterval">
+		<xs:annotation>
+			<xs:documentation>Measurements pertaining to the interfering flow, in the case of an interference test.</xs:documentation>
+		</xs:annotation>
+		<xs:sequence>
+			<xs:element name="FlowTestMeasurementSetRef" type="eml:String64" minOccurs="1" maxOccurs="1">
+				<xs:annotation>
+					<xs:documentation>A reference (using uid) to the flow test measurement set which contains the data concerning the interfering flow, in the case of an interference test. (This other flow test measurement set will be in the same Flow Test Activity top level object and will contain the location, flow rates etc of the intefering flow).</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element name="InterferingFlowrateRef" type="eml:String64" minOccurs="1" maxOccurs="1">
+				<xs:annotation>
+					<xs:documentation>A reference (using uid) to the flow rate which is the measurement of the interfering flow, in the case of an interference test.</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element name="TestPeriodRef" type="eml:String64" minOccurs="0" maxOccurs="unbounded">
+				<xs:annotation>
+					<xs:documentation>A reference (using uid) to the test period(s) whose effect the interfering flow is being allowed for, in the case of an interference test. If unspecified, it should be assumed that all test periods can potentially give rise to an interference effect.</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element name="SimulatedInterferencePressure" type="prodml:OutputPressureData" minOccurs="1" maxOccurs="1">
+				<xs:annotation>
+					<xs:documentation>The simulated interference pressure (which will be at the observation interval), in the case of an interference test.</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element name="SimulatedInterferencePressureRemoved" type="xs:boolean" minOccurs="1" maxOccurs="1">
+				<xs:annotation>
+					<xs:documentation>A flag to indicate if the Simulated Interference Pressure for this intefering flow interval, has been removed from the measured data. If true, then the corrected measured data should be analysable without having to consider the intererence effect further. </xs:documentation>
+				</xs:annotation>
+			</xs:element>
+		</xs:sequence>
+		<xs:attribute name="uid" use="optional" type="eml:String64">
+			<xs:annotation>
+				<xs:documentation>Unique identifier for this instance of the object.</xs:documentation>
+			</xs:annotation>
+		</xs:attribute>
+	</xs:complexType>
+	<xs:complexType name="InternalFaultSubModel">
+		<xs:annotation>
+			<xs:documentation>Internal Fault sub model describes each internal fault within the reservoir. There will be as many instances of this as there are internal faults.  This is expected to be a numerical model.</xs:documentation>
+		</xs:annotation>
+		<xs:sequence>
+			<xs:element name="IsLeaky" type="xs:boolean" minOccurs="1" maxOccurs="1">
+				<xs:annotation>
+					<xs:documentation>Boolean - value of True means that the fault is leaky and therefore that the parameter Leakage should be used to quantify this.</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element name="TransmissibilityReductionRatioOfLinearFront " type="prodml:TransmissibilityReductionFactorOfLinearFront" minOccurs="0" maxOccurs="1">
+				<xs:annotation>
+					<xs:documentation>The transmissibility reduction factor of a fault in a Linear Composite model where the boundary of the inner and outer zones is a leaky fault. If T is the complete transmissibility which would be computed without any fault between point A and point B (T is a function of permeability, etc), then Tf = T * leakage. Therefore: leakage = 1 implies that the fault is not a barrier to flow at all, leakage = 0 implies that the fault is sealing (no transmissibility anymore at all between points A and B).</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element name="IsConductive" type="xs:boolean" minOccurs="1" maxOccurs="1">
+				<xs:annotation>
+					<xs:documentation>Boolean - value of True means that the fault is conductive. If the boolean IsFiniteConductive is also True, then the parameter Conductivity should be used to quantify this. If IsFiniteConductive is False, then the fault is regarded as infinite conductive, and the parameter Conductivity is not required.</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element name="IsFiniteConductive" type="xs:boolean" minOccurs="1" maxOccurs="1">
+				<xs:annotation>
+					<xs:documentation>Boolean - value of True means that the fault is finite conductive and the parameter Conductivity should be used to quantify this. If IsFiniteConductive is False, then the fault is regarded as infinite conductive, and the parameter Conductivity is not required.</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element name="Conductivity" type="prodml:FractureConductivity" minOccurs="0" maxOccurs="1">
+				<xs:annotation>
+					<xs:documentation>For a finite conductivity fault, the conductivity of the fault (which may be regarded as a fracture), equal to Fracture Width * Fracture Permeability.</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element name="FaultRefID" type="prodml:ResqmlModelRef" minOccurs="1" maxOccurs="1">
+				<xs:annotation>
+					<xs:documentation>The reference to a RESQML model representation of this fault.</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+		</xs:sequence>
+	</xs:complexType>
+	<xs:complexType name="LayerModel">
+		<xs:annotation>
+			<xs:documentation>Contains the data about a layer model for PTA or Inflow analysis. This class contains common parameters and then model sections each report the parameter values for the pressure transient model used to describe the later. These are: near wellbore, reservoir, and boundary sections. Example: closed reservoir boundary section model will report 4 distances to boundaries.  </xs:documentation>
+		</xs:annotation>
+		<xs:sequence>
+			<xs:element name="Name" type="eml:String64" minOccurs="1" maxOccurs="1">
+				<xs:annotation>
+					<xs:documentation>The name of the layer for which this later model applies.  Probably a geologically meaningful name. </xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element name="AggregateLayersModel" type="xs:boolean" minOccurs="1" maxOccurs="1">
+				<xs:annotation>
+					<xs:documentation>If set to True, indicates that this layer represents the analysis of the total number of individual layers at this Test Location. Example: it will represent the total Kh (permeability-thickness product) and Total Skin of the Test Location. If False then this layer represents just one of the total number of reservoir layer(s) tested at this Test Location.</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element name="GeologicFeature" type="eml:DataObjectReference" minOccurs="0" maxOccurs="1">
+				<xs:annotation>
+					<xs:documentation>The name of the geology feature (typically, layer or layers) to which this model layer corresponds.</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element name="MdTopLayer" type="eml:MeasuredDepth" minOccurs="0" maxOccurs="1">
+				<xs:annotation>
+					<xs:documentation>The measured depth top of this layer, as seen along the wellbore.</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element name="MdBottomLayer" type="eml:MeasuredDepth" minOccurs="0" maxOccurs="1">
+				<xs:annotation>
+					<xs:documentation>The measured depth bottom of this layer, as seen along the wellbore.</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element name="LayerProductivityIndex" type="eml:VolumePerTimePerPressureMeasure" minOccurs="0" maxOccurs="1">
+				<xs:annotation>
+					<xs:documentation>This is the productivity Index of the layer, expressed in terms of flowrate/pressure.</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element name="LayerTurbulentFlowCoefficient" type="eml:PressurePerFlowrateSquaredMeasure" minOccurs="0" maxOccurs="1">
+				<xs:annotation>
+					<xs:documentation>This is the coefficient for turbulent flow pressure drop in the Inflow Performance Relationship.  In which dP=J*Q+F*Q**2. This parameter is F and the Productivity Index is J.</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element name="LayerLaminarFlowCoefficient" type="eml:PressurePerFlowrateMeasure" minOccurs="0" maxOccurs="1">
+				<xs:annotation>
+					<xs:documentation>This is the coefficient for laminar flow pressure drop.</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element name="NearWellboreModel" type="prodml:NearWellboreBaseModel" minOccurs="0" maxOccurs="1">
+				<xs:annotation>
+					<xs:documentation>For this layer model, the Near Wellbore Model which is used - which will be a child node of this layer model.</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element name="ReservoirModel" type="prodml:ReservoirBaseModel" minOccurs="0" maxOccurs="1">
+				<xs:annotation>
+					<xs:documentation>For this layer model, the Reservoir Model which is used - which will be a child node of this layer model.</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element name="BoundaryModel" type="prodml:BoundaryBaseModel" minOccurs="0" maxOccurs="1">
+				<xs:annotation>
+					<xs:documentation>For this layer model, the Boundary Model which is used - which will be a child node of this layer model.</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element name="LayerToLayerConnection" type="prodml:LayerToLayerConnection" minOccurs="0" maxOccurs="unbounded"/>
+		</xs:sequence>
+		<xs:attribute name="uid" use="optional" type="eml:String64">
+			<xs:annotation>
+				<xs:documentation>Unique identifier for this instance of the object.</xs:documentation>
+			</xs:annotation>
+		</xs:attribute>
+	</xs:complexType>
+	<xs:complexType name="LayerToLayerConnection">
+		<xs:annotation>
+			<xs:documentation>Data about other layers to which this layer connects in terms of a flow connection. Comprises the identity of the other layer, and the inter-layer flow coefficient.</xs:documentation>
+		</xs:annotation>
+		<xs:sequence>
+			<xs:element name="ConnectedLayerRefID" type="eml:String64" minOccurs="1" maxOccurs="1">
+				<xs:annotation>
+					<xs:documentation>Reference to another layer to which this layer is connected for flow.</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element name="InterLayerConnectivity" type="prodml:InterporosityFlowParameter" minOccurs="1" maxOccurs="1">
+				<xs:annotation>
+					<xs:documentation>The Flow Parameter value between the two Layers.</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+		</xs:sequence>
+	</xs:complexType>
+	<xs:complexType name="LocationIn2D">
+		<xs:annotation>
+			<xs:documentation>A location expressed in terms of X,Y coordinates of some part of a PTA object.</xs:documentation>
+		</xs:annotation>
+		<xs:sequence>
+			<xs:element name="CoordinateX" type="eml:LengthMeasure" minOccurs="1" maxOccurs="1">
+				<xs:annotation>
+					<xs:documentation>X coordinate of a point.</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element name="CoordinateY" type="eml:LengthMeasure" minOccurs="1" maxOccurs="1">
+				<xs:annotation>
+					<xs:documentation>Y coordinate of a point.</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+		</xs:sequence>
+	</xs:complexType>
+	<xs:complexType name="LogLogAnalysis">
+		<xs:annotation>
+			<xs:documentation>Contains the result data needed to plot or overlay measured data and simulated data for PTA in a standard log-log axes plot.</xs:documentation>
+		</xs:annotation>
+		<xs:sequence>
+			<xs:element name="AnalysisPressure" type="prodml:AbstractPtaPressureData" minOccurs="1" maxOccurs="1">
+				<xs:annotation>
+					<xs:documentation>The transformed pressure and derivative (contained in referenced Channels) (to log-log transform) used in this log-log analysis.</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element name="LogLogTimeDataTransform" type="prodml:LogLogTimeTransform" minOccurs="1" maxOccurs="1">
+				<xs:annotation>
+					<xs:documentation>Describes the type of transform applied to the time axis of the log log plot. Enum. Options: delta-time (ie, no tranform) and various superposition time functions (ie, time transformed to represent equivalent drawdown time using superposition).</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element name="LogLogPressureTransform" type="prodml:LogLogPressureTransform" minOccurs="1" maxOccurs="1">
+				<xs:annotation>
+					<xs:documentation>Describes the type of transform applied to the pressure axis of the log log plot. Enum. Options: pressure, and various pressure/flowrate functions.</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element name="DerivativeSmoothingFactorL" type="eml:DimensionlessMeasure" minOccurs="0" maxOccurs="1">
+				<xs:annotation>
+					<xs:documentation>The smoothing factor for the derivative curve. Common symbolized as L.</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element name="Remark" type="eml:String2000" minOccurs="0" maxOccurs="1">
+				<xs:annotation>
+					<xs:documentation>Textual description about the value of this field.</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element name="AnalysisLine" type="prodml:AnalysisLine" minOccurs="0" maxOccurs="unbounded"/>
+		</xs:sequence>
+	</xs:complexType>
+	<xs:complexType name="MeasuredFlowData">
+		<xs:annotation>
+			<xs:documentation>Pressure data measured during the flow test</xs:documentation>
+		</xs:annotation>
+		<xs:complexContent>
+			<xs:extension base="prodml:AbstractPtaFlowData">
+				<xs:sequence/>
+			</xs:extension>
+		</xs:complexContent>
+	</xs:complexType>
+	<xs:complexType name="MeasuredPressureData">
+		<xs:annotation>
+			<xs:documentation>Pressure data measured during the flow test</xs:documentation>
+		</xs:annotation>
+		<xs:complexContent>
+			<xs:extension base="prodml:AbstractPtaPressureData">
+				<xs:sequence/>
+			</xs:extension>
+		</xs:complexContent>
+	</xs:complexType>
+	<xs:complexType name="OutputFlowData">
+		<xs:annotation>
+			<xs:documentation>.</xs:documentation>
+		</xs:annotation>
+		<xs:complexContent>
+			<xs:extension base="prodml:AbstractPtaFlowData">
+				<xs:sequence/>
+			</xs:extension>
+		</xs:complexContent>
+	</xs:complexType>
+	<xs:complexType name="OutputPressureData">
+		<xs:annotation>
+			<xs:documentation>.</xs:documentation>
+		</xs:annotation>
+		<xs:complexContent>
+			<xs:extension base="prodml:AbstractPtaPressureData">
+				<xs:sequence/>
+			</xs:extension>
+		</xs:complexContent>
+	</xs:complexType>
+	<xs:complexType name="PreProcessedFlowData">
+		<xs:complexContent>
+			<xs:extension base="prodml:AbstractPtaFlowData">
+				<xs:sequence>
+					<xs:element name="PreProcess" type="eml:DataObjectReference" minOccurs="1" maxOccurs="1">
+						<xs:annotation>
+							<xs:documentation>In cases where the abstract Pta pressure data has type: deconvolved pressure data, this is a reference, using data object reference, to the PtaDataPreProcess data-object containing details of the pre-processing applied.</xs:documentation>
+						</xs:annotation>
+					</xs:element>
+				</xs:sequence>
+			</xs:extension>
+		</xs:complexContent>
+	</xs:complexType>
+	<xs:complexType name="PreProcessedPressureData">
+		<xs:complexContent>
+			<xs:extension base="prodml:AbstractPtaPressureData">
+				<xs:sequence>
+					<xs:element name="PreProcess" type="eml:DataObjectReference" minOccurs="1" maxOccurs="1">
+						<xs:annotation>
+							<xs:documentation>In cases where the abstract Pta pressure data has type: deconvolved pressure data, this is a reference, using data object reference, to the PtaDataPreProcess data-object containing details of the pre-processing applied.</xs:documentation>
+						</xs:annotation>
+					</xs:element>
+				</xs:sequence>
+			</xs:extension>
+		</xs:complexContent>
+	</xs:complexType>
+	<xs:element name="PressureTransientAnalysis" type="prodml:PressureTransientAnalysis" substitutionGroup="eml:AbstractDataObject"/>
+	<xs:complexType name="PressureTransientAnalysis">
+		<xs:annotation>
+			<xs:documentation>Contains the data about the analysis and the model used, in a PTA Analysis.  An Analysis may be a pressure transient (PTA), rate transient (RTA) or Test Design, depending on which data is supplied. This object contains common parameters. The Analysis has one or more Test Location Analysis elements and each reports the model details for one Test Location. </xs:documentation>
+		</xs:annotation>
+		<xs:complexContent>
+			<xs:extension base="eml:AbstractObject">
+				<xs:sequence>
+					<xs:element name="ModelName" type="eml:String2000" minOccurs="1" maxOccurs="1">
+						<xs:annotation>
+							<xs:documentation>The name of the model used - textual description of the whole model. No semantic meaning. Example: "Dual porosity with 2 parallel faults".  The full details of the model are in the Wellbore Model and layerModel sections of the TestLocationAnalysis.</xs:documentation>
+						</xs:annotation>
+					</xs:element>
+					<xs:element name="TimeAppliesFrom" type="eml:TimeStamp" minOccurs="0" maxOccurs="1">
+						<xs:annotation>
+							<xs:documentation>The time this Analysis was created (ie, the time of analysis, not the time of data acquisition).</xs:documentation>
+						</xs:annotation>
+					</xs:element>
+					<xs:element name="MethodName" type="eml:String2000" minOccurs="0" maxOccurs="1">
+						<xs:annotation>
+							<xs:documentation>The name of the method used for analysis - textual description. No semantic meaning. Example: "non-linear regression".</xs:documentation>
+						</xs:annotation>
+					</xs:element>
+					<xs:element name="TimeAppliesTo" type="eml:TimeStamp" minOccurs="0" maxOccurs="1">
+						<xs:annotation>
+							<xs:documentation>The time this Analysis was finished (ie, the time of analysis, not the time of data acquisition).</xs:documentation>
+						</xs:annotation>
+					</xs:element>
+					<xs:element name="IsNumericalAnalysis" type="xs:boolean" minOccurs="0" maxOccurs="1">
+						<xs:annotation>
+							<xs:documentation>Set to TRUE if the Analysis is done with numerical modeling.</xs:documentation>
+						</xs:annotation>
+					</xs:element>
+					<xs:element name="FluidCharacterization" type="eml:DataObjectReference" minOccurs="0" maxOccurs="1">
+						<xs:annotation>
+							<xs:documentation>A reference, using data object reference, to a FluidCharacterization data-object containing the fluid parameters for this PTA.</xs:documentation>
+						</xs:annotation>
+					</xs:element>
+					<xs:element name="NumericalPtaModel" type="eml:DataObjectReference" minOccurs="0" maxOccurs="1">
+						<xs:annotation>
+							<xs:documentation>A reference, using data object reference, to a RESQML data-object containing the root level data for a numerical PTA model.</xs:documentation>
+						</xs:annotation>
+					</xs:element>
+					<xs:element name="FlowTestActivity" type="eml:DataObjectReference" minOccurs="1" maxOccurs="1">
+						<xs:annotation>
+							<xs:documentation>Abstract wellbore response model from which the other wellbore response model types are derived.</xs:documentation>
+						</xs:annotation>
+					</xs:element>
+					<xs:element name="PrincipalFlowTestMeasurementSetRef" type="eml:String64" minOccurs="0" maxOccurs="1">
+						<xs:annotation>
+							<xs:documentation>A reference (using uid) to the flow test measurement set which contains the data concerning the principal test location, in the case of an interference test. For standard (non-interference) tests, this is not needed to be filled in, since there is only one flow test location and therefore only one  flow test measurement set.</xs:documentation>
+						</xs:annotation>
+					</xs:element>
+					<xs:element name="PrincipalTestPeriodRef" type="eml:String64" minOccurs="1" maxOccurs="unbounded">
+						<xs:annotation>
+							<xs:documentation>A reference (using uid) to the test period(s) whose effect the analysis is being performed on.  In the case of an interference test, this reference is to the test period(s) of the principal flow test location. The test periods of interfering flow test locations are included under the Interfering Flow Test Interval element(s).</xs:documentation>
+						</xs:annotation>
+					</xs:element>
+					<xs:element name="WellboreModel" type="prodml:WellboreBaseModel" minOccurs="0" maxOccurs="1">
+						<xs:annotation>
+							<xs:documentation>Abstract wellbore response model from which the other wellbore response model types are derived.</xs:documentation>
+						</xs:annotation>
+					</xs:element>
+					<xs:element name="LayerModel" type="prodml:LayerModel" minOccurs="0" maxOccurs="unbounded">
+						<xs:annotation>
+							<xs:documentation>Contains the data about a layer model for PTA or Inflow analysis. This class contains common parameters and then model sections each report the parameter values for the pressure transient model used to describe the later. These are: near wellbore, reservoir, and boundary sections. Example: closed reservoir boundary section model will report 4 distances to boundaries.  </xs:documentation>
+						</xs:annotation>
+					</xs:element>
+					<xs:element name="FluidPhaseAnalysisKind" type="prodml:FluidPhaseKind" minOccurs="1" maxOccurs="1">
+						<xs:annotation>
+							<xs:documentation>An enum of which phases are being analysed by this analysis (i.e., single phase or multi-phase analyses).</xs:documentation>
+						</xs:annotation>
+					</xs:element>
+					<xs:element name="PressureNonLinearTransformKind" type="prodml:PressureNonLinearTransformKind" minOccurs="1" maxOccurs="1">
+						<xs:annotation>
+							<xs:documentation>Enum for gas or multiphase pseudo pressure analyses using pressure transforms. If pseudo pressure, then further details on the kind of pseudo pressure will be found in the Pseudo Pressure Effect Applied element.</xs:documentation>
+						</xs:annotation>
+					</xs:element>
+					<xs:element name="PseudoPressureEffectApplied" type="prodml:PseudoPressureEffectApplied" minOccurs="0" maxOccurs="1">
+						<xs:annotation>
+							<xs:documentation>Recurring enum used to list all the transforms which have been included in the pseudo pressure transform. If "Other" is selected, a comment should be used to explain.</xs:documentation>
+						</xs:annotation>
+					</xs:element>
+					<xs:element name="TimeNonLinearTransformKind" type="prodml:TimeNonLinearTransformKind" minOccurs="1" maxOccurs="1">
+						<xs:annotation>
+							<xs:documentation>Enum for gas pseudo time analyses using time transforms.</xs:documentation>
+						</xs:annotation>
+					</xs:element>
+					<xs:element name="Remark" type="eml:String2000" minOccurs="0" maxOccurs="1">
+						<xs:annotation>
+							<xs:documentation>Textual description about the value of this field.</xs:documentation>
+						</xs:annotation>
+					</xs:element>
+					<xs:element name="Analysis" type="prodml:AbstractAnalysis" minOccurs="0" maxOccurs="1"/>
+					<xs:element name="CompressibilityParameters" type="prodml:CompressibilityParameters" minOccurs="0" maxOccurs="1"/>
+					<xs:element name="FlowTestActivity" type="eml:DataObjectReference" minOccurs="1" maxOccurs="1">
+						<xs:annotation>
+							<xs:documentation>Superclass of possible flow test activities: drill stem, production transient, interwell, and others.</xs:documentation>
+						</xs:annotation>
+					</xs:element>
+					<xs:element name="InterferingFlowTestInterval" type="prodml:InterferingFlowTestInterval" minOccurs="0" maxOccurs="unbounded">
+						<xs:annotation>
+							<xs:documentation>Measurements pertaining to the interfering flow, in the case of an interference test.</xs:documentation>
+						</xs:annotation>
+					</xs:element>
+				</xs:sequence>
+			</xs:extension>
+		</xs:complexContent>
+	</xs:complexType>
+	<xs:complexType name="PtaAnalysis">
+		<xs:annotation>
+			<xs:documentation>Contains the input and output (simulated) data needed for analysis of pressure (PTA) (ie where flowrate is the boundary condition). Can contain log log plots of the data. Can contain Specialized Analyses and their plots of the data.  The Model data itself is contained in the WellboreModel and LayerModel elements of the TestLocationAnalysis.</xs:documentation>
+		</xs:annotation>
+		<xs:complexContent>
+			<xs:extension base="prodml:AbstractAnalysis">
+				<xs:sequence>
+					<xs:element name="InitialPressureP0ForImpulseTest" type="eml:PressureMeasure" minOccurs="0" maxOccurs="1">
+						<xs:annotation>
+							<xs:documentation>Only required for Impulse type tests: P0 (Pressure at time zero), the instant pressure at the start of the test.</xs:documentation>
+						</xs:annotation>
+					</xs:element>
+					<xs:element name="InputPressure" type="prodml:AbstractPtaPressureData" minOccurs="1" maxOccurs="1">
+						<xs:annotation>
+							<xs:documentation>The pressure (in a Channel) which is being analysed in this PTA.</xs:documentation>
+						</xs:annotation>
+					</xs:element>
+					<xs:element name="SimulatedPressure" type="prodml:OutputPressureData" minOccurs="0" maxOccurs="1">
+						<xs:annotation>
+							<xs:documentation>Reference to the UID of the Output Pressure Data from this Analysis. This will be a simulated response. For Test Design this will be the only pressure time series present.</xs:documentation>
+						</xs:annotation>
+					</xs:element>
+					<xs:element name="SimulatedPressureGaugeNoise" type="eml:PressureMeasure" minOccurs="0" maxOccurs="1">
+						<xs:annotation>
+							<xs:documentation>Optional element to report the addition of noise to the pressure signal for Test Design purposes.  The value is equal to the magnitude of the random noise added. Ie, if value is "x" then random noise distributed within +/-x has been added.</xs:documentation>
+						</xs:annotation>
+					</xs:element>
+					<xs:element name="SimulatedPressureGaugeResolution" type="eml:PressureMeasure" minOccurs="0" maxOccurs="1">
+						<xs:annotation>
+							<xs:documentation>Optional element to report the addition of gauge resolution to the pressure signal for Test Design purposes.  The value is equal to the magnitude of the gauge resolution.</xs:documentation>
+						</xs:annotation>
+					</xs:element>
+					<xs:element name="SimulatedPressureGaugeDrift" type="eml:PressurePerTimeMeasure" minOccurs="0" maxOccurs="1">
+						<xs:annotation>
+							<xs:documentation>Optional element to report the addition of gauge drift to the pressure signal for Test Design purposes.  The value is equal to the magnitude of the gauge drift in terms of units of pressure per unit of time, applied across the time duration of this Result. A negative sign means the drift is negative, ie the gauge is drifting to read a less positive value than the correct value as time passes.</xs:documentation>
+						</xs:annotation>
+					</xs:element>
+					<xs:element name="MeasuredLogLogData" type="prodml:LogLogAnalysis" minOccurs="0" maxOccurs="1"/>
+					<xs:element name="SimulatedLogLogData" type="prodml:LogLogAnalysis" minOccurs="0" maxOccurs="1"/>
+					<xs:element name="RateHistory" type="prodml:AbstractRateHistory" minOccurs="1" maxOccurs="1">
+						<xs:annotation>
+							<xs:documentation>Choice between full rate history (time series) and single flowrate and time (Q &amp; tp).</xs:documentation>
+						</xs:annotation>
+					</xs:element>
+					<xs:element name="SpecializedAnalysis" type="prodml:SpecializedAnalysis" minOccurs="0" maxOccurs="unbounded"/>
+				</xs:sequence>
+			</xs:extension>
+		</xs:complexContent>
+	</xs:complexType>
+	<xs:element name="PtaDataPreProcess" type="prodml:PtaDataPreProcess" substitutionGroup="eml:AbstractDataObject"/>
+	<xs:complexType name="PtaDataPreProcess">
+		<xs:annotation>
+			<xs:documentation>Superclass defining data acquisition for the flow test, input and pre-processing data.</xs:documentation>
+		</xs:annotation>
+		<xs:complexContent>
+			<xs:extension base="eml:AbstractObject">
+				<xs:sequence>
+					<xs:element name="FlowTestActivity" type="eml:DataObjectReference" minOccurs="1" maxOccurs="1">
+						<xs:annotation>
+							<xs:documentation>A reference, using data object reference, to a FlowTestActivity data-object containing the measurement data which this PreProcess applies to.</xs:documentation>
+						</xs:annotation>
+					</xs:element>
+					<xs:element name="FlowTestMeasurementSetRef" type="eml:String64" minOccurs="0" maxOccurs="1">
+						<xs:annotation>
+							<xs:documentation>A reference, using uid, to the Flow Test Measurement Set within the Flow Test Activity data-object containing the measurement data which this PreProcess applies to.</xs:documentation>
+						</xs:annotation>
+					</xs:element>
+					<xs:element name="InputData" type="prodml:AbstractFlowTestData" minOccurs="1" maxOccurs="unbounded">
+						<xs:annotation>
+							<xs:documentation>One or more input channels being pre-processed in this PreProcess.</xs:documentation>
+						</xs:annotation>
+					</xs:element>
+					<xs:element name="PreProcessedData" type="prodml:AbstractFlowTestData" minOccurs="1" maxOccurs="1">
+						<xs:annotation>
+							<xs:documentation>The data (in a Channel) which is the output of this PreProcess.</xs:documentation>
+						</xs:annotation>
+					</xs:element>
+					<xs:element name="DataConditioning" type="prodml:DataConditioningExt" minOccurs="0" maxOccurs="unbounded">
+						<xs:annotation>
+							<xs:documentation>Type of data conditioning that may describe multiple preprocessing steps </xs:documentation>
+						</xs:annotation>
+					</xs:element>
+					<xs:element name="Remark" type="eml:String2000" minOccurs="0" maxOccurs="1">
+						<xs:annotation>
+							<xs:documentation>Textual description about the value of this field.</xs:documentation>
+						</xs:annotation>
+					</xs:element>
+					<xs:element name="FlowTestActivity" type="eml:DataObjectReference" minOccurs="1" maxOccurs="1">
+						<xs:annotation>
+							<xs:documentation>Superclass of possible flow test activities: drill stem, production transient, interwell, and others.</xs:documentation>
+						</xs:annotation>
+					</xs:element>
+				</xs:sequence>
+			</xs:extension>
+		</xs:complexContent>
+	</xs:complexType>
+	<xs:element name="PtaDeconvolution" type="prodml:PtaDeconvolution" substitutionGroup="eml:AbstractDataObject"/>
+	<xs:complexType name="PtaDeconvolution">
+		<xs:annotation>
+			<xs:documentation>Superclass of deconvolution pressure and flowrate measurements, test and method information.</xs:documentation>
+		</xs:annotation>
+		<xs:complexContent>
+			<xs:extension base="eml:AbstractObject">
+				<xs:sequence>
+					<xs:element name="FlowTestActivity" type="eml:DataObjectReference" minOccurs="1" maxOccurs="1">
+						<xs:annotation>
+							<xs:documentation>A reference, using data object reference, to a FlowTestActivity data-object containing the measurement data which this Deconvolution applies to.</xs:documentation>
+						</xs:annotation>
+					</xs:element>
+					<xs:element name="FlowTestMeasurementSetRef" type="eml:String64" minOccurs="0" maxOccurs="1">
+						<xs:annotation>
+							<xs:documentation>A reference, using uid, to the Flow Test Measurement Set within the Flow Test Activity data-object containing the measurement data which this Deconvolution applies to.</xs:documentation>
+						</xs:annotation>
+					</xs:element>
+					<xs:element name="FlowTestPeriodRef" type="eml:String64" minOccurs="0" maxOccurs="unbounded">
+						<xs:annotation>
+							<xs:documentation>Reference to the test periods which are included in the input to the deconvolution.</xs:documentation>
+						</xs:annotation>
+					</xs:element>
+					<xs:element name="MethodName" type="eml:String2000" minOccurs="1" maxOccurs="1">
+						<xs:annotation>
+							<xs:documentation>The name of the method for this deconvolution.</xs:documentation>
+						</xs:annotation>
+					</xs:element>
+					<xs:element name="InitialPressure" type="eml:PressureMeasure" minOccurs="1" maxOccurs="1">
+						<xs:annotation>
+							<xs:documentation>The initial reservoir pressure. Note that this may be in input to, or output from, the deconvolution algorithm.</xs:documentation>
+						</xs:annotation>
+					</xs:element>
+					<xs:element name="InputPressure" type="prodml:AbstractPtaPressureData" minOccurs="1" maxOccurs="1">
+						<xs:annotation>
+							<xs:documentation>The pressure data (in a Channel) which is being deconvolved in this Deconvolution.</xs:documentation>
+						</xs:annotation>
+					</xs:element>
+					<xs:element name="InputFlowrate" type="prodml:AbstractPtaFlowData" minOccurs="1" maxOccurs="1">
+						<xs:annotation>
+							<xs:documentation>The flow data (in a Channel) which is being deconvolved in this Deconvolution.</xs:documentation>
+						</xs:annotation>
+					</xs:element>
+					<xs:element name="ReconstructedPressure" type="prodml:DeconvolvedPressureData" minOccurs="0" maxOccurs="1">
+						<xs:annotation>
+							<xs:documentation>The reconstructed pressure data (in a Channel) which is the output of this Deconvolution.</xs:documentation>
+						</xs:annotation>
+					</xs:element>
+					<xs:element name="ReconstructedFlowrate" type="prodml:DeconvolvedFlowData" minOccurs="0" maxOccurs="1">
+						<xs:annotation>
+							<xs:documentation>The reconstructed flow rate data (in a Channel) which is the output of this Deconvolution.</xs:documentation>
+						</xs:annotation>
+					</xs:element>
+					<xs:element name="Remark" type="eml:String2000" minOccurs="0" maxOccurs="1">
+						<xs:annotation>
+							<xs:documentation>Textual description about the value of this field.</xs:documentation>
+						</xs:annotation>
+					</xs:element>
+					<xs:element name="DeconvolutionOutput" type="prodml:AbstractDeconvolutionOutput" minOccurs="1" maxOccurs="unbounded"/>
+				</xs:sequence>
+			</xs:extension>
+		</xs:complexContent>
+	</xs:complexType>
+	<xs:complexType name="ReservoirZoneSubModel">
+		<xs:annotation>
+			<xs:documentation>Enables a zone within the reservoir model to be defined. This will have local properties which may vary from the rest of the reservoir model.  The zone is bounded by a polygon comprising a number of 2D points. It is left to the software application to verify these comprise a closed polygon, within which the zone properties apply.</xs:documentation>
+		</xs:annotation>
+		<xs:sequence>
+			<xs:element name="BoundingPolygonPoint" type="prodml:LocationIn2D" minOccurs="1" maxOccurs="unbounded">
+				<xs:annotation>
+					<xs:documentation>The zone is bounded by a polygon comprising a number of 2D points, each one is represented by this 2D coordinate pair.</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element name="Permeability" type="prodml:HorizontalRadialPermeability" minOccurs="0" maxOccurs="1">
+				<xs:annotation>
+					<xs:documentation>Horizontal Permeability within this zone. Note that this value should be used to represent any mobility changes in the zone, which may be due to effective permeability and viscosity changeds, eg for the inner region of an injection well.  If absent, the zone is assumed to have the same property as the overall reservoir model.</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element name="Porosity" type="prodml:Porosity" minOccurs="0" maxOccurs="1">
+				<xs:annotation>
+					<xs:documentation>Porosity within this zone.  If absent, the zone is assumed to have the same property as the overall reservoir model.</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element name="Thickness" type="prodml:TotalThickness" minOccurs="0" maxOccurs="1">
+				<xs:annotation>
+					<xs:documentation>Thickness within this zone.  If absent, the zone is assumed to have the same property as the overall reservoir model.</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+		</xs:sequence>
+	</xs:complexType>
+	<xs:complexType name="ResqmlModelRef">
+		<xs:annotation>
+			<xs:documentation>A reference to a RESQML Model element containing the data relating to the PTA object concerned.</xs:documentation>
+		</xs:annotation>
+		<xs:sequence>
+			<xs:element name="ResqmlModelRef" type="eml:DataObjectReference" minOccurs="1" maxOccurs="1">
+				<xs:annotation>
+					<xs:documentation>Reference to the RESQML model element which represents this feature.</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+		</xs:sequence>
+	</xs:complexType>
+	<xs:complexType name="RtaAnalysis">
+		<xs:annotation>
+			<xs:documentation>Contains the input data needed for analysis of flowrate (RTA) (ie where pressure is the boundary condition).</xs:documentation>
+		</xs:annotation>
+		<xs:complexContent>
+			<xs:extension base="prodml:AbstractAnalysis">
+				<xs:sequence>
+					<xs:element name="InputPressure" type="prodml:AbstractPtaPressureData" minOccurs="1" maxOccurs="1">
+						<xs:annotation>
+							<xs:documentation>The pressure (in a Channel) which is being analysed in this RTA.</xs:documentation>
+						</xs:annotation>
+					</xs:element>
+					<xs:element name="InputFlowrateData" type="prodml:AbstractPtaFlowData" minOccurs="1" maxOccurs="1">
+						<xs:annotation>
+							<xs:documentation>The flow rate (in a Channel) which is being analysed in this RTA.</xs:documentation>
+						</xs:annotation>
+					</xs:element>
+					<xs:element name="SimulatedFlowrate" type="prodml:OutputFlowData" minOccurs="1" maxOccurs="1">
+						<xs:annotation>
+							<xs:documentation>The simulated flow rate (in a Channel) which is the output of this RTA.</xs:documentation>
+						</xs:annotation>
+					</xs:element>
+					<xs:element name="SimulatedLogLogData" type="prodml:LogLogAnalysis" minOccurs="0" maxOccurs="1"/>
+					<xs:element name="SpecializedAnalysis" type="prodml:SpecializedAnalysis" minOccurs="0" maxOccurs="unbounded"/>
+					<xs:element name="MeasuredLogLogData" type="prodml:LogLogAnalysis" minOccurs="0" maxOccurs="1"/>
+				</xs:sequence>
+			</xs:extension>
+		</xs:complexContent>
+	</xs:complexType>
+	<xs:complexType name="SingleBoundarySubModel">
+		<xs:annotation>
+			<xs:documentation>For a Boundary model which has an arbitrary number, orientation and type of external boundaries, this is the model sub class which describes each boundary. There will be as many instances of this as there are boundaries.  This is expected to be a numerical model. The other, regular geometries of boundaries may well be represented by analytical models.</xs:documentation>
+		</xs:annotation>
+		<xs:sequence>
+			<xs:element name="TypeOfBoundary" type="prodml:Boundary1Type" minOccurs="1" maxOccurs="1">
+				<xs:annotation>
+					<xs:documentation>In any bounded reservoir model, the type of Boundary 1. Enumeration with choice of "no-flow" or "constant pressure".</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element name="FaultRefID" type="prodml:ResqmlModelRef" minOccurs="1" maxOccurs="1">
+				<xs:annotation>
+					<xs:documentation>The reference to a RESQML model representation of this fault.</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+		</xs:sequence>
+	</xs:complexType>
+	<xs:complexType name="SingleFlowrateData">
+		<xs:annotation>
+			<xs:documentation>Contains the data for a simple representation of flowrate comprising a single rate and a flowing time.</xs:documentation>
+		</xs:annotation>
+		<xs:complexContent>
+			<xs:extension base="prodml:AbstractRateHistory">
+				<xs:sequence>
+					<xs:element name="EffectiveProducingTimeUsed" type="eml:TimeMeasure" minOccurs="1" maxOccurs="1">
+						<xs:annotation>
+							<xs:documentation>If a single flowrate and effective producing time was used, this is the effective producing time used in the analysis. Usually abbreviated Tpeff.</xs:documentation>
+						</xs:annotation>
+					</xs:element>
+					<xs:element name="SingleFlowrate" type="eml:VolumePerTimeMeasure" minOccurs="1" maxOccurs="1">
+						<xs:annotation>
+							<xs:documentation>If a single flowrate and effective producing time was used, this is the single flowrate value used in the analysis.</xs:documentation>
+						</xs:annotation>
+					</xs:element>
+				</xs:sequence>
+			</xs:extension>
+		</xs:complexContent>
+	</xs:complexType>
+	<xs:complexType name="SingleFractureSubModel">
+		<xs:annotation>
+			<xs:documentation>For a Horizontal Wellbore Multiple Variable Fractured Model, this is the model sub class which describes each fracture. There will be as many instances of this as there are fractures. This is expected to be a numerical model.</xs:documentation>
+		</xs:annotation>
+		<xs:sequence>
+			<xs:element name="FractureTip1Location" type="prodml:LocationIn2D" minOccurs="1" maxOccurs="1">
+				<xs:annotation>
+					<xs:documentation>The location of the first tip of the fracture in the local CRS.</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element name="FractureTip2Location" type="prodml:LocationIn2D" minOccurs="1" maxOccurs="1">
+				<xs:annotation>
+					<xs:documentation>The location of the second tip of the fracture (opposite side of the wellbore to the first) in the local CRS.</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element name="FractureHeight" type="prodml:FractureHeight" minOccurs="1" maxOccurs="1">
+				<xs:annotation>
+					<xs:documentation>In the vertical hydraulic fracture model (where the wellbore is horizontal), the height of the fracture.  In the case of a horizontal wellbore, the fractures are assumed to extend an equal distance above and below the wellbore.</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element name="DistanceMidFractureHeightToBottomBoundary" type="prodml:DistanceMidFractureHeightToBottomBoundary" minOccurs="0" maxOccurs="1">
+				<xs:annotation>
+					<xs:documentation>For a hydraulic fracture, the distance between the mid-height level of the fracture and the lower boundary of the layer.</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element name="FractureFaceSkin" type="prodml:FractureFaceSkin" minOccurs="0" maxOccurs="1">
+				<xs:annotation>
+					<xs:documentation>Dimensionless value, characterizing the restriction to flow (+ve value, damage) or additional capacity for flow (-ve value, eg acidized) due to effective permeability across the face of a hydraulic fracture, ie controlling flow from reservoir into fracture. This value is stated with respect to radial flow using the full reservoir thickness (h), ie the radial flow or middle time region of a pressure transient. It therefore can be added, in a fractured well, to "ConvergenceSkinRelativeToTotalThickness" skin to yield  "SkinRelativeToTotalThickness".</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element name="FractureConductivity" type="prodml:FractureConductivity" minOccurs="0" maxOccurs="1">
+				<xs:annotation>
+					<xs:documentation>For an induced hydraulic fracture, the conductivity of the fracture, equal to Fracture Width * Fracture Permeability </xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element name="FractureStorativityRatio" type="prodml:FractureStorativityRatio" minOccurs="0" maxOccurs="1">
+				<xs:annotation>
+					<xs:documentation>Dimensionless Value characterizing the fraction of the pore volume occupied by the fractures to the total of pore volume of (fractures plus reservoir).</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element name="FractureModelType" type="prodml:FractureModelType" minOccurs="1" maxOccurs="1">
+				<xs:annotation>
+					<xs:documentation>For a Horizontal Wellbore Multiple Fractured Model, the model type which applies to this fracture. Enumeration with choices of infinite conductivity, uniform flux, finite conductivity, or compressible fracture finite conductivity.</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+		</xs:sequence>
+	</xs:complexType>
+	<xs:complexType name="SpecializedAnalysis">
+		<xs:annotation>
+			<xs:documentation>This is an analysis not defined by a PTA model but performed on some specialized plot.  It can report using AnyParameter which allows use of any parameter as used in the PTA models, or report Custom Parameters. See these classes for more information.</xs:documentation>
+		</xs:annotation>
+		<xs:sequence>
+			<xs:element name="SpecializedAnalysisType" type="eml:String2000" minOccurs="1" maxOccurs="1">
+				<xs:annotation>
+					<xs:documentation>The type of specialized analysis.  Descriptive text. These are not cataloged in the data model.</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element name="AnyParameter" type="prodml:AbstractParameter" minOccurs="0" maxOccurs="unbounded">
+				<xs:annotation>
+					<xs:documentation>Allows Parameters from the library included in the schema to be added to the Specialized Analysis. Type is AbstractParameter and the concrete instances are all Parameters.</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element name="CustomParameter" type="prodml:CustomParameter" minOccurs="0" maxOccurs="unbounded">
+				<xs:annotation>
+					<xs:documentation>Allows Custom Parameters to be added to the Specialized Analysis. See Custom Parameter for how its properties are defined.</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element name="SpecializedXAxisDescription" type="eml:String2000" minOccurs="1" maxOccurs="1">
+				<xs:annotation>
+					<xs:documentation>The transform of X axis data  described textually, for the Specialized Analysis concerned.</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element name="SpecializedYAxisDescription" type="eml:String2000" minOccurs="1" maxOccurs="1">
+				<xs:annotation>
+					<xs:documentation>The transform of Y axis data  described textually, for the Specialized Analysis concerned.</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element name="AnalysisPressureFunction" type="prodml:AbstractPtaPressureData" minOccurs="1" maxOccurs="1">
+				<xs:annotation>
+					<xs:documentation>The transformed pressure and derivative (contained in referenced Channels) (transformed to the trasnform of this specialized analysis) used in this analysis. The transforms of Y and X axes are described textually in the Specialized [X orY] Axis Description elements.</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element name="Remark" type="eml:String2000" minOccurs="0" maxOccurs="1">
+				<xs:annotation>
+					<xs:documentation>Textual description about the value of this field.</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element name="AnalysisLine" type="prodml:AnalysisLine" minOccurs="0" maxOccurs="unbounded"/>
+		</xs:sequence>
+	</xs:complexType>
+	<xs:complexType name="TestPeriodsFlowrateData">
+		<xs:complexContent>
+			<xs:extension base="prodml:AbstractRateHistory">
+				<xs:sequence>
+					<xs:element name="TestPeriodRef" type="eml:String64" minOccurs="1" maxOccurs="unbounded">
+						<xs:annotation>
+							<xs:documentation>Choice available for rate history where the test period(s) used to form the rate history are referenced (by uid).</xs:documentation>
+						</xs:annotation>
+					</xs:element>
+				</xs:sequence>
+			</xs:extension>
+		</xs:complexContent>
+	</xs:complexType>
+</xs:schema>

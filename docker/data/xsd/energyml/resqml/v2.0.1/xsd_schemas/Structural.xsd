@@ -1,0 +1,554 @@
+<?xml version="1.0" encoding="utf-8"?>
+<xs:schema targetNamespace="http://www.energistics.org/energyml/data/resqmlv2" xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:resqml="http://www.energistics.org/energyml/data/resqmlv2" xmlns:eml="http://www.energistics.org/energyml/data/commonv2" elementFormDefault="qualified" version="2.0">
+	<xs:annotation>
+		<xs:documentation>Representations are the digital descriptions of a feature interpretation or a technical feature. This representation is based on a topology and contains the geometry of the digital description or is based on the topology or the geometry of another representation. Structural has two types of representations: 
+
+	- Representation of Individual Representations. Each Individual representation is specialized by dimension (point, polyline, surface, volume) and represents only one individual geological interpretation (such as, horizons, faults, geological bodies, geological units, and fluids units). 
+
+
+	- Representation of Organization Representations. Each organization representations is a consistent assembly of different representations of interpretations of organizations (such as, earth model, structural organization, stratigraphic organizations, stratigraphic columns, and fluid organizations). </xs:documentation>
+	</xs:annotation>
+	<xs:import namespace="http://www.energistics.org/energyml/data/commonv2" schemaLocation="../../../common/v2.0/xsd_schemas/AllCommonObjects.xsd"/><xs:include schemaLocation="Properties.xsd"/>
+	<xs:include schemaLocation="Representations.xsd"/>
+	<xs:include schemaLocation="Geometry.xsd"/>
+	<xs:include schemaLocation="Interpretations.xsd"/>
+	<xs:complexType name="obj_NonSealedSurfaceFrameworkRepresentation">
+		<xs:annotation>
+			<xs:documentation>A collection of contact representations parts, which are a list of contact patches with no identity. This collection of contact representations is completed by a set of representations gathered at the representation set representation level.</xs:documentation>
+		</xs:annotation>
+		<xs:complexContent>
+			<xs:extension base="resqml:AbstractSurfaceFrameworkRepresentation">
+				<xs:sequence>
+					<xs:element name="NonSealedContactRepresentation" type="resqml:AbstractContactRepresentationPart" minOccurs="0" maxOccurs="unbounded"/>
+				</xs:sequence>
+			</xs:extension>
+		</xs:complexContent>
+	</xs:complexType>
+	<xs:complexType name="obj_TriangulatedSetRepresentation">
+		<xs:annotation>
+			<xs:documentation>A representation based on set of triangulated mesh patches, which gets its geometry from a 1D array of points.
+
+BUSINESS RULE: The orientation of all the triangles of this representation must be consistent.</xs:documentation>
+		</xs:annotation>
+		<xs:complexContent>
+			<xs:extension base="resqml:AbstractSurfaceRepresentation">
+				<xs:sequence>
+					<xs:element name="TrianglePatch" type="resqml:TrianglePatch" minOccurs="1" maxOccurs="unbounded"/>
+				</xs:sequence>
+			</xs:extension>
+		</xs:complexContent>
+	</xs:complexType>
+	<xs:complexType name="NonSealedContactRepresentationPart">
+		<xs:annotation>
+			<xs:documentation>Defines a nonsealed contact representation, meaning that this contact representation is defined by a geometry.</xs:documentation>
+		</xs:annotation>
+		<xs:complexContent>
+			<xs:extension base="resqml:AbstractContactRepresentationPart">
+				<xs:sequence>
+					<xs:element name="Contact" type="resqml:ContactPatch" minOccurs="0" maxOccurs="unbounded"/>
+					<xs:element name="Geometry" type="resqml:AbstractGeometry" minOccurs="1" maxOccurs="1"/>
+				</xs:sequence>
+			</xs:extension>
+		</xs:complexContent>
+	</xs:complexType>
+	<xs:complexType name="SealedContactRepresentationPart">
+		<xs:annotation>
+			<xs:documentation>Sealed contact elements that indicate that 2 or more contact patches are partially or totally colocated or equivalent. For possible types of identity, see IdentityKind.  </xs:documentation>
+		</xs:annotation>
+		<xs:complexContent>
+			<xs:extension base="resqml:AbstractContactRepresentationPart">
+				<xs:sequence>
+					<xs:element name="IdenticalNodeIndices" type="resqml:AbstractIntegerArray" minOccurs="0" maxOccurs="1">
+						<xs:annotation>
+							<xs:documentation>Indicate which nodes (identified by their common index in all contact patches) of the contact patches are identical.
+
+If this list is not present, then it indicates that all nodes in each representation are identical, on an element-by-element level.</xs:documentation>
+						</xs:annotation>
+					</xs:element>
+					<xs:element name="IdentityKind" type="resqml:IdentityKind" minOccurs="1" maxOccurs="1"/>
+					<xs:element name="Contact" type="resqml:ContactPatch" minOccurs="2" maxOccurs="unbounded"/>
+				</xs:sequence>
+			</xs:extension>
+		</xs:complexContent>
+	</xs:complexType>
+	<xs:simpleType name="SurfaceRole">
+		<xs:annotation>
+			<xs:documentation>Indicates the various roles that a surface topology can have.</xs:documentation>
+		</xs:annotation>
+		<xs:restriction base="xs:string">
+			<xs:enumeration value="map">
+				<xs:annotation>
+					<xs:documentation>Representation support for properties.</xs:documentation>
+				</xs:annotation>
+			</xs:enumeration>
+			<xs:enumeration value="pick">
+				<xs:annotation>
+					<xs:documentation>Representation support for 3D points picked in 2D or 3D.</xs:documentation>
+				</xs:annotation>
+			</xs:enumeration>
+		</xs:restriction>
+	</xs:simpleType>
+	<xs:complexType name="ContactPatch">
+		<xs:annotation>
+			<xs:documentation>A subset of topological elements of an existing contact representation part (sealed or non-sealed contact).</xs:documentation>
+		</xs:annotation>
+		<xs:complexContent>
+			<xs:extension base="resqml:Patch1d">
+				<xs:sequence>
+					<xs:element name="RepresentationIndex" type="xs:nonNegativeInteger" minOccurs="1" maxOccurs="1">
+						<xs:annotation>
+							<xs:documentation>Identifies a representation by its index, in the list of representations contained in the organization.</xs:documentation>
+						</xs:annotation>
+					</xs:element>
+					<xs:element name="SupportingRepresentationNodes" type="resqml:AbstractIntegerArray" minOccurs="1" maxOccurs="1">
+						<xs:annotation>
+							<xs:documentation>The ordered list of nodes (identified by their global index) in the supporting representation, which constitutes the contact patch.</xs:documentation>
+						</xs:annotation>
+					</xs:element>
+				</xs:sequence>
+			</xs:extension>
+		</xs:complexContent>
+	</xs:complexType>
+	<xs:complexType name="obj_PlaneSetRepresentation">
+		<xs:annotation>
+			<xs:documentation>Defines a plane representation, which can be made up of multiple patches. Commonly represented features are fluid contacts or frontiers. Common geometries of this representation are titled or horizontal planes.
+
+BUSINESS RULE: If the plane representation is made up of multiple patches, then you must specify the outer rings for each plane patch.</xs:documentation>
+		</xs:annotation>
+		<xs:complexContent>
+			<xs:extension base="resqml:AbstractSurfaceRepresentation">
+				<xs:sequence>
+					<xs:element name="Planes" type="resqml:AbstractPlaneGeometry" minOccurs="1" maxOccurs="unbounded"/>
+				</xs:sequence>
+			</xs:extension>
+		</xs:complexContent>
+	</xs:complexType>
+	<xs:complexType name="AbstractContactRepresentationPart" abstract="true">
+		<xs:annotation>
+			<xs:documentation>Parent class of the sealed and nonsealed contact elements. </xs:documentation>
+		</xs:annotation>
+		<xs:sequence>
+			<xs:element name="Index" type="xs:nonNegativeInteger" minOccurs="1" maxOccurs="1">
+				<xs:annotation>
+					<xs:documentation>The index of the contact.
+Indicates identity of the contact in the surface framework context. It is used for contact identities and to find the interpretation of this particular contact.</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+		</xs:sequence>
+	</xs:complexType>
+	<xs:complexType name="AbstractSurfaceFrameworkRepresentation" abstract="true">
+		<xs:annotation>
+			<xs:documentation>Parent class for a sealed or non-sealed surface framework representation. Each one instantiates a representation set representation.
+
+The difference between the sealed and non-sealed frameworks is that, in the non-sealed case, we do not have all of the contact representations, or we have all of the contacts but they are not all sealed.</xs:documentation>
+		</xs:annotation>
+		<xs:complexContent>
+			<xs:extension base="resqml:obj_RepresentationSetRepresentation">
+				<xs:sequence>
+					<xs:element name="ContactIdentity" type="resqml:ContactIdentity" minOccurs="0" maxOccurs="unbounded"/>
+				</xs:sequence>
+			</xs:extension>
+		</xs:complexContent>
+	</xs:complexType>
+	<xs:complexType name="obj_PointSetRepresentation">
+		<xs:annotation>
+			<xs:documentation>A representation that consists of one or more node patches. Each node patch is an array of XYZ coordinates for the 3D points. There is no implied linkage between the multiple patches.</xs:documentation>
+		</xs:annotation>
+		<xs:complexContent>
+			<xs:extension base="resqml:AbstractRepresentation">
+				<xs:sequence>
+					<xs:element name="NodePatch" type="resqml:NodePatch" minOccurs="1" maxOccurs="unbounded"/>
+				</xs:sequence>
+			</xs:extension>
+		</xs:complexContent>
+	</xs:complexType>
+	<xs:complexType name="obj_SealedVolumeFrameworkRepresentation">
+		<xs:annotation>
+			<xs:documentation>A strict boundary representation (BREP), which represents the volume region by assembling together shells.
+
+BUSINESS RULE: The sealed structural framework must be part of the same earth model as this sealed volume framework.</xs:documentation>
+		</xs:annotation>
+		<xs:complexContent>
+			<xs:extension base="resqml:obj_RepresentationSetRepresentation">
+				<xs:sequence>
+					<xs:element name="BasedOn" type="eml:DataObjectReference" minOccurs="1" maxOccurs="1"/>
+					<xs:element name="Shells" type="resqml:VolumeShell" minOccurs="1" maxOccurs="unbounded"/>
+					<xs:element name="Regions" type="resqml:VolumeRegion" minOccurs="1" maxOccurs="unbounded"/>
+				</xs:sequence>
+			</xs:extension>
+		</xs:complexContent>
+	</xs:complexType>
+	<xs:complexType name="EdgePatch">
+		<xs:annotation>
+			<xs:documentation>Describes edges that are not linked to any other edge. Because edges do not have indices, a consecutive pair of nodes is used to identify each edge. 
+
+The split edges dataset is a set of nodes (2 nodes per edge). Each patch has a set of 2 nodes.</xs:documentation>
+		</xs:annotation>
+		<xs:complexContent>
+			<xs:extension base="resqml:Patch1d">
+				<xs:sequence>
+					<xs:element name="SplitEdges" type="resqml:AbstractIntegerArray" minOccurs="0" maxOccurs="1">
+						<xs:annotation>
+							<xs:documentation>An array of split edges to define patches.
+It points to an HDF5 dataset, which must be a 2D array of non-negative integers with dimensions 2 x numSplitEdges. integers with dimensions {2, numSplitEdges}</xs:documentation>
+						</xs:annotation>
+					</xs:element>
+				</xs:sequence>
+			</xs:extension>
+		</xs:complexContent>
+	</xs:complexType>
+	<xs:complexType name="VolumeRegion">
+		<xs:annotation>
+			<xs:documentation>The volume within a shell or envelope.</xs:documentation>
+		</xs:annotation>
+		<xs:sequence>
+			<xs:element name="PatchIndex" type="xs:nonNegativeInteger" minOccurs="1" maxOccurs="1"/>
+			<xs:element name="InternalShells" type="resqml:VolumeShell" minOccurs="0" maxOccurs="unbounded"/>
+			<xs:element name="Represents" type="eml:DataObjectReference" minOccurs="1" maxOccurs="1"/>
+			<xs:element name="ExternalShell" type="resqml:VolumeShell" minOccurs="1" maxOccurs="1"/>
+		</xs:sequence>
+	</xs:complexType>
+	<xs:complexType name="VolumeShell">
+		<xs:annotation>
+			<xs:documentation>The shell or envelope of a structural, stratigraphic, or fluid unit.</xs:documentation>
+		</xs:annotation>
+		<xs:sequence>
+			<xs:element name="ShellUid" type="xs:string" minOccurs="1" maxOccurs="1"/>
+			<xs:element name="MacroFaces" type="resqml:OrientedMacroFace" minOccurs="1" maxOccurs="unbounded"/>
+		</xs:sequence>
+	</xs:complexType>
+	<xs:complexType name="obj_PolylineSetRepresentation">
+		<xs:annotation>
+			<xs:documentation>A representation made up of a set of polylines or a set of polygonal chains (for more information, see PolylineRepresentation). 
+
+For compactness, it is organized by line patch as a unique polyline set patch.
+
+if allPolylineClosed = True, all the polylines are connected between the first and the last point.
+
+Its geometry is a 1D array of points, corresponding to the concatenation of the points of all polyline points.</xs:documentation>
+		</xs:annotation>
+		<xs:complexContent>
+			<xs:extension base="resqml:AbstractRepresentation">
+				<xs:sequence>
+					<xs:element name="LineRole" type="resqml:LineRole" minOccurs="0" maxOccurs="1"/>
+					<xs:element name="LinePatch" type="resqml:PolylineSetPatch" minOccurs="1" maxOccurs="unbounded"/>
+				</xs:sequence>
+			</xs:extension>
+		</xs:complexContent>
+	</xs:complexType>
+	<xs:complexType name="NodePatch">
+		<xs:annotation>
+			<xs:documentation>Patch representing a list of nodes to which geometry may be attached.</xs:documentation>
+		</xs:annotation>
+		<xs:complexContent>
+			<xs:extension base="resqml:Patch1d">
+				<xs:sequence>
+					<xs:element name="Geometry" type="resqml:PointGeometry" minOccurs="1" maxOccurs="1"/>
+				</xs:sequence>
+			</xs:extension>
+		</xs:complexContent>
+	</xs:complexType>
+	<xs:complexType name="obj_SealedSurfaceFrameworkRepresentation">
+		<xs:annotation>
+			<xs:documentation>A collection of contact representations parts, which are a list of contact patches and their identities. This collection of contact representations is completed by a set of representations gathered at the representation set representation level.</xs:documentation>
+		</xs:annotation>
+		<xs:complexContent>
+			<xs:extension base="resqml:AbstractSurfaceFrameworkRepresentation">
+				<xs:sequence>
+					<xs:element name="SealedContactRepresentation" type="resqml:SealedContactRepresentationPart" minOccurs="0" maxOccurs="unbounded"/>
+				</xs:sequence>
+			</xs:extension>
+		</xs:complexContent>
+	</xs:complexType>
+	<xs:complexType name="TrianglePatch">
+		<xs:annotation>
+			<xs:documentation>Patch made of triangles, where the number of triangles is given by the patch count. 
+BUSINESS RULE: Within a patch, all the triangles must be contiguous.
+
+The patch contains: 
+
+	- Number of nodes within the triangulation and their locations. 
+	- 2D array describing the topology of the triangles. 
+
+
+Two triangles that are connected may be in different patches.</xs:documentation>
+		</xs:annotation>
+		<xs:complexContent>
+			<xs:extension base="resqml:Patch1d">
+				<xs:sequence>
+					<xs:element name="NodeCount" type="xs:nonNegativeInteger" minOccurs="1" maxOccurs="1"/>
+					<xs:element name="Triangles" type="resqml:AbstractIntegerArray" minOccurs="1" maxOccurs="1">
+						<xs:annotation>
+							<xs:documentation>The triangles are a 2D array of non-negative integers with the 
+ dimensions 3 x numTriangles.</xs:documentation>
+						</xs:annotation>
+					</xs:element>
+					<xs:element name="Geometry" type="resqml:PointGeometry" minOccurs="1" maxOccurs="1"/>
+					<xs:element name="SplitEdgePatch" type="resqml:EdgePatch" minOccurs="0" maxOccurs="unbounded"/>
+				</xs:sequence>
+			</xs:extension>
+		</xs:complexContent>
+	</xs:complexType>
+	<xs:complexType name="obj_PolylineRepresentation">
+		<xs:annotation>
+			<xs:documentation>A representation made up of a single polyline or "polygonal chain", which may be closed or not.
+
+Definition from Wikipedia (http://en.wikipedia.org/wiki/Piecewise_linear_curve):
+
+A polygonal chain, polygonal curve, polygonal path, or piecewise linear curve, is a connected series of line segments. More formally, a polygonal chain P is a curve specified by a sequence of points \scriptstyle(A_1, A_2, \dots, A_n) called its vertices so that the curve consists of the line segments connecting the consecutive vertices.
+
+In computer graphics a polygonal chain is called a polyline and is often used to approximate curved paths.
+
+BUSINESS RULE: To record a polyline the writer software must give the values of the geometry of each node in an order corresponding to the logical series of segments (edges). The geometry of a polyline must be a 1D array of points.
+
+A simple polygonal chain is one in which only consecutive (or the first and the last) segments intersect and only at their endpoints.
+
+A closed polygonal chain (isClosed=True) is one in which the first vertex coincides with the last one, or the first and the last vertices are connected by a line segment. </xs:documentation>
+		</xs:annotation>
+		<xs:complexContent>
+			<xs:extension base="resqml:AbstractRepresentation">
+				<xs:sequence>
+					<xs:element name="LineRole" type="resqml:LineRole" minOccurs="0" maxOccurs="1"/>
+					<xs:element name="IsClosed" type="xs:boolean" minOccurs="1" maxOccurs="1"/>
+					<xs:element name="NodePatch" type="resqml:NodePatch" minOccurs="1" maxOccurs="1"/>
+				</xs:sequence>
+			</xs:extension>
+		</xs:complexContent>
+	</xs:complexType>
+	<xs:complexType name="obj_Grid2dRepresentation">
+		<xs:annotation>
+			<xs:documentation>Representation based on a 2D grid. For definitions of slowest and fastest axes of the array, see Grid2dPatch. </xs:documentation>
+		</xs:annotation>
+		<xs:complexContent>
+			<xs:extension base="resqml:AbstractSurfaceRepresentation">
+				<xs:sequence>
+					<xs:element name="Grid2dPatch" type="resqml:Grid2dPatch" minOccurs="1" maxOccurs="1"/>
+				</xs:sequence>
+			</xs:extension>
+		</xs:complexContent>
+	</xs:complexType>
+	<xs:complexType name="PatchBoundaries">
+		<xs:annotation>
+			<xs:documentation>Defines the boundaries of an indexed patch. These boundaries are outer and inner rings.</xs:documentation>
+		</xs:annotation>
+		<xs:sequence>
+			<xs:element name="InnerRing" type="eml:DataObjectReference" minOccurs="0" maxOccurs="unbounded">
+				<xs:annotation>
+					<xs:documentation>A hole inside a representation patch. Inside the ring, the representation patch is not defined, outside it is. 
+In case of contact, inner ring polyline representations should be typed as an erosion line, deposition line, or contact.
+
+BUSINESS RULE: Must be a polyline reference to a polyline representation, either a single polyline representation or a subrepresentation. Must be closed.</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element name="OuterRing" type="eml:DataObjectReference" minOccurs="0" maxOccurs="1">
+				<xs:annotation>
+					<xs:documentation>The extension of a representation patch. Inside the ring, the representation patch is defined, outside it is not.
+
+BUSINESS RULE: Must be a reference to a polyline, either a single polyline representation or a subrepresentation. Must be closed.</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element name="ReferencedPatch" type="xs:nonNegativeInteger" minOccurs="1" maxOccurs="1">
+				<xs:annotation>
+					<xs:documentation>UUID of the referenced topological patch.</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+		</xs:sequence>
+	</xs:complexType>
+	<xs:complexType name="AbstractSurfaceRepresentation" abstract="true">
+		<xs:annotation>
+			<xs:documentation>Parent class of structural surface representations, which can be bounded by an outer ring and has inner rings. These surfaces may consist of one or more patches.</xs:documentation>
+		</xs:annotation>
+		<xs:complexContent>
+			<xs:extension base="resqml:AbstractRepresentation">
+				<xs:sequence>
+					<xs:element name="SurfaceRole" type="resqml:SurfaceRole" minOccurs="1" maxOccurs="1"/>
+					<xs:element name="Boundaries" type="resqml:PatchBoundaries" minOccurs="0" maxOccurs="unbounded"/>
+				</xs:sequence>
+			</xs:extension>
+		</xs:complexContent>
+	</xs:complexType>
+	<xs:complexType name="Grid2dPatch">
+		<xs:annotation>
+			<xs:documentation>Patch representing a single 2D grid and its geometry.
+The FastestAxisCount and the SlowestAxisCount determine the indexing of this grid 2D patch, by defining a one dimensional index for the 2D grid as follows:
+Index = FastestIndex + FastestAxisCount * SlowestIndex
+
+This indexing order IS the data order when stored in HDF5, in which case, this would be a SlowestAxisCount*FastestAxisCount two dimensional array in HDF5.</xs:documentation>
+		</xs:annotation>
+		<xs:complexContent>
+			<xs:extension base="resqml:Patch">
+				<xs:sequence>
+					<xs:element name="FastestAxisCount" type="xs:positiveInteger" minOccurs="1" maxOccurs="1">
+						<xs:annotation>
+							<xs:documentation>The number of nodes in the fastest direction.</xs:documentation>
+						</xs:annotation>
+					</xs:element>
+					<xs:element name="SlowestAxisCount" type="xs:positiveInteger" minOccurs="1" maxOccurs="1">
+						<xs:annotation>
+							<xs:documentation>The number of nodes in the slowest direction.</xs:documentation>
+						</xs:annotation>
+					</xs:element>
+					<xs:element name="Geometry" type="resqml:PointGeometry" minOccurs="1" maxOccurs="1"/>
+				</xs:sequence>
+			</xs:extension>
+		</xs:complexContent>
+	</xs:complexType>
+	<xs:complexType name="obj_Grid2dSetRepresentation">
+		<xs:annotation>
+			<xs:documentation>Set of representations based on a 2D grid. Each 2D grid representation corresponds to one patch of the set.</xs:documentation>
+		</xs:annotation>
+		<xs:complexContent>
+			<xs:extension base="resqml:AbstractSurfaceRepresentation">
+				<xs:sequence>
+					<xs:element name="Grid2dPatch" type="resqml:Grid2dPatch" minOccurs="2" maxOccurs="unbounded"/>
+				</xs:sequence>
+			</xs:extension>
+		</xs:complexContent>
+	</xs:complexType>
+	<xs:complexType name="PolylineSetPatch">
+		<xs:annotation>
+			<xs:documentation>A patch containing a set of polylines.
+
+For performance reasons, the geometry of each patch is described in only one 1D array of 3D points, which aggregates the nodes of all the polylines together.
+
+To be able to separate the polyline descriptions, additional information is added about the type of each polyline (closed or not) and the number of 3D points (node count) of each polyline. 
+
+This additional information is contained in two arrays which are associated with each polyline set patch. The dimension of these arrays is the number of polylines gathered in one polyline set patch. 
+
+	- The first array contains a Boolean for each polyline (closed or not closed)
+	- The second array contains the count of nodes for each polyline.</xs:documentation>
+		</xs:annotation>
+		<xs:complexContent>
+			<xs:extension base="resqml:Patch">
+				<xs:sequence>
+					<xs:element name="ClosedPolylines" type="resqml:AbstractBooleanArray" minOccurs="1" maxOccurs="1"/>
+					<xs:element name="NodeCountPerPolyline" type="resqml:AbstractIntegerArray" minOccurs="1" maxOccurs="1">
+						<xs:annotation>
+							<xs:documentation>The first number in the list defines the node count for the first polyline in the polyline set patch.
+The second number in the list defines the node count for the second polyline in the polyline set patch.
+etc.</xs:documentation>
+						</xs:annotation>
+					</xs:element>
+					<xs:element name="Geometry" type="resqml:PointGeometry" minOccurs="1" maxOccurs="1"/>
+				</xs:sequence>
+			</xs:extension>
+		</xs:complexContent>
+	</xs:complexType>
+	<xs:complexType name="OrientedMacroFace">
+		<xs:annotation>
+			<xs:documentation>An element of a volume shell that is defined by a set of oriented faces belonging to boundable patches.
+
+A macroface may describe a contact between:
+
+	- two structural, stratigraphic, or fluid units 
+	- one boundary feature (fault or frontier) and a unit. 
+
+
+A face is a bounded open subset of a plane or a curved surface in 3D, delimited by an outer contour and zero, one, or more inner contours describing holes.</xs:documentation>
+		</xs:annotation>
+		<xs:sequence>
+			<xs:element name="PatchIndexOfRepresentation" type="xs:nonNegativeInteger" minOccurs="1" maxOccurs="1">
+				<xs:annotation>
+					<xs:documentation>Create the triangulation and 2D grid representation for which the patches match the macro faces.</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element name="RepresentationIndex" type="xs:nonNegativeInteger" minOccurs="1" maxOccurs="1">
+				<xs:annotation>
+					<xs:documentation>Identifies the representation by its index, in the list of representations contained in the organization.</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element name="SideIsPlus" type="xs:boolean" minOccurs="1" maxOccurs="1"/>
+		</xs:sequence>
+	</xs:complexType>
+	<xs:complexType name="ContactIdentity">
+		<xs:annotation>
+			<xs:documentation>Indicates identity between two (or more) contacts. For possible types of identities, see IdentityKind.</xs:documentation>
+		</xs:annotation>
+		<xs:sequence>
+			<xs:element name="IdentityKind" type="resqml:IdentityKind" minOccurs="1" maxOccurs="1"/>
+			<xs:element name="ListOfContactRepresentations" type="resqml:AbstractIntegerArray" minOccurs="1" maxOccurs="1">
+				<xs:annotation>
+					<xs:documentation>The contact representations that share common identity as specified by their indices</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element name="ListOfIdenticalNodes" type="resqml:AbstractIntegerArray" minOccurs="0" maxOccurs="1">
+				<xs:annotation>
+					<xs:documentation>Indicates which nodes (identified by their common index in all contact representations) of the contact representations are identical.
+
+If this list is not present, then it indicates that all nodes in each representation are identical, on an element by element level.</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+		</xs:sequence>
+	</xs:complexType>
+	<xs:simpleType name="LineRole">
+		<xs:annotation>
+			<xs:documentation>Indicates the various roles that a polyline topology can have in a representation. </xs:documentation>
+		</xs:annotation>
+		<xs:restriction base="xs:string">
+			<xs:enumeration value="fault center line">
+				<xs:annotation>
+					<xs:documentation>Usually used to represent fault lineaments on horizons.
+These lines can represent nonsealed contact interpretation parts defined by a horizon/fault intersection. </xs:documentation>
+				</xs:annotation>
+			</xs:enumeration>
+			<xs:enumeration value="pick">
+				<xs:annotation>
+					<xs:documentation>Used to represent all types of nonsealed contact interpretation parts defined by a horizon/fault intersection.</xs:documentation>
+				</xs:annotation>
+			</xs:enumeration>
+			<xs:enumeration value="inner ring">
+				<xs:annotation>
+					<xs:documentation>Closed polyline that delineates a hole in a surface patch. </xs:documentation>
+				</xs:annotation>
+			</xs:enumeration>
+			<xs:enumeration value="outer ring">
+				<xs:annotation>
+					<xs:documentation>Closed polyline that delineates the extension of a surface patch.</xs:documentation>
+				</xs:annotation>
+			</xs:enumeration>
+			<xs:enumeration value="trajectory">
+				<xs:annotation>
+					<xs:documentation>Polyline that is used to represent a well trajectory representation.</xs:documentation>
+				</xs:annotation>
+			</xs:enumeration>
+			<xs:enumeration value="interpretation line">
+				<xs:annotation>
+					<xs:documentation>Line corresponding to a digitalization along an earth model section.</xs:documentation>
+				</xs:annotation>
+			</xs:enumeration>
+			<xs:enumeration value="contact">
+				<xs:annotation>
+					<xs:documentation>Used to represent nonsealed contact interpretation parts defined by a horizon/fault intersection.</xs:documentation>
+				</xs:annotation>
+			</xs:enumeration>
+			<xs:enumeration value="depositional line">
+				<xs:annotation>
+					<xs:documentation>Used to represent nonsealed contact interpretation parts defined by a horizon/horizon intersection.</xs:documentation>
+				</xs:annotation>
+			</xs:enumeration>
+			<xs:enumeration value="erosion line">
+				<xs:annotation>
+					<xs:documentation>Used to represent nonsealed contact interpretation parts defined by a horizon/horizon intersection.</xs:documentation>
+				</xs:annotation>
+			</xs:enumeration>
+			<xs:enumeration value="contouring">
+				<xs:annotation>
+					<xs:documentation>Used to obtain sets of 3D x, y, z points to represent any boundary interpretation.</xs:documentation>
+				</xs:annotation>
+			</xs:enumeration>
+			<xs:enumeration value="pillar"/>
+		</xs:restriction>
+	</xs:simpleType>
+	<xs:complexType name="ContactRepresentationReference">
+		<xs:annotation>
+			<xs:documentation>Used when the contact already exists as a top level element representation.</xs:documentation>
+		</xs:annotation>
+		<xs:complexContent>
+			<xs:extension base="resqml:AbstractContactRepresentationPart">
+				<xs:sequence>
+					<xs:element name="Representation" type="eml:DataObjectReference" minOccurs="1" maxOccurs="1"/>
+				</xs:sequence>
+			</xs:extension>
+		</xs:complexContent>
+	</xs:complexType>
+</xs:schema>

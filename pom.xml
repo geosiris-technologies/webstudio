@@ -1,0 +1,153 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+    <name>WebStudio</name>
+    <packaging>war</packaging>
+    <groupId>com.geosiris</groupId>
+    <artifactId>webstudio</artifactId>
+    <version>1.0.0</version>
+    <organization>
+        <name>Geosiris</name>
+        <url>http://www.geosiris.com</url>
+    </organization>
+    <description>The WebStudio is a web application that allows to manipulate energyml file (such as EPC or individual xml files)</description>
+    <developers>
+        <developer>
+            <name>Valentin Gauthier</name>
+            <email>valentin.gauthier@geosiris.com</email>
+        </developer>
+    </developers>
+    <licenses>
+        <license>
+            <name>Apache License 2.0</name>
+            <url>https://www.apache.org/licenses/LICENSE-2.0.txt</url>
+            <distribution>repo</distribution>
+        </license>
+    </licenses>
+    <issueManagement>
+        <system>GitHub</system>
+        <url>https://github.com/geosiris-technologies/energyml-java/issues</url>
+    </issueManagement>
+    <properties>
+        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+        <maven.compiler.source>11</maven.compiler.source>
+        <maven.compiler.target>11</maven.compiler.target>
+        <java.version>11</java.version>
+        <src.dir>${project.basedir}/src/main/java</src.dir>
+        <rc.dir>${project.basedir}/src/main/resources</rc.dir>
+        <webapp.dir>${project.basedir}/src/main/webapp</webapp.dir>
+        <jetty.version>9.4.45.v20220203</jetty.version>
+        <tomcat.version>10.1.0-M15</tomcat.version>
+        <failOnMissingWebXml>true</failOnMissingWebXml>
+        <sonar.organization>geosiris-technologies</sonar.organization>
+        <sonar.host.url>https://sonarcloud.io</sonar.host.url>
+    </properties>
+    <build>
+        <sourceDirectory>${src.dir}</sourceDirectory>
+        <resources>
+            <resource>
+                <directory>${rc.dir}</directory>
+            </resource>
+        </resources>
+        <plugins>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-compiler-plugin</artifactId>
+                <version>3.8.0</version>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-war-plugin</artifactId>
+                <version>3.3.1</version>
+                <configuration>
+                    <attachClasses>true</attachClasses>
+                    <warSourceDirectory>${webapp.dir}</warSourceDirectory>
+                    <webXml>${webapp.dir}/WEB-INF/web.xml</webXml>
+                    <archive>
+                        <manifest>
+                            <addDefaultImplementationEntries>true</addDefaultImplementationEntries>
+                            <addDefaultSpecificationEntries>true</addDefaultSpecificationEntries>
+                        </manifest>
+                    </archive>
+                </configuration>
+            </plugin>
+        </plugins>
+    </build>
+    <dependencies>
+        <!--
+         _       _______    ____
+        | |     / / ___/   / __ \___  ____  ____  _____
+        | | /| / /\__ \   / /_/ / _ \/ __ \/ __ \/ ___/
+        | |/ |/ /___/ /  / _, _/  __/ /_/ / /_/ (__  )
+        |__/|__//____/  /_/ |_|\___/ .___/\____/____/
+                                  /_/
+        -->
+        <dependency>
+            <groupId>com.geosiris</groupId>
+            <artifactId>energyml-utils</artifactId>
+            <version>1.0.0</version>
+        </dependency>
+        <dependency>
+            <groupId>com.geosiris</groupId>
+            <artifactId>energyml-resqml201</artifactId>
+            <version>1.0.0</version>
+        </dependency>
+        <dependency>
+            <groupId>com.geosiris</groupId>
+            <artifactId>energyml-resqml22</artifactId>
+            <version>1.0.0</version>
+        </dependency>
+        <dependency>
+            <groupId>com.geosiris</groupId>
+            <artifactId>etpproto-java</artifactId>
+            <version>1.0.0</version>
+        </dependency>
+        <dependency>
+            <groupId>com.geosiris</groupId>
+            <artifactId>etptypes-java</artifactId>
+            <version>1.0.0</version>
+        </dependency>
+        <dependency>
+            <groupId>com.geosiris</groupId>
+            <artifactId>cloud-storage-api</artifactId>
+            <version>1.0.0</version>
+        </dependency>
+        <!--
+            ____        __    ___         ____
+           / __ \__  __/ /_  / (_)____   / __ \___  ____  ____  _____
+          / /_/ / / / / __ \/ / / ___/  / /_/ / _ \/ __ \/ __ \/ ___/
+         / ____/ /_/ / /_/ / / / /__   / _, _/  __/ /_/ / /_/ (__  )
+        /_/    \__,_/_.___/_/_/\___/  /_/ |_|\___/ .___/\____/____/
+                                                /_/ 
+        -->
+        <dependency>
+            <groupId>org.apache.tomcat</groupId>
+            <artifactId>tomcat-util</artifactId>
+            <version>${tomcat.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.tomcat</groupId>
+            <artifactId>tomcat-coyote</artifactId>
+            <version>${tomcat.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.eclipse.jetty.websocket</groupId>
+            <artifactId>websocket-client</artifactId>
+            <version>${jetty.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.postgresql</groupId>
+            <artifactId>postgresql</artifactId>
+            <version>42.2.13</version>
+        </dependency>
+    </dependencies>
+    <distributionManagement>
+        <repository>
+            <id>gitlab-maven</id>
+            <url>https://gitlab.com/api/v4/projects/${env.CI_PROJECT_ID}/packages/maven</url>
+        </repository>
+        <snapshotRepository>
+            <id>gitlab-maven</id>
+            <url>https://gitlab.com/api/v4/projects/${env.CI_PROJECT_ID}/packages/maven</url>
+        </snapshotRepository>
+    </distributionManagement>
+</project>

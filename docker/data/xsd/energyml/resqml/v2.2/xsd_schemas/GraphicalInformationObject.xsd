@@ -1,0 +1,624 @@
+<?xml version="1.0" encoding="utf-8"?>
+<xs:schema targetNamespace="http://www.energistics.org/energyml/data/resqmlv2" xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:resqml="http://www.energistics.org/energyml/data/resqmlv2" xmlns:eml="http://www.energistics.org/energyml/data/commonv2" elementFormDefault="qualified" version="2.2" attributeFormDefault="unqualified">
+	<!--														-->
+	<!-- Energistics License Agreement
+			This file is distributed under the Energistics Product License Agreement at
+			http://www.energistics.org/product-license-agreement
+			Use of this file constitutes agreement with the Energistics Product License Agreement.
+			Copyright (c) 2021 Energistics. All rights reserved.
+			Energistics, WITSML, PRODML and RESQML are trademarks or registered trademarks of Energistics.
+			-->
+	<!--														-->
+	<xs:annotation>
+		<xs:documentation>Schemas for graphical information.  Provides the ability to supply graphical style information with EnergyML data objects (specifically RESQML objects) as a part of a data transfer.  Scope covers all geometries.  Non-invasive (has its own top-level data object) and optional.  Color maps are also included.  The design leverages CSS and SVG.</xs:documentation>
+	</xs:annotation>
+	<!--														-->
+	<xs:import namespace="http://www.energistics.org/energyml/data/commonv2" schemaLocation="../../../common/v2.3/xsd_schemas/EmlAllObjects.xsd"/>
+	<xs:simpleType name="DisplaySpace">
+		<xs:restriction base="eml:TypeEnum">
+			<xs:enumeration value="device"/>
+			<xs:enumeration value="model"/>
+		</xs:restriction>
+	</xs:simpleType>
+	<xs:simpleType name="EdgePattern">
+		<xs:annotation>
+			<xs:documentation>The graphical patterns that an edge can support. </xs:documentation>
+		</xs:annotation>
+		<xs:restriction base="eml:TypeEnum">
+			<xs:enumeration value="dashed">
+				<xs:annotation>
+					<xs:documentation>The edge will display as a dashed (succession of dashes) line.</xs:documentation>
+				</xs:annotation>
+			</xs:enumeration>
+			<xs:enumeration value="dotted">
+				<xs:annotation>
+					<xs:documentation>The edge will display as a dotted (succession of dots) line.</xs:documentation>
+				</xs:annotation>
+			</xs:enumeration>
+			<xs:enumeration value="solid">
+				<xs:annotation>
+					<xs:documentation>The edge will display as a single line.</xs:documentation>
+				</xs:annotation>
+			</xs:enumeration>
+			<xs:enumeration value="wavy">
+				<xs:annotation>
+					<xs:documentation>The edge will display as a wavy line.</xs:documentation>
+				</xs:annotation>
+			</xs:enumeration>
+		</xs:restriction>
+	</xs:simpleType>
+	<xs:simpleType name="EdgePatternExt">
+		<xs:annotation>
+			<xs:documentation>Allows the use of custom edge pattern in addition to the EdgePattern enumeration.</xs:documentation>
+		</xs:annotation>
+		<xs:union memberTypes="resqml:EdgePattern eml:EnumExtensionPattern"/>
+	</xs:simpleType>
+	<xs:simpleType name="InterpolationDomain">
+		<xs:annotation>
+			<xs:documentation>Color domain/model for interpolation.</xs:documentation>
+		</xs:annotation>
+		<xs:restriction base="eml:TypeEnum">
+			<xs:enumeration value="hsv">
+				<xs:annotation>
+					<xs:documentation>Hue Saturation Value color model.</xs:documentation>
+				</xs:annotation>
+			</xs:enumeration>
+			<xs:enumeration value="rgb">
+				<xs:annotation>
+					<xs:documentation>Red Green Blue color model.</xs:documentation>
+				</xs:annotation>
+			</xs:enumeration>
+		</xs:restriction>
+	</xs:simpleType>
+	<xs:simpleType name="InterpolationMethod">
+		<xs:annotation>
+			<xs:documentation>Method for interpolation.</xs:documentation>
+		</xs:annotation>
+		<xs:restriction base="eml:TypeEnum">
+			<xs:enumeration value="linear"/>
+			<xs:enumeration value="logarithmic"/>
+		</xs:restriction>
+	</xs:simpleType>
+	<xs:simpleType name="NodeSymbol">
+		<xs:annotation>
+			<xs:documentation>Standardized symbols for node visualization.</xs:documentation>
+		</xs:annotation>
+		<xs:restriction base="eml:TypeEnum">
+			<xs:enumeration value="circle"/>
+			<xs:enumeration value="cross"/>
+			<xs:enumeration value="cube"/>
+			<xs:enumeration value="diamond"/>
+			<xs:enumeration value="plus"/>
+			<xs:enumeration value="point"/>
+			<xs:enumeration value="pyramid"/>
+			<xs:enumeration value="sphere"/>
+			<xs:enumeration value="star"/>
+			<xs:enumeration value="tetrahedron"/>
+		</xs:restriction>
+	</xs:simpleType>
+	<xs:simpleType name="NodeSymbolExt">
+		<xs:annotation>
+			<xs:documentation>Allows you to use custom node symbols in addition to the NodeSymbol enumeration.</xs:documentation>
+		</xs:annotation>
+		<xs:union memberTypes="resqml:NodeSymbol eml:EnumExtensionPattern"/>
+	</xs:simpleType>
+	<xs:simpleType name="ViewerKind">
+		<xs:annotation>
+			<xs:documentation>Standardized kinds of viewers.</xs:documentation>
+		</xs:annotation>
+		<xs:restriction base="eml:TypeEnum">
+			<xs:enumeration value="3d">
+				<xs:annotation>
+					<xs:documentation>A viewer where data objects are visualized in a 3D space.</xs:documentation>
+				</xs:annotation>
+			</xs:enumeration>
+			<xs:enumeration value="base map">
+				<xs:annotation>
+					<xs:documentation>A viewer where data objects are visualized in 2D from above.</xs:documentation>
+				</xs:annotation>
+			</xs:enumeration>
+			<xs:enumeration value="section">
+				<xs:annotation>
+					<xs:documentation>A viewer where data objects are laterally visualized in 2D.</xs:documentation>
+				</xs:annotation>
+			</xs:enumeration>
+			<xs:enumeration value="well correlation">
+				<xs:annotation>
+					<xs:documentation>A viewer where several well-related data objects (mostly channels and markers) are visualized against depth.</xs:documentation>
+				</xs:annotation>
+			</xs:enumeration>
+		</xs:restriction>
+	</xs:simpleType>
+	<xs:simpleType name="ViewerKindExt">
+		<xs:annotation>
+			<xs:documentation>Allows you to use custom viewer kinds in addition to the ViewerKind enumeration.</xs:documentation>
+		</xs:annotation>
+		<xs:union memberTypes="resqml:ViewerKind eml:EnumExtensionPattern"/>
+	</xs:simpleType>
+	<xs:complexType name="AbstractColorMap" abstract="true">
+		<xs:complexContent>
+			<xs:extension base="eml:AbstractObject">
+				<xs:sequence>
+					<xs:element name="NullColor" type="resqml:HsvColor" minOccurs="0" maxOccurs="1"/>
+					<xs:element name="AboveMaxColor" type="resqml:HsvColor" minOccurs="0" maxOccurs="1"/>
+					<xs:element name="BelowMinColor" type="resqml:HsvColor" minOccurs="0" maxOccurs="1"/>
+				</xs:sequence>
+			</xs:extension>
+		</xs:complexContent>
+	</xs:complexType>
+	<xs:complexType name="AbstractGraphicalInformationForIndexableElement" abstract="true">
+		<xs:annotation>
+			<xs:documentation>Some general attributes for graphical information applied on some particular indexable elements.</xs:documentation>
+		</xs:annotation>
+		<xs:sequence>
+			<xs:element name="ActiveAlphaInformationIndex" type="xs:long" minOccurs="0" maxOccurs="1">
+				<xs:annotation>
+					<xs:documentation>Index into the graphical information set.</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element name="ActiveAnnotationInformationIndex" type="xs:long" minOccurs="0" maxOccurs="1">
+				<xs:annotation>
+					<xs:documentation>Index into the graphical information set</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element name="ActiveColorInformationIndex" type="xs:long" minOccurs="0" maxOccurs="1">
+				<xs:annotation>
+					<xs:documentation>Index into the graphical information set</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element name="ActiveSizeInformationIndex" type="xs:long" minOccurs="0" maxOccurs="1">
+				<xs:annotation>
+					<xs:documentation>Index into the graphical information set</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element name="ConstantAlpha" type="xs:double" minOccurs="0" maxOccurs="1">
+				<xs:annotation>
+					<xs:documentation>It multiplies the opacity of the color map.
+If defined, then AlphaInformation cannot be defined.</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element name="IsVisible" type="xs:boolean" minOccurs="1" maxOccurs="1">
+				<xs:annotation>
+					<xs:documentation>Indicates if this graphical information is intended to be visible or only stored/transferred.</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element name="OverwriteColorAlpha" type="xs:boolean" minOccurs="0" maxOccurs="1">
+				<xs:annotation>
+					<xs:documentation>If both ConstantAlpha and either ConstantColor or ColorInformation are defined, then setting this field to true will indicate that the ConstantAlpha must be used instead of the ConstantColor or ColorInformation alpha(s). Else the product of the two alpha should be used.</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element name="ConstantColor" type="resqml:HsvColor" minOccurs="0" maxOccurs="1"/>
+		</xs:sequence>
+	</xs:complexType>
+	<xs:complexType name="AlphaInformation">
+		<xs:annotation>
+			<xs:documentation>Used for continuous properties and property kinds and for geometry. In the latter case, we need to point to the representation.</xs:documentation>
+		</xs:annotation>
+		<xs:complexContent>
+			<xs:extension base="eml:AbstractGraphicalInformation">
+				<xs:sequence>
+					<xs:element name="Alpha" type="xs:double" minOccurs="2" maxOccurs="unbounded">
+						<xs:annotation>
+							<xs:documentation>Count equals to entry count.
+It multiplies the opacity of the color map.</xs:documentation>
+						</xs:annotation>
+					</xs:element>
+					<xs:element name="Index" type="xs:string" minOccurs="2" maxOccurs="unbounded">
+						<xs:annotation>
+							<xs:documentation>Count equals to opacity count.</xs:documentation>
+						</xs:annotation>
+					</xs:element>
+					<xs:element name="MinMax" type="resqml:MinMax" minOccurs="0" maxOccurs="1"/>
+					<xs:element name="OverwriteColorAlpha" type="xs:boolean" minOccurs="1" maxOccurs="1">
+						<xs:annotation>
+							<xs:documentation>If both Alpha and either ConstantColor or ColorInformation are defined, then setting this field to true will indicate that the Alpha must be used instead of the ConstantColor or ColorInformation alpha(s). Else the product of the two alpha should be used.</xs:documentation>
+						</xs:annotation>
+					</xs:element>
+					<xs:element name="UseLogarithmicMapping" type="xs:boolean" minOccurs="1" maxOccurs="1">
+						<xs:annotation>
+							<xs:documentation>Indicates that the log of the property values are taken into account when mapped with the index of the color map.</xs:documentation>
+						</xs:annotation>
+					</xs:element>
+					<xs:element name="UseReverseMapping" type="xs:boolean" minOccurs="1" maxOccurs="1">
+						<xs:annotation>
+							<xs:documentation>Indicates that the minimum value of the property corresponds to the maximum index of the color map and that the maximum value of the property corresponds to the minimum index of the color map.</xs:documentation>
+						</xs:annotation>
+					</xs:element>
+					<xs:element name="ValueVectorIndex" type="xs:long" minOccurs="0" maxOccurs="1">
+						<xs:annotation>
+							<xs:documentation>Especially useful for vector property and for geometry.</xs:documentation>
+						</xs:annotation>
+					</xs:element>
+				</xs:sequence>
+			</xs:extension>
+		</xs:complexContent>
+	</xs:complexType>
+	<xs:complexType name="AnnotationInformation">
+		<xs:annotation>
+			<xs:documentation>Used for properties and property kinds and for geometry. In the latter case, we need to point to the representation.</xs:documentation>
+		</xs:annotation>
+		<xs:complexContent>
+			<xs:extension base="eml:AbstractGraphicalInformation">
+				<xs:sequence>
+					<xs:element name="ShowAnnotationEvery" type="xs:long" minOccurs="1" maxOccurs="1">
+						<xs:annotation>
+							<xs:documentation>Shows the annotation (i.e., the value) on some of the indexable element on a regular basis.</xs:documentation>
+						</xs:annotation>
+					</xs:element>
+					<xs:element name="ValueVectorIndices" type="xs:string" minOccurs="1" maxOccurs="unbounded">
+						<xs:annotation>
+							<xs:documentation>Especially useful for vector property and for geometry.</xs:documentation>
+						</xs:annotation>
+					</xs:element>
+				</xs:sequence>
+			</xs:extension>
+		</xs:complexContent>
+	</xs:complexType>
+	<xs:complexType name="ColorInformation">
+		<xs:annotation>
+			<xs:documentation>Used for properties and property kinds and for geometry. In the latter case, we need to point to the representation. </xs:documentation>
+		</xs:annotation>
+		<xs:complexContent>
+			<xs:extension base="eml:AbstractGraphicalInformation">
+				<xs:sequence>
+					<xs:element name="MinMax" type="resqml:MinMax" minOccurs="0" maxOccurs="1">
+						<xs:annotation>
+							<xs:documentation>This is the range of values of the associated property which will result in the minimum color and the maximum color. This is not necessarily the entire range of values of the data - data outside this range will continue to have the extreme color from this range.</xs:documentation>
+						</xs:annotation>
+					</xs:element>
+					<xs:element name="UseLogarithmicMapping" type="xs:boolean" minOccurs="1" maxOccurs="1">
+						<xs:annotation>
+							<xs:documentation>Indicates that the log of the property values are taken into account when mapped with the index of the color map.</xs:documentation>
+						</xs:annotation>
+					</xs:element>
+					<xs:element name="UseReverseMapping" type="xs:boolean" minOccurs="1" maxOccurs="1">
+						<xs:annotation>
+							<xs:documentation>Indicates that the minimum value of the property corresponds to the maximum index of the color map and that the maximum value of the property corresponds to the minimum index of the color map.</xs:documentation>
+						</xs:annotation>
+					</xs:element>
+					<xs:element name="ValueVectorIndex" type="xs:long" minOccurs="0" maxOccurs="1">
+						<xs:annotation>
+							<xs:documentation>Especially useful for vectorial property and for geometry.</xs:documentation>
+						</xs:annotation>
+					</xs:element>
+					<xs:element name="ColorMap" type="eml:DataObjectReference" minOccurs="0" maxOccurs="1"/>
+				</xs:sequence>
+			</xs:extension>
+		</xs:complexContent>
+	</xs:complexType>
+	<xs:element name="ColorMapDictionary" type="resqml:ColorMapDictionary" substitutionGroup="eml:AbstractDataObject"/>
+	<xs:complexType name="ColorMapDictionary">
+		<xs:annotation>
+			<xs:documentation>A container for color maps.</xs:documentation>
+		</xs:annotation>
+		<xs:complexContent>
+			<xs:extension base="eml:AbstractObject">
+				<xs:sequence>
+					<xs:element name="ColorMap" type="resqml:AbstractColorMap" minOccurs="0" maxOccurs="unbounded"/>
+				</xs:sequence>
+			</xs:extension>
+		</xs:complexContent>
+	</xs:complexType>
+	<xs:element name="ContinuousColorMap" type="resqml:ContinuousColorMap" substitutionGroup="eml:AbstractDataObject"/>
+	<xs:complexType name="ContinuousColorMap">
+		<xs:annotation>
+			<xs:documentation>A color map associating a double value to a color.</xs:documentation>
+		</xs:annotation>
+		<xs:complexContent>
+			<xs:extension base="resqml:AbstractColorMap">
+				<xs:sequence>
+					<xs:element name="InterpolationDomain" type="resqml:InterpolationDomain" minOccurs="1" maxOccurs="1">
+						<xs:annotation>
+							<xs:documentation>The domain for the interpolation between color map entries.</xs:documentation>
+						</xs:annotation>
+					</xs:element>
+					<xs:element name="InterpolationMethod" type="resqml:InterpolationMethod" minOccurs="1" maxOccurs="1">
+						<xs:annotation>
+							<xs:documentation>The method for the interpolation between color map entries.</xs:documentation>
+						</xs:annotation>
+					</xs:element>
+					<xs:element name="Entry" type="resqml:ContinuousColorMapEntry" minOccurs="2" maxOccurs="unbounded"/>
+				</xs:sequence>
+			</xs:extension>
+		</xs:complexContent>
+	</xs:complexType>
+	<xs:complexType name="ContinuousColorMapEntry">
+		<xs:annotation>
+			<xs:documentation>An association between a single double value and a color.</xs:documentation>
+		</xs:annotation>
+		<xs:sequence>
+			<xs:element name="Index" type="xs:double" minOccurs="1" maxOccurs="1">
+				<xs:annotation>
+					<xs:documentation>The double value to be associated with a particular color.</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element name="Hsv" type="resqml:HsvColor" minOccurs="1" maxOccurs="1"/>
+		</xs:sequence>
+	</xs:complexType>
+	<xs:complexType name="ContourLineSetInformation">
+		<xs:annotation>
+			<xs:documentation>Information about contour lines between regions having different ranges of values (elevation or depth mostly).</xs:documentation>
+		</xs:annotation>
+		<xs:complexContent>
+			<xs:extension base="eml:AbstractGraphicalInformation">
+				<xs:sequence>
+					<xs:element name="DisplayLabelOnMajorLine" type="xs:boolean" minOccurs="0" maxOccurs="1">
+						<xs:annotation>
+							<xs:documentation>Indicator to display the contour line value on major lines. To differentiate minor and major lines, see ShowMajorLineEvery.</xs:documentation>
+						</xs:annotation>
+					</xs:element>
+					<xs:element name="DisplayLabelOnMinorLine" type="xs:boolean" minOccurs="0" maxOccurs="1">
+						<xs:annotation>
+							<xs:documentation>Indicator to display the contour line value on minor lines. To differentiate minor and major lines, see ShowMajorLineEvery.</xs:documentation>
+						</xs:annotation>
+					</xs:element>
+					<xs:element name="Increment" type="xs:double" minOccurs="0" maxOccurs="1">
+						<xs:annotation>
+							<xs:documentation>The absolute incremented value between two consecutive minor contour lines.</xs:documentation>
+						</xs:annotation>
+					</xs:element>
+					<xs:element name="MajorLineGraphicalInformation" type="resqml:GraphicalInformationForEdges" minOccurs="0" maxOccurs="1">
+						<xs:annotation>
+							<xs:documentation>Graphical information of major lines.</xs:documentation>
+						</xs:annotation>
+					</xs:element>
+					<xs:element name="MinorLineGraphicalInformation" type="resqml:GraphicalInformationForEdges" minOccurs="0" maxOccurs="1">
+						<xs:annotation>
+							<xs:documentation>Graphical information of minor lines.</xs:documentation>
+						</xs:annotation>
+					</xs:element>
+					<xs:element name="ShowMajorLineEvery" type="xs:long" minOccurs="0" maxOccurs="1">
+						<xs:annotation>
+							<xs:documentation>Allows to regularly promote some minor lines to major lines.</xs:documentation>
+						</xs:annotation>
+					</xs:element>
+					<xs:element name="ValueVectorIndex" type="xs:long" minOccurs="0" maxOccurs="1">
+						<xs:annotation>
+							<xs:documentation>Especially useful for vectorial property and for geometry.</xs:documentation>
+						</xs:annotation>
+					</xs:element>
+				</xs:sequence>
+			</xs:extension>
+		</xs:complexContent>
+	</xs:complexType>
+	<xs:complexType name="DefaultGraphicalInformation">
+		<xs:annotation>
+			<xs:documentation>Either for Feature, Interp or representation, marker</xs:documentation>
+		</xs:annotation>
+		<xs:complexContent>
+			<xs:extension base="eml:AbstractGraphicalInformation">
+				<xs:sequence>
+					<xs:element name="ViewerId" type="xs:string" minOccurs="0" maxOccurs="1">
+						<xs:annotation>
+							<xs:documentation>Use this especially to differentiate between two viewers of the same kind</xs:documentation>
+						</xs:annotation>
+					</xs:element>
+					<xs:element name="ViewerKind" type="resqml:ViewerKindExt" minOccurs="1" maxOccurs="1">
+						<xs:annotation>
+							<xs:documentation>The kind of viewer where this graphical information is supposed to be used.</xs:documentation>
+						</xs:annotation>
+					</xs:element>
+					<xs:element name="IndexableElementInfo" type="resqml:AbstractGraphicalInformationForIndexableElement" minOccurs="1" maxOccurs="unbounded"/>
+				</xs:sequence>
+			</xs:extension>
+		</xs:complexContent>
+	</xs:complexType>
+	<xs:element name="DiscreteColorMap" type="resqml:DiscreteColorMap" substitutionGroup="eml:AbstractDataObject"/>
+	<xs:complexType name="DiscreteColorMap">
+		<xs:annotation>
+			<xs:documentation>A color map associating an integer value to a color.
+BUSINESS RULE: When using a discrete color map for a continuous property the property value will be equal to the next lowest integer in the color map.  For example a color map of 10, 20, 30, etc., and a continuous property value of 16.5 will result in a value of 10 for the minimum.</xs:documentation>
+		</xs:annotation>
+		<xs:complexContent>
+			<xs:extension base="resqml:AbstractColorMap">
+				<xs:sequence>
+					<xs:element name="Entry" type="resqml:DiscreteColorMapEntry" minOccurs="1" maxOccurs="unbounded"/>
+				</xs:sequence>
+			</xs:extension>
+		</xs:complexContent>
+	</xs:complexType>
+	<xs:complexType name="DiscreteColorMapEntry">
+		<xs:annotation>
+			<xs:documentation>An association between a single integer value and a color.</xs:documentation>
+		</xs:annotation>
+		<xs:sequence>
+			<xs:element name="index" type="xs:long" minOccurs="1" maxOccurs="1">
+				<xs:annotation>
+					<xs:documentation>The integer value to be associated with a particular color.</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element name="Hsv" type="resqml:HsvColor" minOccurs="1" maxOccurs="1"/>
+		</xs:sequence>
+	</xs:complexType>
+	<xs:complexType name="GraphicalInformationForEdges">
+		<xs:annotation>
+			<xs:documentation>Graphical information for edges.</xs:documentation>
+		</xs:annotation>
+		<xs:complexContent>
+			<xs:extension base="resqml:AbstractGraphicalInformationForIndexableElement">
+				<xs:sequence>
+					<xs:element name="DisplaySpace" type="resqml:DisplaySpace" minOccurs="0" maxOccurs="1"/>
+					<xs:element name="Pattern" type="resqml:EdgePatternExt" minOccurs="0" maxOccurs="1">
+						<xs:annotation>
+							<xs:documentation>The pattern of the edge.</xs:documentation>
+						</xs:annotation>
+					</xs:element>
+					<xs:element name="Thickness" type="eml:LengthMeasureExt" minOccurs="0" maxOccurs="1">
+						<xs:annotation>
+							<xs:documentation>The thickness of the edge.</xs:documentation>
+						</xs:annotation>
+					</xs:element>
+					<xs:element name="UseInterpolationBetweenNodes" type="xs:boolean" minOccurs="0" maxOccurs="1">
+						<xs:annotation>
+							<xs:documentation>Use color and size interpolation between nodes.</xs:documentation>
+						</xs:annotation>
+					</xs:element>
+				</xs:sequence>
+			</xs:extension>
+		</xs:complexContent>
+	</xs:complexType>
+	<xs:complexType name="GraphicalInformationForFaces">
+		<xs:annotation>
+			<xs:documentation>Graphical information for faces.</xs:documentation>
+		</xs:annotation>
+		<xs:complexContent>
+			<xs:extension base="resqml:AbstractGraphicalInformationForIndexableElement">
+				<xs:sequence>
+					<xs:element name="AppliesOnRightHandedFace" type="xs:boolean" minOccurs="0" maxOccurs="1">
+						<xs:annotation>
+							<xs:documentation>If true the graphical information only applies to the right handed side of the face. If false, it only applies to the left handed side of the face.
+If not present the graphical information applies to both sides of faces.</xs:documentation>
+						</xs:annotation>
+					</xs:element>
+					<xs:element name="UseInterpolationBetweenNodes" type="xs:boolean" minOccurs="0" maxOccurs="1">
+						<xs:annotation>
+							<xs:documentation>Interpolate the values all along the face based on fixed value set on nodes.</xs:documentation>
+						</xs:annotation>
+					</xs:element>
+				</xs:sequence>
+			</xs:extension>
+		</xs:complexContent>
+	</xs:complexType>
+	<xs:complexType name="GraphicalInformationForNodes">
+		<xs:annotation>
+			<xs:documentation>Graphical information for nodes.</xs:documentation>
+		</xs:annotation>
+		<xs:complexContent>
+			<xs:extension base="resqml:AbstractGraphicalInformationForIndexableElement">
+				<xs:sequence>
+					<xs:element name="ConstantSize" type="eml:LengthMeasureExt" minOccurs="0" maxOccurs="1">
+						<xs:annotation>
+							<xs:documentation>A size for all the nodes.
+Not defined if ActiveSizeInformationIndex is defined.</xs:documentation>
+						</xs:annotation>
+					</xs:element>
+					<xs:element name="DisplaySpace" type="resqml:DisplaySpace" minOccurs="0" maxOccurs="1"/>
+					<xs:element name="ShowSymbolEvery" type="xs:long" minOccurs="0" maxOccurs="1">
+						<xs:annotation>
+							<xs:documentation>Allows you to show only a subset of nodes (instead of all of them).</xs:documentation>
+						</xs:annotation>
+					</xs:element>
+					<xs:element name="Symbol" type="resqml:NodeSymbolExt" minOccurs="0" maxOccurs="1">
+						<xs:annotation>
+							<xs:documentation>The symbol used to visualize a single node.</xs:documentation>
+						</xs:annotation>
+					</xs:element>
+				</xs:sequence>
+			</xs:extension>
+		</xs:complexContent>
+	</xs:complexType>
+	<xs:complexType name="GraphicalInformationForVolumes">
+		<xs:annotation>
+			<xs:documentation>Graphical information for volumes.</xs:documentation>
+		</xs:annotation>
+		<xs:complexContent>
+			<xs:extension base="resqml:AbstractGraphicalInformationForIndexableElement">
+				<xs:sequence>
+					<xs:element name="UseInterpolationBetweenNodes" type="xs:boolean" minOccurs="0" maxOccurs="1">
+						<xs:annotation>
+							<xs:documentation>Interpolate the values all along the volume based on a fixed value set on nodes.</xs:documentation>
+						</xs:annotation>
+					</xs:element>
+				</xs:sequence>
+			</xs:extension>
+		</xs:complexContent>
+	</xs:complexType>
+	<xs:complexType name="GraphicalInformationForWholeObject">
+		<xs:annotation>
+			<xs:documentation>Graphical information for the whole data object.</xs:documentation>
+		</xs:annotation>
+		<xs:complexContent>
+			<xs:extension base="resqml:AbstractGraphicalInformationForIndexableElement">
+				<xs:sequence>
+					<xs:element name="ActiveContourLineSetInformationIndex" type="xs:long" minOccurs="0" maxOccurs="1">
+						<xs:annotation>
+							<xs:documentation>Display the contour line of the visualized data object according to information at a particular index of the GraphicalInformationSet.</xs:documentation>
+						</xs:annotation>
+					</xs:element>
+					<xs:element name="DisplayTitle" type="xs:boolean" minOccurs="0" maxOccurs="1">
+						<xs:annotation>
+							<xs:documentation>Display the title of the visualized data object next to it.</xs:documentation>
+						</xs:annotation>
+					</xs:element>
+				</xs:sequence>
+			</xs:extension>
+		</xs:complexContent>
+	</xs:complexType>
+	<xs:complexType name="HsvColor">
+		<xs:annotation>
+			<xs:documentation>See https://en.wikipedia.org/wiki/HSL_and_HSV</xs:documentation>
+		</xs:annotation>
+		<xs:sequence>
+			<xs:element name="Alpha" type="xs:double" minOccurs="1" maxOccurs="1">
+				<xs:annotation>
+					<xs:documentation>Transparency/opacity of the color: 0 is totally transparent while 1 is totally opaque.</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element name="Hue" type="xs:double" minOccurs="1" maxOccurs="1">
+				<xs:annotation>
+					<xs:documentation>Hue of the color in the HSV model.</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element name="Saturation" type="xs:double" minOccurs="1" maxOccurs="1">
+				<xs:annotation>
+					<xs:documentation>Saturation of the color in the HSV model.</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element name="Title" type="xs:string" minOccurs="0" maxOccurs="1">
+				<xs:annotation>
+					<xs:documentation>Name of the color.</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element name="Value" type="xs:double" minOccurs="1" maxOccurs="1">
+				<xs:annotation>
+					<xs:documentation>Value of the color in the HSV model.</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+		</xs:sequence>
+	</xs:complexType>
+	<xs:complexType name="MinMax">
+		<xs:annotation>
+			<xs:documentation>A simple reusable structure that carries a minimum and a maximum double value leading to the definition of an interval of values.</xs:documentation>
+		</xs:annotation>
+		<xs:sequence>
+			<xs:element name="Minimum" type="xs:double" minOccurs="1" maxOccurs="1">
+				<xs:annotation>
+					<xs:documentation>The minimum value of the interval.</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element name="Maximum" type="xs:double" minOccurs="1" maxOccurs="1">
+				<xs:annotation>
+					<xs:documentation>The maximum value of the interval.</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+		</xs:sequence>
+	</xs:complexType>
+	<xs:complexType name="SizeInformation">
+		<xs:annotation>
+			<xs:documentation>Used for properties and property kinds and for geometry. In the latter case, we need to point to the representation. </xs:documentation>
+		</xs:annotation>
+		<xs:complexContent>
+			<xs:extension base="eml:AbstractGraphicalInformation">
+				<xs:sequence>
+					<xs:element name="MinMax" type="resqml:MinMax" minOccurs="0" maxOccurs="1"/>
+					<xs:element name="UseLogarithmicMapping" type="xs:boolean" minOccurs="1" maxOccurs="1">
+						<xs:annotation>
+							<xs:documentation>Indicates that the log of the property values are taken into account when mapped with the index of the color map.</xs:documentation>
+						</xs:annotation>
+					</xs:element>
+					<xs:element name="UseReverseMapping" type="xs:boolean" minOccurs="1" maxOccurs="1">
+						<xs:annotation>
+							<xs:documentation>Indicates that the minimum value of the property corresponds to the maximum index of the color map and that te maximum value of the property corresponds to the minimum index of the color map.</xs:documentation>
+						</xs:annotation>
+					</xs:element>
+					<xs:element name="ValueVectorIndex" type="xs:long" minOccurs="0" maxOccurs="1">
+						<xs:annotation>
+							<xs:documentation>Especially useful for vectorial property and for geometry.</xs:documentation>
+						</xs:annotation>
+					</xs:element>
+				</xs:sequence>
+			</xs:extension>
+		</xs:complexContent>
+	</xs:complexType>
+	<!--														-->
+	</xs:schema>

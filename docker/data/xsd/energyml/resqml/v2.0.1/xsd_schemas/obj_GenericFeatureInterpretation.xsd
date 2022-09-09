@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xsd:schema xmlns:resqml="http://www.energistics.org/energyml/data/resqmlv2" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:eml="http://www.energistics.org/energyml/data/commonv2" targetNamespace="http://www.energistics.org/energyml/data/resqmlv2" elementFormDefault="qualified" attributeFormDefault="unqualified" version="2.0">
+	<!--                                                         -->
+	<!-- Energistics License Agreement
+			This file is distributed under the Energistics License Agreement at
+			http://www.energistics.org
+			Use of this file constitutes agreement with the Energistics License Agreement.
+			Copyright (c) 2014 Energistics. All rights reserved.
+			Energistics, WITSML, PRODML and RESQML are trademarks or registered trademarks of Energistics.
+			-->
+	<!--                                                         -->
+	<xs:import namespace="http://www.energistics.org/energyml/data/commonv2" schemaLocation="../../../common/v2.0/xsd_schemas/AllCommonObjects.xsd"/>
+	<xsd:include schemaLocation="Properties.xsd"/>
+	<xsd:include schemaLocation="Geometry.xsd"/>
+	<xsd:include schemaLocation="Wells.xsd"/>
+	<xsd:include schemaLocation="Structural.xsd"/>
+	<xsd:include schemaLocation="Grids.xsd"/>
+	<xsd:include schemaLocation="Seismic.xsd"/>
+	<xsd:include schemaLocation="Representations.xsd"/>
+	<xsd:include schemaLocation="Interpretations.xsd"/>
+	<xsd:include schemaLocation="Technical.xsd"/>
+	<xsd:include schemaLocation="Geologic.xsd"/>
+	<xsd:include schemaLocation="Features.xsd"/>
+	<xsd:include schemaLocation="Common.xsd"/>
+	<!--                                                         -->
+	<xsd:element name="GenericFeatureInterpretation" type="resqml:obj_GenericFeatureInterpretation" substitutionGroup="eml:AbstractDataObject"/>
+</xsd:schema>

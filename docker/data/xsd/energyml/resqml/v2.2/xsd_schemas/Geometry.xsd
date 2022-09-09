@@ -1,0 +1,528 @@
+<?xml version="1.0" encoding="utf-8"?>
+<xs:schema targetNamespace="http://www.energistics.org/energyml/data/resqmlv2" xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:resqml="http://www.energistics.org/energyml/data/resqmlv2" xmlns:eml="http://www.energistics.org/energyml/data/commonv2" elementFormDefault="qualified" version="2.2" attributeFormDefault="unqualified">
+	<!--														-->
+	<!-- Energistics License Agreement
+			This file is distributed under the Energistics Product License Agreement at
+			http://www.energistics.org/product-license-agreement
+			Use of this file constitutes agreement with the Energistics Product License Agreement.
+			Copyright (c) 2021 Energistics. All rights reserved.
+			Energistics, WITSML, PRODML and RESQML are trademarks or registered trademarks of Energistics.
+			-->
+	<!--														-->
+	<xs:annotation>
+		<xs:documentation>This package contains the classes used to define and exchanged geometry data in RESQML. In general, geometry is attached to a representation with either a finite extent or planes, which are infinite. However, when spatial locations need to be stored for specific elements in a representation, then this information is stored similarly to properties using property points. </xs:documentation>
+	</xs:annotation>
+	<!--														-->
+	<xs:import namespace="http://www.energistics.org/energyml/data/commonv2" schemaLocation="../../../common/v2.3/xsd_schemas/EmlAllObjects.xsd"/>
+	<!--														-->
+	<xs:include schemaLocation="Seismic.xsd"/>
+	<xs:include schemaLocation="Representations.xsd"/>
+	<xs:complexType name="AbstractGeometry" abstract="true">
+		<xs:annotation>
+			<xs:documentation>The base class for all geometric values, which is always associated with a representation.</xs:documentation>
+		</xs:annotation>
+		<xs:sequence>
+			<xs:element name="TimeIndex" type="eml:TimeIndex" minOccurs="0" maxOccurs="1"/>
+			<xs:element name="LocalCrs" type="eml:DataObjectReference" minOccurs="1" maxOccurs="1"/>
+		</xs:sequence>
+	</xs:complexType>
+	<xs:complexType name="AbstractParametricLineArray" abstract="true">
+		<xs:annotation>
+			<xs:documentation>Defines an array of parametric lines.
+
+The array size is obtained from context. In the current schema, this may be as simple as a 1D array (#Lines=count) or a 2D array #Lines = NIL x NJL for an IJK grid representation.</xs:documentation>
+		</xs:annotation>
+		<xs:sequence/>
+	</xs:complexType>
+	<xs:complexType name="AbstractParametricLineGeometry" abstract="true">
+		<xs:annotation>
+			<xs:documentation>The abstract class for defining a single parametric line.</xs:documentation>
+		</xs:annotation>
+		<xs:complexContent>
+			<xs:extension base="resqml:AbstractGeometry">
+				<xs:sequence/>
+			</xs:extension>
+		</xs:complexContent>
+	</xs:complexType>
+	<xs:complexType name="AbstractPlaneGeometry" abstract="true">
+		<xs:annotation>
+			<xs:documentation>The abstract class for all geometric values defined by planes.</xs:documentation>
+		</xs:annotation>
+		<xs:complexContent>
+			<xs:extension base="resqml:AbstractGeometry">
+				<xs:sequence/>
+			</xs:extension>
+		</xs:complexContent>
+	</xs:complexType>
+	<xs:complexType name="AbstractPoint3dArray" abstract="true">
+		<xs:annotation>
+			<xs:documentation>The abstract class of 3D points implemented in a single fashion for the schema. Abstraction allows a variety of instantiations for efficiency or to implicitly provide additional geometric information about a data-object. For example, parametric points can be used to implicitly define a wellbore trajectory using an underlying parametric line, by the specification of the control points along the parametric line.
+
+The dimensionality of the array of 3D points is based on context within an instance.</xs:documentation>
+		</xs:annotation>
+		<xs:sequence/>
+	</xs:complexType>
+	<xs:complexType name="Graph2dRepresentation">
+		<xs:annotation>
+			<xs:documentation>The geometry of a single point defined by its location in the local CRS.</xs:documentation>
+		</xs:annotation>
+		<xs:complexContent>
+			<xs:extension base="resqml:AbstractRepresentation">
+				<xs:sequence>
+					<xs:element name="Edges" type="eml:AbstractIntegerArray" minOccurs="1" maxOccurs="1"/>
+					<xs:element name="isDirected" type="xs:boolean" minOccurs="1" maxOccurs="1"/>
+					<xs:element name="Geometry" type="resqml:PointGeometry" minOccurs="1" maxOccurs="1"/>
+				</xs:sequence>
+			</xs:extension>
+		</xs:complexContent>
+	</xs:complexType>
+	<xs:complexType name="HorizontalPlaneGeometry">
+		<xs:annotation>
+			<xs:documentation>Defines the infinite geometry of a horizontal plane provided by giving its unique Z value.</xs:documentation>
+		</xs:annotation>
+		<xs:complexContent>
+			<xs:extension base="resqml:AbstractPlaneGeometry">
+				<xs:sequence>
+					<xs:element name="Coordinate" type="xs:double" minOccurs="1" maxOccurs="1"/>
+				</xs:sequence>
+			</xs:extension>
+		</xs:complexContent>
+	</xs:complexType>
+	<xs:complexType name="ParametricLineArray">
+		<xs:annotation>
+			<xs:documentation>Defines an array of parametric lines of multiple kinds.
+For more information, see the RESQML Technical Usage Guide.
+In general, a parametric line is unbounded so the interpolant in the first or last interval is used as an extrapolating function.
+
+Special Cases:
+(1) Natural cubic splines with only two control points reduce to linear interpolation.
+(2) If required but not defined, tangent vectors at a spline knot are calculated from the control point data using a quadratic fit to the control point and the two adjacent control points (if internal) or, if at an edge, by a vanishing second derivative. This calculation reduces locally to a natural spline.
+(3) If not expected but provided, then extraneous information is to be ignored, e.g., tangent vectors for linear splines.
+
+Vertical:
+(1) Control points are (X,Y,-).
+(2) Parameter values are interpreted as depth =&gt; (X,Y,Z), where the depth to Z conversion depends on the vertical CRS direction.
+
+Piecewise Linear:
+(1) Control points are (P,X,Y,Z).
+(2) Piecewise interpolation in (X,Y,Z) as a linear function of P.
+
+Natural Cubic:
+(1) Control points are (P,X,Y,Z).
+(2) First and second derivatives at each knot are inferred from a quadratic fit to the two adjacent control points, if internal, or, if external knots, by specifying a vanishing second derivative.
+
+Tangential Cubic and Minimum-Curvature.
+(1) Control points are (P,X,Y,Z).
+(2) Tangent vectors are (P,TX,TY,TZ). Tangent vectors are defined as the derivative of position with respect to the parameter. If the parameter is arc-length, then the tangent vectors are unit vectors, but not otherwise.
+(3) Interpolating minimum-curvature basis functions obtained by a circular arc construction. This differs from the "drilling" algorithm in which the parameter must be arc length.
+
+Z Linear Cubic:
+(1) (X,Y) follow a natural cubic spline and Z follows a linear spline.
+(2) On export, to go from Z to P, the RESQML "software writer" first needs to determine the interval and then uses linearity in Z to determine P. 
+(3) On import, a RESQML "software reader" converts from P to Z using piecewise linear interpolation, and from P to X and Y using natural cubic spline interpolation. Other than the differing treatment of Z from X and Y, these are completely generic interpolation algorithms.
+(4) The use of P instead of Z for interpolation allows support for over-turned reservoir structures and removes any apparent discontinuities in parametric derivatives at the spline knots.</xs:documentation>
+		</xs:annotation>
+		<xs:complexContent>
+			<xs:extension base="resqml:AbstractParametricLineArray">
+				<xs:sequence>
+					<xs:element name="ControlPointParameters" type="eml:AbstractFloatingPointArray" minOccurs="0" maxOccurs="1">
+						<xs:annotation>
+							<xs:documentation>An array of explicit control point parameters for all of the control points on each of the parametric lines.
+If you cannot provide enough control point parameters for a parametric line, then pad with NaN values.
+BUSINESS RULE: The parametric values must be strictly monotonically increasing on each parametric line.</xs:documentation>
+						</xs:annotation>
+					</xs:element>
+					<xs:element name="ControlPoints" type="resqml:AbstractPoint3dArray" minOccurs="1" maxOccurs="1">
+						<xs:annotation>
+							<xs:documentation>An array of 3D points for all of the control points on each of the parametric lines. The number of control points per line is given by the KnotCount.
+Control points are ordered by lines going fastest, then by knots going slowest. 
+If you cannot provide enough control points for a parametric line, then pad with NaN values.</xs:documentation>
+						</xs:annotation>
+					</xs:element>
+					<xs:element name="KnotCount" type="eml:PositiveLong" minOccurs="1" maxOccurs="1">
+						<xs:annotation>
+							<xs:documentation>The first dimension of the control point, control point parameter, and tangent vector arrays for the parametric splines. The Knot Count is typically chosen to be the maximum number of control points, parameters or tangent vectors on any parametric line in the array of parametric lines.</xs:documentation>
+						</xs:annotation>
+					</xs:element>
+					<xs:element name="LineKindIndices" type="eml:AbstractIntegerArray" minOccurs="1" maxOccurs="1">
+						<xs:annotation>
+							<xs:documentation>An array of integers indicating the parametric line kind.
+
+0 = vertical
+1 = linear spline
+2 = natural cubic spline
+3 = tangential cubic spline
+4 = Z linear cubic spline
+5 = minimum-curvature spline
+null value: no line 
+
+Size = #Lines, e.g., (1D or 2D)</xs:documentation>
+						</xs:annotation>
+					</xs:element>
+					<xs:element name="TangentVectors" type="resqml:AbstractPoint3dArray" minOccurs="0" maxOccurs="1">
+						<xs:annotation>
+							<xs:documentation>An optional array of tangent vectors for all of the control points on each of the tangential cubic and minimum-curvature parametric lines. Used only if tangent vectors are present.
+The number of tangent vectors per line is given by the KnotCount for these spline types.
+
+Described as a 1D array, the tangent vector array is divided into segments of length Knot Count, with null (NaN) values added to each segment to fill it up.
+
+Size = Knot Count x #Lines, e.g., 2D or 3D
+
+BUSINESS RULE: For all lines other than the cubic and minimum-curvature parametric lines, this array should not appear. For these line kinds, there should be one tangent vector for each control point.
+
+If a tangent vector is missing, then it is computed in the same fashion as for a natural cubic spline. Specifically, to obtain the tangent at internal knots, the control points are fit by a quadratic function with the two adjacent control points. At edge knots, the second derivative vanishes.</xs:documentation>
+						</xs:annotation>
+					</xs:element>
+					<xs:element name="ParametricLineIntersections" type="resqml:ParametricLineIntersections" minOccurs="0" maxOccurs="1"/>
+				</xs:sequence>
+			</xs:extension>
+		</xs:complexContent>
+	</xs:complexType>
+	<xs:complexType name="ParametricLineFromRepresentationGeometry">
+		<xs:annotation>
+			<xs:documentation>The parametric line extracted from an existing representation.
+
+BUSINESS RULE: The supporting representation must have pillars or lines as indexable elements.</xs:documentation>
+		</xs:annotation>
+		<xs:complexContent>
+			<xs:extension base="resqml:AbstractParametricLineGeometry">
+				<xs:sequence>
+					<xs:element name="LineIndexOnSupportingRepresentation" type="eml:NonNegativeLong" minOccurs="1" maxOccurs="1">
+						<xs:annotation>
+							<xs:documentation>The line index of the selected line in the supporting representation.
+
+For a column-layer grid, the parametric lines follow the indexing of the pillars.</xs:documentation>
+						</xs:annotation>
+					</xs:element>
+					<xs:element name="SupportingRepresentation" type="eml:DataObjectReference" minOccurs="1" maxOccurs="1"/>
+				</xs:sequence>
+			</xs:extension>
+		</xs:complexContent>
+	</xs:complexType>
+	<xs:complexType name="ParametricLineFromRepresentationLatticeArray">
+		<xs:annotation>
+			<xs:documentation>The lattice array of parametric lines extracted from an existing representation.
+
+BUSINESS RULE: The supporting representation must have pillars or lines as indexable elements.</xs:documentation>
+		</xs:annotation>
+		<xs:complexContent>
+			<xs:extension base="resqml:AbstractParametricLineArray">
+				<xs:sequence>
+					<xs:element name="LineIndicesOnSupportingRepresentation" type="eml:IntegerLatticeArray" minOccurs="1" maxOccurs="1">
+						<xs:annotation>
+							<xs:documentation>The line indices of the selected lines in the supporting representation. The index selection is regularly incremented from one node to the next node.
+
+BUSINESS RULE: The dimensions of the integer lattice array must be consistent with the dimensions of the supporting representation.
+
+For a column-layer grid, the parametric lines follow the indexing of the pillars.
+
+BUSINESS RULE: The start value of the integer lattice array must be the linearized index of the starting line.
+Example: iStart + ni * jStart in case of a supporting 2D grid.</xs:documentation>
+						</xs:annotation>
+					</xs:element>
+					<xs:element name="SupportingRepresentation" type="eml:DataObjectReference" minOccurs="1" maxOccurs="1"/>
+				</xs:sequence>
+			</xs:extension>
+		</xs:complexContent>
+	</xs:complexType>
+	<xs:complexType name="ParametricLineGeometry">
+		<xs:annotation>
+			<xs:documentation>Defines a parametric line of any kind.
+
+For more information on the supported parametric lines, see ParametricLineArray.</xs:documentation>
+		</xs:annotation>
+		<xs:complexContent>
+			<xs:extension base="resqml:AbstractParametricLineGeometry">
+				<xs:sequence>
+					<xs:element name="ControlPointParameters" type="eml:AbstractFloatingPointArray" minOccurs="0" maxOccurs="1">
+						<xs:annotation>
+							<xs:documentation>An array of explicit control point parameters for the control points on the parametric line. 
+BUSINESS RULE: The size MUST match the number of control points. 
+BUSINESS RULE: The parametric values MUST be strictly monotonically increasing on the parametric line. </xs:documentation>
+						</xs:annotation>
+					</xs:element>
+					<xs:element name="ControlPoints" type="resqml:AbstractPoint3dArray" minOccurs="1" maxOccurs="1">
+						<xs:annotation>
+							<xs:documentation>An array of 3D points for the control points on the parametric line.</xs:documentation>
+						</xs:annotation>
+					</xs:element>
+					<xs:element name="KnotCount" type="eml:PositiveLong" minOccurs="1" maxOccurs="1">
+						<xs:annotation>
+							<xs:documentation>Number of spline knots in the parametric line.</xs:documentation>
+						</xs:annotation>
+					</xs:element>
+					<xs:element name="LineKindIndex" type="xs:long" minOccurs="1" maxOccurs="1">
+						<xs:annotation>
+							<xs:documentation>Integer indicating the parametric line kind
+
+0 for vertical
+1 for linear spline
+2 for natural cubic spline
+3 for cubic spline
+4 for z linear cubic spline
+5 for minimum-curvature spline
+(-1) for null: no line</xs:documentation>
+						</xs:annotation>
+					</xs:element>
+					<xs:element name="TangentVectors" type="resqml:AbstractPoint3dArray" minOccurs="0" maxOccurs="1">
+						<xs:annotation>
+							<xs:documentation>An optional array of tangent vectors for each control point on the cubic and minimum-curvature parametric lines. Used only if tangent vectors are present.
+
+If a tangent vector is missing, then it is computed in the same fashion as for a natural cubic spline. Specifically, to obtain the tangent at internal knots, the control points are fit by a quadratic function with the two adjacent control points. At edge knots, the second derivative vanishes.</xs:documentation>
+						</xs:annotation>
+					</xs:element>
+				</xs:sequence>
+			</xs:extension>
+		</xs:complexContent>
+	</xs:complexType>
+	<xs:complexType name="ParametricLineIntersections">
+		<xs:annotation>
+			<xs:documentation>Used to specify the intersections between parametric lines. This information is purely geometric and is not required for the evaluation of the parametric point locations on these lines. The information required for that purpose is stored in the parametric points array.</xs:documentation>
+		</xs:annotation>
+		<xs:sequence>
+			<xs:element name="Count" type="eml:PositiveLong" minOccurs="1" maxOccurs="1">
+				<xs:annotation>
+					<xs:documentation>Number of parametric line intersections. Must be positive.</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element name="IntersectionLinePairs" type="eml:AbstractIntegerArray" minOccurs="1" maxOccurs="1">
+				<xs:annotation>
+					<xs:documentation>Intersected line index pair for (line 1, line 2).
+
+Size = 2 x count</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element name="ParameterValuePairs" type="eml:AbstractValueArray" minOccurs="1" maxOccurs="1">
+				<xs:annotation>
+					<xs:documentation>Intersected line parameter value pairs for (line 1, line 2).
+
+Size = 2 x count</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+		</xs:sequence>
+	</xs:complexType>
+	<xs:complexType name="Point2dExternalArray">
+		<xs:annotation>
+			<xs:documentation>An array of explicit XY points stored as two coordinates in an HDF5 dataset. If needed, the implied Z coordinate is uniformly 0.</xs:documentation>
+		</xs:annotation>
+		<xs:complexContent>
+			<xs:extension base="resqml:AbstractPoint3dArray">
+				<xs:sequence>
+					<xs:element name="Coordinates" type="eml:ExternalDataArray" minOccurs="1" maxOccurs="1">
+						<xs:annotation>
+							<xs:documentation>Reference to an HDF5 2D dataset of XY points. The 2 coordinates are stored sequentially in HDF5, i.e., a multi-dimensional array of points is stored as a 2 x ... HDF5 array.</xs:documentation>
+						</xs:annotation>
+					</xs:element>
+				</xs:sequence>
+			</xs:extension>
+		</xs:complexContent>
+	</xs:complexType>
+	<xs:complexType name="Point3d">
+		<xs:annotation>
+			<xs:documentation>Defines a point using coordinates in 3D space.</xs:documentation>
+		</xs:annotation>
+		<xs:sequence>
+			<xs:element name="Coordinate1" type="xs:double" minOccurs="1" maxOccurs="1">
+				<xs:annotation>
+					<xs:documentation>X coordinate</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element name="Coordinate2" type="xs:double" minOccurs="1" maxOccurs="1">
+				<xs:annotation>
+					<xs:documentation>Y coordinate</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element name="Coordinate3" type="xs:double" minOccurs="1" maxOccurs="1">
+				<xs:annotation>
+					<xs:documentation>Either Z or T coordinate</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+		</xs:sequence>
+	</xs:complexType>
+	<xs:complexType name="Point3dExternalArray">
+		<xs:annotation>
+			<xs:documentation>An array of explicit XYZ points stored as three coordinates in an HDF5 dataset.</xs:documentation>
+		</xs:annotation>
+		<xs:complexContent>
+			<xs:extension base="resqml:AbstractPoint3dArray">
+				<xs:sequence>
+					<xs:element name="Coordinates" type="eml:ExternalDataArray" minOccurs="1" maxOccurs="1">
+						<xs:annotation>
+							<xs:documentation>Reference to an HDF5 3D dataset of XYZ points. The 3 coordinates are stored sequentially in HDF5, i.e., a multi-dimensional array of points is stored as a 3 x ... HDF5 array.</xs:documentation>
+						</xs:annotation>
+					</xs:element>
+				</xs:sequence>
+			</xs:extension>
+		</xs:complexContent>
+	</xs:complexType>
+	<xs:complexType name="Point3dFromRepresentationLatticeArray">
+		<xs:annotation>
+			<xs:documentation>A lattice array of points extracted from an existing representation.
+
+BUSINESS RULE: The supporting representation must have nodes as indexable elements.</xs:documentation>
+		</xs:annotation>
+		<xs:complexContent>
+			<xs:extension base="resqml:AbstractPoint3dArray">
+				<xs:sequence>
+					<xs:element name="NodeIndicesOnSupportingRepresentation" type="eml:IntegerLatticeArray" minOccurs="1" maxOccurs="1">
+						<xs:annotation>
+							<xs:documentation>The node indices of the selected nodes in the supporting representation. The index selection is regularly incremented from one node to the next node.
+
+BUSINESS RULE: The node indices must be consistent with the size of supporting representation. </xs:documentation>
+						</xs:annotation>
+					</xs:element>
+					<xs:element name="SupportingRepresentation" type="eml:DataObjectReference" minOccurs="1" maxOccurs="1"/>
+				</xs:sequence>
+			</xs:extension>
+		</xs:complexContent>
+	</xs:complexType>
+	<xs:complexType name="Point3dLatticeArray">
+		<xs:annotation>
+			<xs:documentation>Describes a lattice array of points obtained by sampling from along a multi-dimensional lattice. Each dimension of the lattice can be uniformly or irregularly spaced.</xs:documentation>
+		</xs:annotation>
+		<xs:complexContent>
+			<xs:extension base="resqml:AbstractPoint3dArray">
+				<xs:sequence>
+					<xs:element name="AllDimensionsAreOrthogonal" type="xs:boolean" minOccurs="0" maxOccurs="1">
+						<xs:annotation>
+							<xs:documentation>The optional element that indicates that the offset vectors for each direction are mutually orthogonal to each other. This meta-information is useful to remove any doubt of orthogonality in case of numerical precision issues.
+
+BUSINESS RULE: If you don't know it or if only one lattice dimension is given, do not provide this element.</xs:documentation>
+						</xs:annotation>
+					</xs:element>
+					<xs:element name="Origin" type="resqml:Point3d" minOccurs="1" maxOccurs="1">
+						<xs:annotation>
+							<xs:documentation>The origin location of the lattice given as XYZ coordinates.</xs:documentation>
+						</xs:annotation>
+					</xs:element>
+					<xs:element name="Dimension" type="resqml:Point3dLatticeDimension" minOccurs="1" maxOccurs="unbounded"/>
+				</xs:sequence>
+			</xs:extension>
+		</xs:complexContent>
+	</xs:complexType>
+	<xs:complexType name="Point3dLatticeDimension">
+		<xs:annotation>
+			<xs:documentation>Defines the size and sampling in each dimension (direction) of the point 3D lattice array. Sampling can be uniform or irregular.</xs:documentation>
+		</xs:annotation>
+		<xs:sequence>
+			<xs:element name="Direction" type="resqml:Point3d" minOccurs="1" maxOccurs="1">
+				<xs:annotation>
+					<xs:documentation>The direction of the axis of this lattice dimension. This is a relative offset vector instead of an absolute 3D point.</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element name="Spacing" type="eml:AbstractFloatingPointArray" minOccurs="1" maxOccurs="1">
+				<xs:annotation>
+					<xs:documentation>A lattice of N offset points is described by a spacing array of size N-1. The offset between points is given by the spacing value multiplied by the offset vector. For example, the first offset is 0. The second offset is the first spacing * offset. The second offset is (first spacing + second spacing) * offset, etc.</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+		</xs:sequence>
+	</xs:complexType>
+	<xs:complexType name="Point3dParametricArray">
+		<xs:annotation>
+			<xs:documentation>A parametric specification of an array of XYZ points.</xs:documentation>
+		</xs:annotation>
+		<xs:complexContent>
+			<xs:extension base="resqml:AbstractPoint3dArray">
+				<xs:sequence>
+					<xs:element name="Parameters" type="eml:AbstractValueArray" minOccurs="1" maxOccurs="1">
+						<xs:annotation>
+							<xs:documentation>A multi-dimensional array of parametric values that implicitly specifies an array of XYZ points.
+
+The parametric values provided in this data-object must be consistent with the parametric values specified in the referenced parametric line array.
+
+When constructing a column-layer grid geometry using parametric points, the array indexing follows the dimensionality of the coordinate lines x NKL, which is either a 2D or 3D array.</xs:documentation>
+						</xs:annotation>
+					</xs:element>
+					<xs:element name="ParametricLineIndices" type="eml:AbstractIntegerArray" minOccurs="0" maxOccurs="1">
+						<xs:annotation>
+							<xs:documentation>An optional array of indices that map from the array index to the index of the corresponding parametric line. 
+If this information is known from context, then this array is not needed. For example, in either of these cases:
+(1) If the mapping from array index to parametric line is 1:1.
+(2) If the mapping has already been specified, as with the pillar Index from the column-layer geometry of a grid.
+
+For example, when constructing a column-layer grid geometry using parametric lines, the array indexing follows the dimensionality of the coordinate lines.</xs:documentation>
+						</xs:annotation>
+					</xs:element>
+					<xs:element name="TruncatedLineIndices" type="eml:AbstractIntegerArray" minOccurs="0" maxOccurs="1">
+						<xs:annotation>
+							<xs:documentation>A 2D array of line indices for use with intersecting parametric lines. Each record consists of a single line index, which indicates the array line that uses this truncation information, followed by the parametric line indices for each of the points on that line.
+
+For a non-truncated line, the equivalent record repeats the array line index NKL+1 times. 
+
+Size = (NKL+1) x truncatedLineCount</xs:documentation>
+						</xs:annotation>
+					</xs:element>
+					<xs:element name="ParametricLines" type="resqml:AbstractParametricLineArray" minOccurs="1" maxOccurs="1"/>
+				</xs:sequence>
+			</xs:extension>
+		</xs:complexContent>
+	</xs:complexType>
+	<xs:complexType name="Point3dZValueArray">
+		<xs:annotation>
+			<xs:documentation>An array of points defined by applying a Z value on top of an existing array of points, XYZ, where Z is ignored. Used in these cases:
+	- in 2D for defining geometry of one patch of a 2D grid representation.
+	- for extracting nodal geometry from one grid representation for use in another.</xs:documentation>
+		</xs:annotation>
+		<xs:complexContent>
+			<xs:extension base="resqml:AbstractPoint3dArray">
+				<xs:sequence>
+					<xs:element name="SupportingGeometry" type="resqml:AbstractPoint3dArray" minOccurs="1" maxOccurs="1">
+						<xs:annotation>
+							<xs:documentation>Geometry defining the X and Y coordinates.</xs:documentation>
+						</xs:annotation>
+					</xs:element>
+					<xs:element name="ZValues" type="eml:AbstractFloatingPointArray" minOccurs="1" maxOccurs="1">
+						<xs:annotation>
+							<xs:documentation>The values for Z coordinates</xs:documentation>
+						</xs:annotation>
+					</xs:element>
+				</xs:sequence>
+			</xs:extension>
+		</xs:complexContent>
+	</xs:complexType>
+	<xs:complexType name="PointGeometry">
+		<xs:annotation>
+			<xs:documentation>The geometry of a set of points defined by their location in the local CRS, with optional seismic coordinates.</xs:documentation>
+		</xs:annotation>
+		<xs:complexContent>
+			<xs:extension base="resqml:AbstractGeometry">
+				<xs:sequence>
+					<xs:element name="Points" type="resqml:AbstractPoint3dArray" minOccurs="1" maxOccurs="1"/>
+					<xs:element name="SeismicCoordinates" type="resqml:AbstractSeismicCoordinates" minOccurs="0" maxOccurs="1"/>
+				</xs:sequence>
+			</xs:extension>
+		</xs:complexContent>
+	</xs:complexType>
+	<xs:complexType name="SinglePointGeometry">
+		<xs:annotation>
+			<xs:documentation>The geometry of a single point defined by its location in the local CRS.</xs:documentation>
+		</xs:annotation>
+		<xs:complexContent>
+			<xs:extension base="resqml:AbstractGeometry">
+				<xs:sequence>
+					<xs:element name="Point3d" type="resqml:Point3d" minOccurs="1" maxOccurs="1"/>
+				</xs:sequence>
+			</xs:extension>
+		</xs:complexContent>
+	</xs:complexType>
+	<xs:complexType name="ThreePoint3d">
+		<xs:annotation>
+			<xs:documentation>List of three 3D points.</xs:documentation>
+		</xs:annotation>
+		<xs:sequence>
+			<xs:element name="Point3d" type="resqml:Point3d" minOccurs="3" maxOccurs="3"/>
+		</xs:sequence>
+	</xs:complexType>
+	<xs:complexType name="TiltedPlaneGeometry">
+		<xs:annotation>
+			<xs:documentation>Describes the geometry of a tilted (or potentially not tilted) plane from three points.</xs:documentation>
+		</xs:annotation>
+		<xs:complexContent>
+			<xs:extension base="resqml:AbstractPlaneGeometry">
+				<xs:sequence>
+					<xs:element name="Plane" type="resqml:ThreePoint3d" minOccurs="1" maxOccurs="unbounded"/>
+				</xs:sequence>
+			</xs:extension>
+		</xs:complexContent>
+	</xs:complexType>
+</xs:schema>

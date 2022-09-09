@@ -1,0 +1,38 @@
+{
+    "energyml.witsml2_0.Channel": {
+        "Uom": "energyml.common2_1.UnitOfMeasureExt"
+    },
+    "energyml.witsml2_0.ChannelIndex": {
+        "Uom": "energyml.common2_1.UnitOfMeasureExt"
+    },
+    "energyml.witsml2_0.CuttingsIntervalLithology": {
+        "Kind": "energyml.common2_1.LithologyKindExt"
+    },
+    "energyml.witsml2_0.Equipment": {
+        "EquipmentType": "energyml.witsml2_0.EquipmentTypeExt"
+    },
+    "energyml.witsml2_0.InterpretedIntervalLithology": {
+        "Kind": "energyml.common2_1.LithologyKindExt"
+    },
+    "energyml.witsml2_0.LithologyQualifier": {
+        "Kind": "energyml.common2_1.LithologyQualifierKindExt"
+    },
+    "energyml.witsml2_0.LogChannelAxis": {
+        "AxisUom": "energyml.common2_1.UnitOfMeasureExt"
+    },
+    "energyml.witsml2_0.MudLogConcentrationParameter": {
+        "Value": "energyml.common2_1.VolumePerVolumeMeasureExt"
+    },
+    "energyml.witsml2_0.MudLogForceParameter": {
+        "Value": "energyml.common2_1.ForceMeasureExt"
+    },
+    "energyml.witsml2_0.MudLogPressureGradientParameter": {
+        "Value": "energyml.common2_1.ForcePerVolumeMeasureExt"
+    },
+    "energyml.witsml2_0.MudLogPressureParameter": {
+        "Value": "energyml.common2_1.PressureMeasureExt"
+    },
+    "energyml.witsml2_0.StringEquipment": {
+        "EquipmentType": "energyml.witsml2_0.EquipmentTypeExt"
+    }
+}

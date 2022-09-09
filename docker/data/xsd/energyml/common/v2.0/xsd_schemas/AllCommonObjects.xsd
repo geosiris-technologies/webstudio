@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<xs:schema targetNamespace="http://www.energistics.org/energyml/data/commonv2" xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:eml="http://www.energistics.org/energyml/data/commonv2" elementFormDefault="qualified" version="2.0">
+        <xs:include schemaLocation="Abstract.xsd"/>
+        <xs:include schemaLocation="BaseTypes.xsd"/>
+        <xs:include schemaLocation="CRS.xsd"/>
+        <xs:include schemaLocation="ObjectReference.xsd"/>
+        <xs:include schemaLocation="QuantityClass.xsd"/>
+        <xs:include schemaLocation="MeasureType.xsd"/>
+        <xs:element name="EpcExternalPartReference" type="eml:obj_EpcExternalPartReference"/>
+</xs:schema>

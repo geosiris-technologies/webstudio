@@ -1,0 +1,161 @@
+<?xml version="1.0" encoding="utf-8"?>
+<xs:schema targetNamespace="http://www.energistics.org/energyml/data/commonv2" xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:gml="http://www.opengis.net/gml/3.2" xmlns:eml="http://www.energistics.org/energyml/data/commonv2" elementFormDefault="qualified" version="2.0">
+	<xs:import namespace="http://www.opengis.net/gml/3.2" schemaLocation="gml/3.2.1/gml.xsd"/>
+	<xs:include schemaLocation="QuantityClass.xsd"/>
+	<xs:include schemaLocation="BaseTypes.xsd"/>
+	<xs:include schemaLocation="Abstract.xsd"/>
+	<xs:complexType name="VerticalCrsEpsgCode">
+		<xs:annotation>
+			<xs:documentation>This is the Energistics encapsulation of the ProjectedCrs type from GML. </xs:documentation>
+		</xs:annotation>
+		<xs:complexContent>
+			<xs:extension base="eml:AbstractVerticalCrs">
+				<xs:sequence>
+					<xs:element name="EpsgCode" type="xs:positiveInteger" minOccurs="1" maxOccurs="1"/>
+				</xs:sequence>
+			</xs:extension>
+		</xs:complexContent>
+	</xs:complexType>
+	<xs:complexType name="GmlVerticalCrsDefinition">
+		<xs:annotation>
+			<xs:documentation>This is the Energistics encapsulation of the ProjectedCrs type from GML. </xs:documentation>
+		</xs:annotation>
+		<xs:complexContent>
+			<xs:extension base="eml:AbstractVerticalCrs">
+				<xs:sequence>
+					<xs:element name="GmlVerticalCrsDefinition" type="gml:VerticalCRSType" minOccurs="1" maxOccurs="1"/>
+				</xs:sequence>
+			</xs:extension>
+		</xs:complexContent>
+	</xs:complexType>
+	<xs:complexType name="VerticalUnknownCrs">
+		<xs:annotation>
+			<xs:documentation>This is the Energistics encapsulation of the ProjectedCrs type from GML. </xs:documentation>
+		</xs:annotation>
+		<xs:complexContent>
+			<xs:extension base="eml:AbstractVerticalCrs">
+				<xs:sequence>
+					<xs:element name="Unknown" type="eml:DescriptionString" minOccurs="1" maxOccurs="1"/>
+				</xs:sequence>
+			</xs:extension>
+		</xs:complexContent>
+	</xs:complexType>
+	<xs:complexType name="ProjectedCrs">
+		<xs:annotation>
+			<xs:documentation>This is the Energistics encapsulation of the ProjectedCrs type from GML. </xs:documentation>
+		</xs:annotation>
+		<xs:complexContent>
+			<xs:extension base="eml:AbstractCitedDataObject">
+				<xs:sequence>
+					<xs:element name="AxisOrder" type="eml:AxisOrder2d" minOccurs="1" maxOccurs="1"/>
+					<xs:element name="AbstractProjectedCrs" type="eml:AbstractProjectedCrs" minOccurs="1" maxOccurs="1"/>
+				</xs:sequence>
+				<xs:attribute name="uom" use="optional" type="eml:LengthUom"/>
+			</xs:extension>
+		</xs:complexContent>
+	</xs:complexType>
+	<xs:simpleType name="AxisOrder2d">
+		<xs:annotation>
+			<xs:documentation>Defines the cordinate system axis order of the global CRS using the axis names (from EPSG database).</xs:documentation>
+		</xs:annotation>
+		<xs:restriction base="eml:TypeEnum">
+			<xs:enumeration value="easting northing">
+				<xs:annotation>
+					<xs:documentation>The first axis is easting and the second axis is northing.</xs:documentation>
+				</xs:annotation>
+			</xs:enumeration>
+			<xs:enumeration value="northing easting">
+				<xs:annotation>
+					<xs:documentation>The first axis is northing and the second asis is easting.</xs:documentation>
+				</xs:annotation>
+			</xs:enumeration>
+			<xs:enumeration value="westing southing">
+				<xs:annotation>
+					<xs:documentation>The first axis is westing and the second axis is southing.</xs:documentation>
+				</xs:annotation>
+			</xs:enumeration>
+			<xs:enumeration value="southing westing">
+				<xs:annotation>
+					<xs:documentation>The first axis is southing and the second axis is westing.</xs:documentation>
+				</xs:annotation>
+			</xs:enumeration>
+			<xs:enumeration value="northing westing">
+				<xs:annotation>
+					<xs:documentation>the first axis is northing and the second axis is westing.</xs:documentation>
+				</xs:annotation>
+			</xs:enumeration>
+			<xs:enumeration value="westing northing">
+				<xs:annotation>
+					<xs:documentation>the first axis is westing and the second axis is northing.</xs:documentation>
+				</xs:annotation>
+			</xs:enumeration>
+		</xs:restriction>
+	</xs:simpleType>
+	<xs:simpleType name="VerticalDirection">
+		<xs:restriction base="eml:TypeEnum">
+			<xs:enumeration value="up">
+				<xs:annotation>
+					<xs:documentation>Values are positive when moving away from the center of the Earth.</xs:documentation>
+				</xs:annotation>
+			</xs:enumeration>
+			<xs:enumeration value="down">
+				<xs:annotation>
+					<xs:documentation>Values are positive when moving toward the center of the Earth.</xs:documentation>
+				</xs:annotation>
+			</xs:enumeration>
+		</xs:restriction>
+	</xs:simpleType>
+	<xs:complexType name="VerticalCrs">
+		<xs:complexContent>
+			<xs:extension base="eml:AbstractCitedDataObject">
+				<xs:sequence>
+					<xs:element name="Direction" type="eml:VerticalDirection" minOccurs="1" maxOccurs="1"/>
+					<xs:element name="AbstractVerticalCrs" type="eml:AbstractVerticalCrs" minOccurs="1" maxOccurs="1"/>
+				</xs:sequence>
+				<xs:attribute name="uom" use="required" type="eml:LengthUom"/>
+			</xs:extension>
+		</xs:complexContent>
+	</xs:complexType>
+	<xs:complexType name="AbstractVerticalCrs" abstract="true">
+		<xs:sequence/>
+	</xs:complexType>
+	<xs:complexType name="AbstractProjectedCrs" abstract="true">
+		<xs:sequence/>
+	</xs:complexType>
+	<xs:complexType name="ProjectedCrsEpsgCode">
+		<xs:annotation>
+			<xs:documentation>This is the Energistics encapsulation of the ProjectedCrs type from GML. </xs:documentation>
+		</xs:annotation>
+		<xs:complexContent>
+			<xs:extension base="eml:AbstractProjectedCrs">
+				<xs:sequence>
+					<xs:element name="EpsgCode" type="xs:positiveInteger" minOccurs="1" maxOccurs="1"/>
+				</xs:sequence>
+			</xs:extension>
+		</xs:complexContent>
+	</xs:complexType>
+	<xs:complexType name="GmlProjectedCrsDefinition">
+		<xs:annotation>
+			<xs:documentation>This is the Energistics encapsulation of the ProjectedCrs type from GML. </xs:documentation>
+		</xs:annotation>
+		<xs:complexContent>
+			<xs:extension base="eml:AbstractProjectedCrs">
+				<xs:sequence>
+					<xs:element name="GmlProjectedCrsDefinition" type="gml:ProjectedCRSType" minOccurs="1" maxOccurs="1"/>
+				</xs:sequence>
+			</xs:extension>
+		</xs:complexContent>
+	</xs:complexType>
+	<xs:complexType name="ProjectedUnknownCrs">
+		<xs:annotation>
+			<xs:documentation>This is the Energistics encapsulation of the ProjectedCrs type from GML. </xs:documentation>
+		</xs:annotation>
+		<xs:complexContent>
+			<xs:extension base="eml:AbstractProjectedCrs">
+				<xs:sequence>
+					<xs:element name="Unknown" type="eml:DescriptionString" minOccurs="1" maxOccurs="1"/>
+				</xs:sequence>
+			</xs:extension>
+		</xs:complexContent>
+	</xs:complexType>
+</xs:schema>

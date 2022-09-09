@@ -1,0 +1,314 @@
+<?xml version="1.0" encoding="utf-8"?>
+<xs:schema targetNamespace="http://www.energistics.org/energyml/data/resqmlv2" xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:resqml="http://www.energistics.org/energyml/data/resqmlv2" elementFormDefault="qualified" version="2.0" xmlns:eml="http://www.energistics.org/energyml/data/commonv2">
+	<xs:annotation>
+		<xs:documentation>A representation refers to a digital description of a feature or interpretation. For example, currently in RESQML, a horizon interpretation may be represented by a point set, a set of triangulated surfaces, or a set of orthogonal grids.
+A representation contains the topology and geometry of structural features. Additionally, properties may be attached to a representation.
+Representations in RESQML must be in a single global CRS. All representations associated with the same interpretation may be in either time or in depth/elevation, but a mixture of time, depth and elevation vertical reference systems is not allowed. 
+Representations may not always be associated with interpretations, although this pattern is recommended for subsurface representations for which interpretations exist.
+The representation package is organized into a main package with the main representation classes and sub-packages for: 
+
+	- Grids
+	- Structural
+	- Wells
+	- Seismic</xs:documentation>
+	</xs:annotation>
+	<xs:import namespace="http://www.energistics.org/energyml/data/commonv2" schemaLocation="../../../common/v2.0/xsd_schemas/AllCommonObjects.xsd"/><xs:include schemaLocation="Properties.xsd"/>
+	<xs:include schemaLocation="Grids.xsd"/>
+	<xs:include schemaLocation="Geometry.xsd"/>
+	<xs:include schemaLocation="Interpretations.xsd"/>
+	<xs:include schemaLocation="Common.xsd"/>
+	<xs:complexType name="Patch1d">
+		<xs:annotation>
+			<xs:documentation>A patch with a single 1D index count.</xs:documentation>
+		</xs:annotation>
+		<xs:complexContent>
+			<xs:extension base="resqml:Patch">
+				<xs:sequence>
+					<xs:element name="Count" type="xs:positiveInteger" minOccurs="1" maxOccurs="1">
+						<xs:annotation>
+							<xs:documentation>Number of items in the patch.</xs:documentation>
+						</xs:annotation>
+					</xs:element>
+				</xs:sequence>
+			</xs:extension>
+		</xs:complexContent>
+	</xs:complexType>
+	<xs:complexType name="Patch">
+		<xs:annotation>
+			<xs:documentation>Set or range of one kind of topological element used to define part of a data-object; this concept exists for grid and structural data-objects. Subset of a specified kind of indexable element of a representation, associated with a patch index. The patch index is used to define the relative order for the elements. It may also be used to access patches of indexable elements directly for geometry, properties, or relationships.
+
+Patches are used to remove any ambiguity in data ordering among the indexable elements. For example, the triangle indexing of a triangulated set representation consists of multiple triangles, each with a patch index. This index specifies the relative ordering of the triangle patches. Those data-objects that inherit a patch index from the abstract class of patches all include the word “Patch” as part of their name, e.g., TrianglePatch.</xs:documentation>
+		</xs:annotation>
+		<xs:sequence>
+			<xs:element name="PatchIndex" type="xs:nonNegativeInteger" minOccurs="1" maxOccurs="1">
+				<xs:annotation>
+					<xs:documentation>Local index of the patch, making it unique within the representation.</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+		</xs:sequence>
+	</xs:complexType>
+	<xs:complexType name="ElementIndices">
+		<xs:annotation>
+			<xs:documentation>Index into the indexable elements selected.</xs:documentation>
+		</xs:annotation>
+		<xs:sequence>
+			<xs:element name="IndexableElement" type="resqml:IndexableElements" minOccurs="1" maxOccurs="1"/>
+			<xs:element name="Indices" type="resqml:AbstractIntegerArray" minOccurs="1" maxOccurs="1"/>
+		</xs:sequence>
+	</xs:complexType>
+	<xs:complexType name="SubRepresentationPatch">
+		<xs:annotation>
+			<xs:documentation>Each sub-representation patch has its own list of representation indices, drawn from the supporting representation.
+
+If a list of pairwise elements is required, use two representation indices. The count of elements is defined in SubRepresenationPatch.
+
+Optional additional grid topology is available for grid representations.</xs:documentation>
+		</xs:annotation>
+		<xs:complexContent>
+			<xs:extension base="resqml:Patch1d">
+				<xs:sequence>
+					<xs:element name="ElementIndices" type="resqml:ElementIndices" minOccurs="1" maxOccurs="2"/>
+				</xs:sequence>
+			</xs:extension>
+		</xs:complexContent>
+	</xs:complexType>
+	<xs:simpleType name="IdentityKind">
+		<xs:annotation>
+			<xs:documentation>Enumeration of the identity kinds for the element identities (ElementIdentity).</xs:documentation>
+		</xs:annotation>
+		<xs:restriction base="xs:string">
+			<xs:enumeration value="colocation">
+				<xs:annotation>
+					<xs:documentation>A set of (sub)representations is collocated if there is bijection between the simple elements of all of the participating (sub)representations. This definition implies there is the same number of simple elements. 
+NOTE: The geometric location of each set of simple elements mapped through the bijection is intended to be identical even if the numeric values of the associated geometries differ, i.e., due to loss of spatial resolution.</xs:documentation>
+				</xs:annotation>
+			</xs:enumeration>
+			<xs:enumeration value="previous colocation">
+				<xs:annotation>
+					<xs:documentation>The participating (sub)representations were collocated at some time in the geologic past—but not necessarily in the present day earth model.</xs:documentation>
+				</xs:annotation>
+			</xs:enumeration>
+			<xs:enumeration value="equivalence">
+				<xs:annotation>
+					<xs:documentation>A set of (sub)representations is equivalent if there is a map giving an association between some of the simple topological elements of the participating (sub)representations.</xs:documentation>
+				</xs:annotation>
+			</xs:enumeration>
+			<xs:enumeration value="previous equivalence">
+				<xs:annotation>
+					<xs:documentation>The participating (sub)representations were equivalent at some time in the geologic past—but not necessarily in the present day earth model.</xs:documentation>
+				</xs:annotation>
+			</xs:enumeration>
+		</xs:restriction>
+	</xs:simpleType>
+	<xs:complexType name="obj_RepresentationSetRepresentation">
+		<xs:annotation>
+			<xs:documentation>The parent class of the framework representations. It is used to group together individual representations which may be of the same kind to represent a “bag” of representations. If the bag is homogeneous, then this may be indicated.
+
+These “bags” do not imply any geologic consistency. For example, you can define a set of wellbore frames, a set of wellbore trajectories, a set of blocked wellbores. 
+
+Because the framework representations inherit from this class, they inherit the capability to gather individual representations into sealed and non-sealed surface framework representations, or sealed volume framework representations.</xs:documentation>
+		</xs:annotation>
+		<xs:complexContent>
+			<xs:extension base="resqml:AbstractRepresentation">
+				<xs:sequence>
+					<xs:element name="IsHomogeneous" type="xs:boolean" minOccurs="1" maxOccurs="1">
+						<xs:annotation>
+							<xs:documentation>Indicates that all of the selected representations are of a single kind.</xs:documentation>
+						</xs:annotation>
+					</xs:element>
+					<xs:element name="Representation" type="eml:DataObjectReference" minOccurs="1" maxOccurs="unbounded"/>
+				</xs:sequence>
+			</xs:extension>
+		</xs:complexContent>
+	</xs:complexType>
+	<xs:complexType name="obj_RedefinedGeometryRepresentation">
+		<xs:annotation>
+			<xs:documentation>A representation derived from an existing representation by redefining its geometry. Example use cases include deformation of the geometry of an object, change of coordinate system, and change of time &lt;=&gt; depth.</xs:documentation>
+		</xs:annotation>
+		<xs:complexContent>
+			<xs:extension base="resqml:AbstractRepresentation">
+				<xs:sequence>
+					<xs:element name="PatchOfGeometry" type="resqml:PatchOfGeometry" minOccurs="1" maxOccurs="unbounded"/>
+					<xs:element name="SupportingRepresentation" type="eml:DataObjectReference" minOccurs="1" maxOccurs="1"/>
+				</xs:sequence>
+			</xs:extension>
+		</xs:complexContent>
+	</xs:complexType>
+	<xs:complexType name="RepresentationIdentity">
+		<xs:annotation>
+			<xs:documentation>Indicates the nature of the relationship between 2 or more representations, specifically if they are partially or totally identical. For possible types of relationships, see IdentityKind.</xs:documentation>
+		</xs:annotation>
+		<xs:sequence>
+			<xs:element name="IdenticalElementCount" type="xs:positiveInteger" minOccurs="1" maxOccurs="1">
+				<xs:annotation>
+					<xs:documentation>Number of elements within each representation for which a representation identity is specified.</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element name="ElementIdentity" type="resqml:ElementIdentity" minOccurs="2" maxOccurs="unbounded"/>
+			<xs:element name="AdditionalGridTopology" type="resqml:AdditionalGridTopology" minOccurs="0" maxOccurs="1"/>
+		</xs:sequence>
+	</xs:complexType>
+	<xs:complexType name="obj_RepresentationIdentitySet">
+		<xs:annotation>
+			<xs:documentation>A collection of representation identities.</xs:documentation>
+		</xs:annotation>
+		<xs:complexContent>
+			<xs:extension base="resqml:AbstractResqmlDataObject">
+				<xs:sequence>
+					<xs:element name="RepresentationIdentity" type="resqml:RepresentationIdentity" minOccurs="1" maxOccurs="unbounded"/>
+				</xs:sequence>
+			</xs:extension>
+		</xs:complexContent>
+	</xs:complexType>
+	<xs:complexType name="ElementIdentity">
+		<xs:annotation>
+			<xs:documentation>Indicates the nature of the relationship between 2 or more representations, specifically if they are partially or totally identical. For possible types of relationships, see IdentityKind. 
+
+Commonly used to identify contacts between representations in model descriptions. May also be used to relate the components of a grid (e.g., pillars) to those of a structural framework.</xs:documentation>
+		</xs:annotation>
+		<xs:sequence>
+			<xs:element name="ElementIndices" type="resqml:AbstractIntegerArray" minOccurs="0" maxOccurs="1">
+				<xs:annotation>
+					<xs:documentation>Indicates which elements are identical based on their indices in the (sub)representation.
+If not given, then the selected indexable elements of each of the selected representations are identical at the element by element level. 
+
+If not given, then all elements are specified to be identical.
+
+BUSINESS RULE: Number of identical elements must equal identicalElementCount for each representation.</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element name="IdentityKind" type="resqml:IdentityKind" minOccurs="1" maxOccurs="1"/>
+			<xs:element name="IndexableElement" type="resqml:IndexableElements" minOccurs="1" maxOccurs="1"/>
+			<xs:element name="Representation" type="eml:DataObjectReference" minOccurs="1" maxOccurs="1"/>
+			<xs:element name="FromTimeIndex" type="resqml:TimeIndex" minOccurs="0" maxOccurs="1"/>
+			<xs:element name="ToTimeIndex" type="resqml:TimeIndex" minOccurs="0" maxOccurs="1"/>
+		</xs:sequence>
+	</xs:complexType>
+	<xs:complexType name="AbstractRepresentation" abstract="true">
+		<xs:annotation>
+			<xs:documentation>The parent class of all specialized digital descriptions, which may provide a representation of a feature interpretation or a technical feature. It may be either of these:
+
+	- based on a topology and contains the geometry of this digital description. 
+
+
+	- based on the topology or the geometry of another representation.
+
+
+Not all representations require a defined geometry. For example, it is not required for block-centered grids or wellbore frames. For representations without geometry, a software writer may provide null (NaN) values in the local 3D CRS, which is mandatory.
+
+TimeIndex is provided to describe time-dependent geometry.</xs:documentation>
+		</xs:annotation>
+		<xs:complexContent>
+			<xs:extension base="resqml:AbstractResqmlDataObject">
+				<xs:sequence>
+					<xs:element name="RepresentedInterpretation" type="eml:DataObjectReference" minOccurs="0" maxOccurs="1"/>
+				</xs:sequence>
+			</xs:extension>
+		</xs:complexContent>
+	</xs:complexType>
+	<xs:complexType name="PatchOfGeometry">
+		<xs:annotation>
+			<xs:documentation>Indicates which patch of the representation has a new geometry.</xs:documentation>
+		</xs:annotation>
+		<xs:sequence>
+			<xs:element name="RepresentationPatchIndex" type="xs:nonNegativeInteger" minOccurs="0" maxOccurs="1">
+				<xs:annotation>
+					<xs:documentation>Patch index for the geometry attachment, if required</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element name="Geometry" type="resqml:AbstractGeometry" minOccurs="1" maxOccurs="1"/>
+		</xs:sequence>
+	</xs:complexType>
+	<xs:complexType name="obj_SubRepresentation">
+		<xs:annotation>
+			<xs:documentation>An ordered list of indexable elements and/or indexable element pairs of an existing representation. 
+
+Because the representation concepts of topology, geometry, and property values are separate in RESQML, it is now possible to select a range of nodes, edges, faces, or volumes (cell) indices from the topological support of an existing representation to define a sub-representation.
+
+A sub-representation may describe a different feature interpretation using the same geometry or property as the "parent" representation. In this case, the only information exchanged is a set of potentially non-consecutive indices of the topological support of the representation.</xs:documentation>
+		</xs:annotation>
+		<xs:complexContent>
+			<xs:extension base="resqml:AbstractRepresentation">
+				<xs:sequence>
+					<xs:element name="AdditionalGridTopology" type="resqml:AdditionalGridTopology" minOccurs="0" maxOccurs="1"/>
+					<xs:element name="SupportingRepresentation" type="eml:DataObjectReference" minOccurs="1" maxOccurs="1"/>
+					<xs:element name="SubRepresentationPatch" type="resqml:SubRepresentationPatch" minOccurs="1" maxOccurs="unbounded"/>
+				</xs:sequence>
+			</xs:extension>
+		</xs:complexContent>
+	</xs:complexType>
+	<xs:simpleType name="IndexableElements">
+		<xs:annotation>
+			<xs:documentation>Indexable elements for the different representations. The indexing of each element depends upon the specific representation.
+To order and reference the elements of a representation, RESQML makes extensive use of the concept of indexing. Both one-dimensional and multi-dimensional arrays of elements are used. So that all elements may be referenced in a consistent and uniform fashion, each multi-dimensional index must have a well-defined 1D index.
+
+Attributes below identify the IndexableElements, though not all elements apply to all types of representations. 
+
+Indexable elements are used to:
+
+	- attach geometry and properties to a representation.
+
+
+	- identify portions of a representation when expressing a representation identity.
+
+
+	- construct a sub-representation from an existing representation. 
+
+
+See the RESQML Overview Guide for the table of indexable elements and the representations to which they apply. </xs:documentation>
+		</xs:annotation>
+		<xs:restriction base="xs:string">
+			<xs:enumeration value="cells"/>
+			<xs:enumeration value="column edges"/>
+			<xs:enumeration value="columns"/>
+			<xs:enumeration value="contacts"/>
+			<xs:enumeration value="coordinate lines"/>
+			<xs:enumeration value="edges"/>
+			<xs:enumeration value="edges per column"/>
+			<xs:enumeration value="enumerated elements"/>
+			<xs:enumeration value="faces"/>
+			<xs:enumeration value="faces per cell"/>
+			<xs:enumeration value="interval edges">
+				<xs:annotation>
+					<xs:documentation>Count = NKL (Column Layer Grids, only)</xs:documentation>
+				</xs:annotation>
+			</xs:enumeration>
+			<xs:enumeration value="intervals"/>
+			<xs:enumeration value="I0">
+				<xs:annotation>
+					<xs:documentation>Count = NI (IJK Grids, only)</xs:documentation>
+				</xs:annotation>
+			</xs:enumeration>
+			<xs:enumeration value="I0 edges">
+				<xs:annotation>
+					<xs:documentation>Count = NIL (IJK Grids, only)</xs:documentation>
+				</xs:annotation>
+			</xs:enumeration>
+			<xs:enumeration value="J0">
+				<xs:annotation>
+					<xs:documentation>Count = NJ (IJK Grids, only)</xs:documentation>
+				</xs:annotation>
+			</xs:enumeration>
+			<xs:enumeration value="J0 edges">
+				<xs:annotation>
+					<xs:documentation>Count = NJL (IJK Grids, only)</xs:documentation>
+				</xs:annotation>
+			</xs:enumeration>
+			<xs:enumeration value="layers">
+				<xs:annotation>
+					<xs:documentation>Count = NK  (Column Layer Grids, only)</xs:documentation>
+				</xs:annotation>
+			</xs:enumeration>
+			<xs:enumeration value="nodes"/>
+			<xs:enumeration value="nodes per cell"/>
+			<xs:enumeration value="nodes per edge"/>
+			<xs:enumeration value="nodes per face"/>
+			<xs:enumeration value="patches"/>
+			<xs:enumeration value="pillars"/>
+			<xs:enumeration value="regions"/>
+			<xs:enumeration value="representation"/>
+			<xs:enumeration value="subnodes"/>
+			<xs:enumeration value="triangles"/>
+		</xs:restriction>
+	</xs:simpleType>
+</xs:schema>

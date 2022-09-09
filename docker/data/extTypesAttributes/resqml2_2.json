@@ -1,0 +1,40 @@
+{
+    "energyml.resqml2_2.ContinuousProperty": {
+        "Uom": "energyml.common2_3.UnitOfMeasureExt"
+    },
+    "energyml.resqml2_2.CulturalFeature": {
+        "CulturalFeatureKind": "energyml.resqml2_2.CulturalFeatureKindExt"
+    },
+    "energyml.resqml2_2.DefaultGraphicalInformation": {
+        "ViewerKind": "energyml.resqml2_2.ViewerKindExt"
+    },
+    "energyml.resqml2_2.FaultThrow": {
+        "Throw": "energyml.resqml2_2.ThrowKindExt"
+    },
+    "energyml.resqml2_2.GeologicUnitInterpretation": {
+        "DepositionalEnvironment": "energyml.resqml2_2.DepositionalEnvironmentKindExt",
+        "DepositionalFacies": "energyml.resqml2_2.DepositionalFaciesKindExt",
+        "GeologicUnit3dShape": "energyml.resqml2_2.Shape3dExt",
+        "GeologicUnitComposition": "energyml.common2_3.LithologyKindExt"
+    },
+    "energyml.resqml2_2.GraphicalInformationForEdges": {
+        "Pattern": "energyml.resqml2_2.EdgePatternExt",
+        "Thickness": "energyml.common2_3.LengthMeasureExt"
+    },
+    "energyml.resqml2_2.GraphicalInformationForNodes": {
+        "ConstantSize": "energyml.common2_3.LengthMeasureExt",
+        "Symbol": "energyml.resqml2_2.NodeSymbolExt"
+    },
+    "energyml.resqml2_2.HorizonInterpretation": {
+        "SequenceStratigraphySurface": "energyml.resqml2_2.SequenceStratigraphySurfaceKindExt"
+    },
+    "energyml.resqml2_2.PolylineRepresentation": {
+        "LineRole": "energyml.resqml2_2.LineRoleExt"
+    },
+    "energyml.resqml2_2.PolylineSetRepresentation": {
+        "LineRole": "energyml.resqml2_2.LineRoleExt"
+    },
+    "energyml.resqml2_2.StreamlinesFeature": {
+        "Flux": "energyml.resqml2_2.StreamlineFluxExt"
+    }
+}

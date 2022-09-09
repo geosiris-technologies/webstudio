@@ -1,0 +1,143 @@
+<?xml version="1.0" encoding="utf-8"?>
+<xs:schema targetNamespace="http://www.energistics.org/energyml/data/resqmlv2" xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:resqml="http://www.energistics.org/energyml/data/resqmlv2" xmlns:eml="http://www.energistics.org/energyml/data/commonv2" elementFormDefault="qualified" version="2.2">
+	<!--														-->
+	<!-- Energistics License Agreement
+			This file is distributed under the Energistics Product License Agreement at
+			http://www.energistics.org/product-license-agreement
+			Use of this file constitutes agreement with the Energistics Product License Agreement.
+			Copyright (c) 2017 Energistics. All rights reserved.
+			Energistics, WITSML, PRODML and RESQML are trademarks or registered trademarks of Energistics.
+			-->
+	<!--														-->
+	<xs:annotation>
+		<xs:documentation>This package contains data objects that are shared across all classes in RESQML.</xs:documentation>
+	</xs:annotation>
+	<!--														-->
+	<xs:import namespace="http://www.energistics.org/energyml/data/commonv2" schemaLocation="../../../common/v2.2/xsd_schemas/EmlAllObjects.xsd"/>
+	<xs:complexType name="AbstractLocal3dCrs" abstract="true">
+		<xs:annotation>
+			<xs:documentation>Defines a local 2D+1D coordinate reference system (CRS), by translation and rotation, whose origin is located at the (X,Y,Z) offset from the projected and vertical 2D+1D CRS.
+
+For specific business rules, see the attribute definitions.
+
+The units of measure in XY must be the same as the projected CRS. The units of measure of the third coordinate is determined in the depth or concrete type.
+
+ArealRotation is a plane angle.
+
+Defines a local 3D CRS, which is subject to the following restrictions:
+	- The projected 2D CRS must have orthogonal axes. 
+	- The vertical 1D CRS must be chosen so that it is orthogonal to the plane defined by the projected 2D CRS. 
+
+As a consequence of the definition:
+	- The local CRS forms a Cartesian system of axes.  
+	- The local areal axes are in the plane of the projected system. 
+	- The local areal axes are orthogonal to each other. 
+
+This 3D system is semantically equivalent to a compound CRS composed of a local 2D areal system and a local 1D vertical system.
+The labels associated with the axes on this local system are X, Y, Z or X, Y, T.
+The relative orientation of the local Y axis with respect to the local X axis is identical to that of the projected axes.</xs:documentation>
+		</xs:annotation>
+		<xs:complexContent>
+			<xs:extension base="eml:AbstractObject">
+				<xs:sequence>
+					<xs:element name="YOffset" type="xs:double" minOccurs="1" maxOccurs="1">
+						<xs:annotation>
+							<xs:documentation>The Y offset of the origin of the local areal axes relative to the projected CRS origin.
+BUSINESS RULE: The value MUST represent the second axis of the coordinate system.
+The unit of measure is defined by the unit of measure for the projected 2D CRS.</xs:documentation>
+						</xs:annotation>
+					</xs:element>
+					<xs:element name="ZOffset" type="xs:double" minOccurs="1" maxOccurs="1">
+						<xs:annotation>
+							<xs:documentation>The Z offset of the origin of the local vertical axis relative to the vertical CRS origin. According to CRS type (depth or time) it corresponds to the depth or time datum. 
+BUSINESS RULE: The value MUST represent the third axis of the coordinate system.
+The unit of measure is defined by the unit of measure for the vertical CRS.</xs:documentation>
+						</xs:annotation>
+					</xs:element>
+					<xs:element name="ArealRotation" type="eml:PlaneAngleMeasure" minOccurs="1" maxOccurs="1">
+						<xs:annotation>
+							<xs:documentation>The rotation of the local Y axis relative to the projected Y axis. 
+	- A positive value indicates a clockwise rotation from the projected Y axis.
+	- A negative value indicates a counter-clockwise rotation form the projected Y axis.</xs:documentation>
+						</xs:annotation>
+					</xs:element>
+					<xs:element name="ProjectedAxisOrder" type="eml:AxisOrder2d" minOccurs="1" maxOccurs="1">
+						<xs:annotation>
+							<xs:documentation>Defines the coordinate system axis order of the global projected CRS when the projected CRS is an unknown CRS, else it must correspond to the axis order of the projected CRS.</xs:documentation>
+						</xs:annotation>
+					</xs:element>
+					<xs:element name="ProjectedUomCustomDict" type="eml:DataObjectReference" minOccurs="0" maxOccurs="1">
+						<xs:annotation>
+							<xs:documentation>A reference to the dictionary where the projected UOM is defined.</xs:documentation>
+						</xs:annotation>
+					</xs:element>
+					<xs:element name="ProjectedUom" type="eml:LengthUomExt" minOccurs="1" maxOccurs="1">
+						<xs:annotation>
+							<xs:documentation>Unit of measure of the associated projected CRS. BUSINESS RULE: When the projected CRS is well known, it must have the same UOM as the UOM defined by the well-known projected CRS.
+Explanation: A well-known CRS already defines the UOM. When you indicate that you use a CRS EPSG code, e.g., 7500, if you go to the EPSG database, you find the constrained UOM. This approach removes the need to depend on an EPSG database (or other external database), so RESQML copies the UOM of the well-known CRS into the RESQML CRS.</xs:documentation>
+						</xs:annotation>
+					</xs:element>
+					<xs:element name="VerticalUom" type="eml:LengthUomExt" minOccurs="1" maxOccurs="1">
+						<xs:annotation>
+							<xs:documentation>Unit of measure of the associated vertical CRS. BUSINESS RULE: When the vertical CRS is well known, it must have the same UOM defined by the well-known vertical CRS.
+Explanation: See ProjectedUom. </xs:documentation>
+						</xs:annotation>
+					</xs:element>
+					<xs:element name="VerticalUomCustomDict" type="eml:DataObjectReference" minOccurs="0" maxOccurs="1">
+						<xs:annotation>
+							<xs:documentation>A reference to the dictionary where the vertical UOM is defined.</xs:documentation>
+						</xs:annotation>
+					</xs:element>
+					<xs:element name="ZIncreasingDownward" type="xs:boolean" minOccurs="1" maxOccurs="1">
+						<xs:annotation>
+							<xs:documentation>Indicates that Z values correspond to depth values and are increasing downward, as opposite to elevation values increasing upward. BUSINESS RULE: When the vertical CRS is already defined somewhere else (e.g., in a well-known source), it must correspond to the axis orientation of the vertical CRS.</xs:documentation>
+						</xs:annotation>
+					</xs:element>
+					<xs:element name="XOffset" type="xs:double" minOccurs="1" maxOccurs="1">
+						<xs:annotation>
+							<xs:documentation>The X location of the origin of the local areal axes relative to the projected CRS origin.
+BUSINESS RULE: The value MUST represent the first axis of the coordinate system.
+The unit of measure is defined by the unit of measure for the projected 2D CRS.</xs:documentation>
+						</xs:annotation>
+					</xs:element>
+					<xs:element name="ProjectedCrs" type="eml:AbstractProjectedCrs" minOccurs="1" maxOccurs="1"/>
+					<xs:element name="VerticalCrs" type="eml:AbstractVerticalCrs" minOccurs="1" maxOccurs="1"/>
+				</xs:sequence>
+			</xs:extension>
+		</xs:complexContent>
+	</xs:complexType>
+	<xs:element name="LocalDepth3dCrs" type="resqml:LocalDepth3dCrs" substitutionGroup="eml:AbstractDataObject"/>
+	<xs:complexType name="LocalDepth3dCrs">
+		<xs:annotation>
+			<xs:documentation>Defines a local depth coordinate system. the geometrical origin and location are defined by the elements of the base class AbstractLocal3dCRS. This CRS uses the units of measure of its projected and vertical CRS.</xs:documentation>
+		</xs:annotation>
+		<xs:complexContent>
+			<xs:extension base="resqml:AbstractLocal3dCrs">
+				<xs:sequence/>
+			</xs:extension>
+		</xs:complexContent>
+	</xs:complexType>
+	<xs:element name="LocalTime3dCrs" type="resqml:LocalTime3dCrs" substitutionGroup="eml:AbstractDataObject"/>
+	<xs:complexType name="LocalTime3dCrs">
+		<xs:annotation>
+			<xs:documentation>Defines a local time coordinate system. The geometrical origin and location are defined by the elements of the base class AbstractLocal3dCRS. This CRS defines the time unit that the time-based geometries that refer to it will use.</xs:documentation>
+		</xs:annotation>
+		<xs:complexContent>
+			<xs:extension base="resqml:AbstractLocal3dCrs">
+				<xs:sequence>
+					<xs:element name="TimeUom" type="eml:TimeUomExt" minOccurs="1" maxOccurs="1">
+						<xs:annotation>
+							<xs:documentation>Defines the unit of measure of the third (time) coordinates, for the geometries that refer to it.</xs:documentation>
+						</xs:annotation>
+					</xs:element>
+					<xs:element name="CustomUnitDictionary" type="eml:DataObjectReference" minOccurs="0" maxOccurs="1">
+						<xs:annotation>
+							<xs:documentation>Reference to a custom units dictionary, if one is used. </xs:documentation>
+						</xs:annotation>
+					</xs:element>
+				</xs:sequence>
+			</xs:extension>
+		</xs:complexContent>
+	</xs:complexType>
+	<!--														-->
+	</xs:schema>

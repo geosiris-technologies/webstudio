@@ -1,0 +1,698 @@
+body{
+	background-color: #242939; 
+	color: #48465b;
+	font-family: "Courier New", Courier, "Liberation Mono", monospace;
+	/*font-family: Monaco, "DejaVu Sans Mono", "Lucida Console", "Andale Mono", monospace;*/
+}
+
+.ws_title:before{
+	background-image: url("../img/logos/logoWS_hd.png");
+	background-size: 40px auto;
+	display: inline-block;
+	width: 40px;
+	height: 27px;
+	content: "";
+	position: relative;
+	top: 3px;
+	right: 10px;
+	margin-left: 20px;
+}
+.modal-content{
+	background-color: #f8f9fa; 
+}
+.mandatoryElt{
+	color: #e33a3a;
+	/*font-weight: bold;*/
+	font-style: italic !important;
+}
+.mandatoryLabel{
+	right: 0px;
+	position: absolute;
+}
+
+.mandatoryElt:after{
+	content: " *";
+	margin-right: 30px;
+}
+
+#sessionCounter{
+
+}
+
+#main {
+	padding-top: 80px;
+	padding-right: 10px;
+	padding-left: 10px;
+	padding-bottom: 10px;
+	overflow: hidden;
+	position: fixed;
+	width:100%;
+	height: calc(100% - 80px);
+	box-sizing: content-box!important;
+}
+
+#mainSplitter{
+	height: calc(100% - 5px);
+	overflow: hidden;
+}
+
+
+#workspaceObjectListPanel {
+	/* width: 40%; */ 
+	width: 100%;
+	height: 100%; /* calc(100% - 90px); */
+	/* margin-left: 10px; */
+	/* left: 0%; */
+	/* position: fixed; */
+	overflow: hidden!important;
+}
+
+.vue-left-part{
+	padding-left: 5px;
+	padding-right: 0px;
+	padding-top: 0px;
+	padding-bottom: 0px;
+	margin-left : 0px;	
+	margin-right : 0px;	
+}
+.vue-right-part{
+	padding-left: 0px;
+	padding-right: 0px;
+	padding-top: 0px;
+	padding-bottom: 0px;
+	margin-left : 0px;	
+	margin-right : 25px;	
+}
+
+#objectsVuePanel {
+	/* 	width: calc(60% - 20px);*/
+ 	height: 100%;
+	width: 100%;
+ 	/* height: calc(100% - 90px); */
+	/* margin-left: 42%; */
+	/* position: absolute; */
+	/* right: 5px; */
+	background-color: #f8f9fa;
+}
+
+#objectsVuePanel td {
+	padding-left: 5px;
+	padding-right: 5px;
+}
+
+#objectsVuePanel thead {
+	text-align: center;
+}
+
+#rws__EPC_TABLE_DIV__{
+	height : calc(100% - 50px);
+	overflow: auto;
+	scrollbar-color: #777980 #242939;
+	margin-top : 10px;
+	background-color: #fff;
+}
+
+#rws__EPC_TABS_CONTAINER__ {
+    width: 100%;
+	height: calc(100% - 50px);
+	padding-bottom:1px; 
+	padding-left: 10px;
+}
+
+
+#tableFilter{
+	width:50%;
+	display:inline-block;
+}
+
+.geosirisPopOver{
+	display : block;
+}
+
+
+/* Style de la colonne du numero d'element resqml */
+.colName_num {
+	text-align: right;
+	font-weight: bold;
+}
+
+.dropdown-menu{
+	/*max-height:400px;*/
+	/*overflow-y:auto;*/
+	background-color: #f8f9fa;
+}
+
+.dropright {
+  position: relative;
+  display: contents;
+}
+
+.dropright { /* .dropdown-menu */
+  top: 0;
+  left: 100%;
+  margin-top: -1px;
+}
+
+hr {
+	height: 2px;
+	color: #839D2D;
+	background-color: #839D2D;
+	width: 80%;
+	border: none;
+	margin-top : 10px; 
+	margin-bottom : 10px; 
+	/* color: #00000; */
+}
+
+
+.objectContent {
+	height: calc(60% - 10px - 1px);
+	/* On enlève la moitié de la taille du hr + la moitié de ses marges */
+	overflow: auto;
+	width: 100%;
+}
+
+.entityProperty {
+	height: 100%;
+	/* On enlève la moitié de la taille du hr + la moitié de ses marges */
+	overflow: auto;
+	width: 100%;
+}
+.propertyContainer h3{
+	text-align: center;
+}
+
+.entityProperty input, select {
+	width: 100%;
+}
+
+.treeLeafWithProperty{
+	cursor: pointer!important;
+	/*text-decoration: underline!important;*/
+	font-weight: bold;
+}
+
+.treeSubAttribute{
+	margin : 0px 0px 0px 20px;
+}
+
+table a {
+	cursor: pointer;
+}
+
+.openedObject .deleteButton{
+	color: #d7a3a3!important;
+} 
+
+.deleteButton{
+	color:red;
+	cursor: pointer;
+}
+
+.deleteButton:hover{
+	/*color:blue;*/
+}
+
+.treeExpander{
+	color : #007bff;
+	cursor: pointer;
+	margin-right: 4px;
+	font-size: 20pt!important;
+	top:-2px;
+}
+.treeExpander:hover{
+	color : #0060e0;
+}
+
+
+.btn-secondary{
+	padding : 2px;
+	margin : 1px;
+}
+
+.dropDownCreateSubAttribute{
+	margin-left : 5px;
+}
+.dropDownCreateSubAttributeButton{
+	color: #007bff;
+	font-size: 15pt!important;
+}
+.dropDownCreateSubAttributeButton:hover{
+	color: #0060e0;
+}
+
+.deleteButtonTree{
+	margin-left : 5px;
+	font-size: 15pt!important;
+	vertical-align: middle;
+}
+
+.resqmlCollapse {
+	margin-right: 10px;
+	color : #28a745;
+}
+
+/* pour que le contenu des tabulation remplisse #workspaceObjectListPanel meme quand la fenetre est large */
+.container{
+	margin : 0px!important;
+	max-width: inherit!important;
+}
+
+.containerJsonTree{
+	height: calc(100% - 3em);;
+	align-content: center;
+	overflow: auto;
+}
+
+/* par exemple pour les CustomData qui ne sont pas supportee */
+.disabledLink, .disabledLink:hover{
+	text-decoration: line-through;
+	font-style: italic;
+	cursor: default!important;
+}
+
+.custom-checkbox{
+	display: inline;
+}
+
+.hdfViewIcon{
+	width  : 40px;
+	padding: 5px;
+	cursor : pointer;
+}
+
+.form-control:invalid {
+  border: red solid 3px;
+}
+
+.openElementBut{
+	cursor : pointer;
+	position: relative;
+	display: inline-block;
+	width: 0px;
+	left: -25px;
+	color : mediumslateblue;
+}
+
+
+.genElementBut{
+	cursor : pointer;
+	position: relative;
+	display: inline-block;
+	width: 0px;
+	left: -50px;
+	color : mediumslateblue;
+}
+
+input + label {
+	margin-left: 5px;
+	margin-right: 5px;
+}
+label + input {
+	margin-left: 5px;
+	margin-right: 5px;
+}
+
+#modal_createRootElt_versionChooserDiv{
+	margin: 0 auto;
+	width: fit-content;
+}
+
+.vueActionBut{
+	color : blue;
+	cursor: pointer;
+	margin-left : 5px;
+	margin-right: 5px;
+}
+
+.btn-sm{
+	margin: 1px;
+}
+
+.typeCommentIcon{
+	color : blue;
+	cursor: pointer;
+	margin-left : 5px;
+	margin-right: 5px;
+}
+
+.typeCommentContainer{
+	background: #f2f2f2;
+	z-index: 100;
+	border-radius: 30px;
+	border: 1px solid;
+	padding: 5px;
+	max-width: 800px;
+	position: fixed;
+}
+.timeoutNormal{
+	color: black;
+}
+.timeoutCritical{
+	font-weight: bold;
+	color: red;
+}
+
+.inputTextClearBut{
+	position: relative;
+	right: 20px;
+	display: inline-block;
+	width: 0px;
+	cursor: pointer;
+	top: 10px;
+	z-index: 3;
+}
+
+
+.logoutBut{
+	font-size: xx-large;
+	color: #e33437;
+	bottom: 0px;
+	width: 100%;
+	text-align: center;
+}
+.logoutBut:hover{
+	text-decoration: none;
+}
+
+.loginBut{
+	font-size: xx-large;
+	color: #28a745;
+	bottom: 0px;
+	width: 100%;
+	text-align: center;
+}
+.loginBut:hover{
+	text-decoration: none;
+}
+
+.connectedUser{
+	color: #28a745!important;
+}
+.connectedAdmin{
+	color: #e33437!important;
+}
+
+/**************** 		Blink 	  ***************/
+.blink {
+  animation-duration: 2000ms;    /*blinking speed decreases and increase */
+  animation-name: tgle;
+  animation-iteration-count: infinite;
+}
+
+@keyframes tgle {
+  0% {
+    opacity: 0;
+  }
+
+  25% {
+    opacity: 0.5;
+  }
+  50% {
+    opacity: 1;
+  }
+
+  75.5% {
+    opacity: 0.5;
+  }
+  100% {
+    opacity: 0;
+  }
+}
+/**************** Select Editable ***************/
+
+.addedOptionInSelect{
+	color : forestgreen;
+	font-weight: bold;
+}
+
+/****************** DRAG_N_DROP *****************/
+.dropper {
+    /* margin: 50px 10px 10px 50px;
+    width: 400px;
+    height: 250px;
+    background-color: #555;
+    border: 1px solid #111;
+    
+    border-radius: 10px; */
+    transition: all 200ms linear;
+}
+
+.drop_hover {
+    box-shadow: 0 0 30px rgba(0, 0, 0, 0.8) inset;
+}
+
+.draggable {
+   /*  display: inline-block;
+    margin: 20px 10px 10px 20px;
+    padding-top: 20px;
+    width: 80px;
+    height: 60px;
+    color: #3D110F;
+    background-color: #822520;
+    border: 4px solid #3D110F;
+    text-align: center;
+    font-size: 2em; */
+    /* cursor: move; */
+
+    transition: all 200ms linear;
+    user-select: none;
+}
+
+.dragingElt{
+	background: #ccc!important;
+	/*color: red!important;*/
+}
+
+/* .draggable::after{
+	content:\"Custom Text\";
+	color:#000;
+	font-size: 20px;
+}
+ */
+/* .draggable:not(:only-child) > .deleteButton::after{
+	width: 20px;
+	height: 20px;
+	background: url("../img/dragCursor.png");
+	position: relative;
+	left: 20px;
+	top: 3px;
+	background-size: 100%;
+	content: "";
+	display: inline-block;
+	cursor: move; 
+} */
+
+.draggableButton{
+	width: 20px;
+	height: 20px;
+	background: url("../img/dragCursor.png");
+	margin-left : 10px;
+	background-size: 100%;
+	display: inline-block;
+	top: 3px;
+	position: relative;
+	cursor: move;
+}
+
+
+/********************* SCROLL ********************/
+
+.scrollable-customGeosiris::-webkit-scrollbar-track
+{
+	-webkit-box-shadow: inset 0 0 6px rgba(0,0,0,0.3);
+	border-radius: 10px;
+	background-color: #F5F5F5;
+}
+
+.scrollable-customGeosiris::-webkit-scrollbar
+{
+	width: 12px;
+	background-color: #F5F5F5;
+}
+
+.scrollable-customGeosiris::-webkit-scrollbar-thumb
+{
+	border-radius: 10px;
+	-webkit-box-shadow: inset 0 0 6px rgba(0,0,0,.3);
+	background-color: #555;
+}
+
+/********************* ONGLETS ********************/
+
+.tabulationScroller{
+	position: absolute;
+	margin-top: 5px;
+	background: #242939;
+	font-size: 20pt;
+	z-index: 10;
+	/*display: inline-flex;*/
+	display: none;
+	border-radius: 10%;
+	color: #f2f2f2;
+	top: 0px;
+}
+.tabulationScroller_left{
+	left: 2px;	
+}
+.tabulationScroller_right{
+	right: 2px;	
+}
+.tabulationCloser{
+	position: relative;
+	right: 20px;
+	display: inline-block;
+	width: 0px;
+	cursor: pointer;
+}
+#rws__EPC_TABS_HEADER__ {
+	border-bottom: 0px!important;
+	/*min-height: 50px;*/
+	overflow-x: auto;
+	overflow-y: hidden;
+	flex-wrap : nowrap !important;
+	display : -webkit-inline-box;
+	width: 100%;
+	background-color: #242939;
+	/*rotate : 180deg;*/
+}
+#rws__EPC_TABS_HEADER__>*{
+	/*rotate : 180deg;*/
+}
+#rws__EPC_TABS_HEADER__  .nav-link {
+	display: inline-block !important;
+	padding-right: 20px;
+	border-top: 0px;
+	color: #817c7d;
+}
+#rws__EPC_TABS_HEADER__>.nav-item{
+	margin-right: 1px;
+}
+#rws__EPC_TABS_HEADER__>.nav-item :not(.active){
+	background-color: #657299;
+	color: white;
+	/*box-shadow: inset 0px 3px #817c7d;*/
+
+}
+#rws__EPC_TABS_HEADER__>.nav-item>.active, 
+#rws__EPC_TABS_HEADER__>.nav-item>.active + .tabulationCloser{
+	box-shadow: inset 0px 5px #ff8a00;
+	background-color: #f8f9fa;
+	border-color: #dee2e6 #dee2e6 #f8f9fa;
+	color: #817c7d;
+}
+
+.warningMSG{
+	color : #ca8302;
+	font-weight: bold;
+}
+
+.infoMSG{
+	color : #1e1ec8;
+}
+
+
+/*******************  GraphView  ******************/
+
+#cyGrapher {
+	width: 100%;
+	height: 100%;
+	display: block;
+	border: 2px solid black;
+	background-color: white;
+	margin-left : 5px;
+	margin-right : 5px;
+}
+
+#cyLister {
+	width: 100%;
+	height: 90%;
+	overflow-y: auto;
+}
+
+#graphElementChecked{
+	margin-left : 5px;
+	margin-right : 5px;
+	overflow-y: auto;
+	height: 100%;
+}
+
+
+/*********************  MODAL  ********************/
+.modal-xl-customGeosiris{
+	width: 98%;
+	height: 98%;
+	padding: 0;
+	margin: 5px;
+	max-width: none!important;
+}
+
+.modal-xl-customGeosiris>.modal-content{
+	height: 98%;
+}
+.modal-xl-customGeosiris .tab-content{
+	padding-top: 10px;
+}
+
+.modal-xl{
+	width: max-content;
+	height: max-content;
+}
+.modal-xl>.modal-content{
+	padding: 10px;
+}
+
+/********************* SPLITER ********************/
+
+
+/* Pour ne pas bloquer le splitter quand on met la fenetre en plein ecran */
+.col{
+	flex-basis: unset!important;
+}
+
+
+/********************* TOOLTIP ********************/
+.tooltip {
+  position: relative;
+  display: inline-block;
+  border-bottom: 1px dotted black;
+}
+
+.tooltip .tooltiptext {
+  visibility: hidden;
+  width: 120px;
+  background-color: #555;
+  color: #fff;
+  text-align: center;
+  border-radius: 6px;
+  padding: 5px 0;
+  position: absolute;
+  z-index: 1;
+  bottom: 125%;
+  left: 50%;
+  margin-left: -60px;
+  opacity: 0;
+  transition: opacity 0.3s;
+}
+
+.tooltip .tooltiptext::after {
+  content: "";
+  position: absolute;
+  top: 100%;
+  left: 50%;
+  margin-left: -5px;
+  border-width: 5px;
+  border-style: solid;
+  border-color: #555 transparent transparent transparent;
+}
+
+.tooltip:hover .tooltiptext {
+  visibility: visible;
+  opacity: 1;
+}
+
+.objButtonAction{
+	padding: 4px;
+	margin-top: 4px;
+	margin-bottom: 4px;
+}

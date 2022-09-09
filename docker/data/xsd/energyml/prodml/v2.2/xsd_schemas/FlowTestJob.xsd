@@ -1,0 +1,64 @@
+<?xml version="1.0" encoding="utf-8"?>
+<xs:schema targetNamespace="http://www.energistics.org/energyml/data/prodmlv2" xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:prodml="http://www.energistics.org/energyml/data/prodmlv2" xmlns:eml="http://www.energistics.org/energyml/data/commonv2" elementFormDefault="qualified" version="2.2" attributeFormDefault="unqualified">
+	<!--														-->
+	<!-- Energistics License Agreement
+			This file is distributed under the Energistics Product License Agreement at
+			http://www.energistics.org/product-license-agreement
+			Use of this file constitutes agreement with the Energistics Product License Agreement.
+			Copyright (c) 2021 Energistics. All rights reserved.
+			Energistics, WITSML, PRODML and RESQML are trademarks or registered trademarks of Energistics.
+			-->
+	<!--														-->
+	<xs:annotation>
+		<xs:documentation>Operational data regarding flow test.</xs:documentation>
+	</xs:annotation>
+	<!--														-->
+	<xs:import namespace="http://www.energistics.org/energyml/data/commonv2" schemaLocation="../../../common/v2.3/xsd_schemas/EmlAllObjects.xsd"/>
+	<!--														-->
+	<xs:include schemaLocation="PressureTransientAnalysis.xsd"/>
+	<xs:include schemaLocation="FlowTestActivity.xsd"/>
+	<xs:include schemaLocation="FluidSampleAcquisitionJob.xsd"/>
+	<xs:element name="FlowTestJob" type="prodml:FlowTestJob" substitutionGroup="eml:AbstractDataObject"/>
+	<xs:complexType name="FlowTestJob">
+		<xs:annotation>
+			<xs:documentation>Operational data regarding flow test. Links to the following (of which there can be multiple):
+	- Flow Test Activity  
+	- PressureTransientAnalysis 
+	- PtaDataPreProcess
+	- PtaDeconvolution
+
+It can also link to one Fluid Sample Acquisition Job. </xs:documentation>
+		</xs:annotation>
+		<xs:complexContent>
+			<xs:extension base="eml:AbstractObject">
+				<xs:sequence>
+					<xs:element name="Client" type="eml:DataObjectReference" minOccurs="0" maxOccurs="1"/>
+					<xs:element name="ServiceCompany" type="eml:DataObjectReference" minOccurs="0" maxOccurs="1"/>
+					<xs:element name="StartTime" type="eml:TimeStamp" minOccurs="0" maxOccurs="1"/>
+					<xs:element name="FluidSampleAcquisitionJob" type="eml:DataObjectReference" minOccurs="0" maxOccurs="1"/>
+					<xs:element name="PtaDataPreProcess" type="eml:DataObjectReference" minOccurs="0" maxOccurs="unbounded">
+						<xs:annotation>
+							<xs:documentation>Superclass defining data acquisition for the flow test, input and pre-processing data</xs:documentation>
+						</xs:annotation>
+					</xs:element>
+					<xs:element name="FlowTestActivity" type="eml:DataObjectReference" minOccurs="0" maxOccurs="unbounded">
+						<xs:annotation>
+							<xs:documentation>Superclass of possible flow test activities: drill stem, production transient, interwell, and others.</xs:documentation>
+						</xs:annotation>
+					</xs:element>
+					<xs:element name="PtaDeconvolution" type="eml:DataObjectReference" minOccurs="0" maxOccurs="unbounded">
+						<xs:annotation>
+							<xs:documentation>Superclass of deconvolution pressure and flowrate measurements, test and method information.</xs:documentation>
+						</xs:annotation>
+					</xs:element>
+					<xs:element name="PressureTransientAnalysis" type="eml:DataObjectReference" minOccurs="0" maxOccurs="unbounded">
+						<xs:annotation>
+							<xs:documentation>Contains the data about the analysis and the model used, in a PTA Analysis.  An Analysis may be a pressure transient (PTA), rate transient (RTA) or Test Design, depending on which data is supplied. This object contains common parameters. The Analysis has one or more Test Location Analysis elements and each reports the model details for one Test Location. </xs:documentation>
+						</xs:annotation>
+					</xs:element>
+					<xs:element name="EndTime" type="eml:TimeStamp" minOccurs="0" maxOccurs="1"/>
+				</xs:sequence>
+			</xs:extension>
+		</xs:complexContent>
+	</xs:complexType>
+</xs:schema>

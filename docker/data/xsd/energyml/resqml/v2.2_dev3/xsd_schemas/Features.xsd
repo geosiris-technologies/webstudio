@@ -1,0 +1,179 @@
+<?xml version="1.0" encoding="utf-8"?>
+<xs:schema targetNamespace="http://www.energistics.org/energyml/data/resqmlv2" xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:resqml="http://www.energistics.org/energyml/data/resqmlv2" xmlns:eml="http://www.energistics.org/energyml/data/commonv2" elementFormDefault="qualified" version="2.2">
+	<!--														-->
+	<!-- Energistics License Agreement
+			This file is distributed under the Energistics Product License Agreement at
+			http://www.energistics.org/product-license-agreement
+			Use of this file constitutes agreement with the Energistics Product License Agreement.
+			Copyright (c) 2017 Energistics. All rights reserved.
+			Energistics, WITSML, PRODML and RESQML are trademarks or registered trademarks of Energistics.
+			-->
+	<!--														-->
+	<xs:annotation>
+		<xs:documentation>This package contains the main classes used to define and exchange data for geologic and technical features in RESQML Other packages in RESQML also define features and may leverage classes in this Feature package; those other packages include:
+	- Wells
+	- Seismic
+	- Streamlines
+Features refer to something that has physical existence at some point during the exploration, development, production, or abandonment of a reservoir. For example: It can be a boundary, a rock volume, a basin area, but also extends to a drilled well, a drilling rig, an injected or produced fluid, or a 2D, 3D, or 4D seismic survey.
+In RESQML, features are divided into these categories: geologic or technical. 
+Geologic Feature. Objects that exist a priori, in the natural world, for example: the rock formations and how they are positioned with regard to each other; the fluids that are present before production; or the position of the geological intervals with respect to each. Some of these objects are static—such as geologic intervals---while others are dynamic—such as fluids: their properties, geometries, and quantities may change over time during the course of field production.
+This concept of geologic feature is relative to the three following features: BoundaryFeature, RockVolumeFeature and Model feature
+
+Technical Feature. Objects that exist by the action of humans. Examples include: wells and all they may contain, seismic surveys (surface, permanent water bottom), or injected fluid volumes. Because the decision to deploy such equipment is the result of studies or decisions by humans, technical features are usually not subject to the same kind of large changes in interpretation as geologic features. However, they are still subject to measurement error and other sources of uncertainty, and so still can be considered as subject to “interpretation”.</xs:documentation>
+	</xs:annotation>
+	<!--														-->
+	<xs:import namespace="http://www.energistics.org/energyml/data/commonv2" schemaLocation="../../../common/v2.2/xsd_schemas/EmlAllObjects.xsd"/>
+	<xs:simpleType name="FluidContact">
+		<xs:annotation>
+			<xs:documentation>Enumerated values used to indicate a specific type of fluid boundary interpretation. </xs:documentation>
+		</xs:annotation>
+		<xs:restriction base="eml:TypeEnum">
+			<xs:enumeration value="free water contact">
+				<xs:annotation>
+					<xs:documentation>A surface defined by vanishing capillary pressure between the water and hydrocarbon phases.</xs:documentation>
+				</xs:annotation>
+			</xs:enumeration>
+			<xs:enumeration value="gas oil contact">
+				<xs:annotation>
+					<xs:documentation>A surface defined by vanishing capillary pressure between the gas and oil hydrocarbon phases.</xs:documentation>
+				</xs:annotation>
+			</xs:enumeration>
+			<xs:enumeration value="gas water contact">
+				<xs:annotation>
+					<xs:documentation>A surface defined by vanishing capillary pressure between the water and gas hydrocarbon phases.</xs:documentation>
+				</xs:annotation>
+			</xs:enumeration>
+			<xs:enumeration value="seal">
+				<xs:annotation>
+					<xs:documentation>Identifies a break in the hydrostatic column.</xs:documentation>
+				</xs:annotation>
+			</xs:enumeration>
+			<xs:enumeration value="water oil contact">
+				<xs:annotation>
+					<xs:documentation>A surface defined by vanishing capillary pressure between the water and oil hydrocarbon phases.</xs:documentation>
+				</xs:annotation>
+			</xs:enumeration>
+		</xs:restriction>
+	</xs:simpleType>
+	<xs:simpleType name="FluidMarker">
+		<xs:annotation>
+			<xs:documentation>The various fluids a well marker can indicate.</xs:documentation>
+		</xs:annotation>
+		<xs:restriction base="eml:TypeEnum">
+			<xs:enumeration value="gas down to"/>
+			<xs:enumeration value="gas up to"/>
+			<xs:enumeration value="oil down to"/>
+			<xs:enumeration value="oil up to"/>
+			<xs:enumeration value="water down to"/>
+			<xs:enumeration value="water up to"/>
+		</xs:restriction>
+	</xs:simpleType>
+	<xs:simpleType name="Phase">
+		<xs:annotation>
+			<xs:documentation>The enumeration of the possible rock fluid unit phases in a hydrostatic column.
+The seal is considered here as a part (the coverage phase) of a hydrostatic column.</xs:documentation>
+		</xs:annotation>
+		<xs:restriction base="eml:TypeEnum">
+			<xs:enumeration value="aquifer">
+				<xs:annotation>
+					<xs:documentation>Volume of the hydrostatic column for which only the aqueous phase is mobile. Typically below the Pc (hydrocarbon-water) = 0 free fluid surface.</xs:documentation>
+				</xs:annotation>
+			</xs:enumeration>
+			<xs:enumeration value="gas cap">
+				<xs:annotation>
+					<xs:documentation>Volume of the hydrostatic column for which only the gaseous phase is mobile. Typically above the Pc (gas-oil) = 0 free fluid surface.</xs:documentation>
+				</xs:annotation>
+			</xs:enumeration>
+			<xs:enumeration value="oil column">
+				<xs:annotation>
+					<xs:documentation>Volume of the hydrostatic column for which only the oleic and aqueous phases may be mobile. Typically below the gas-oil Pc = 0 free fluid surface. Pc (gas-oil) = 0 free fluid surface.</xs:documentation>
+				</xs:annotation>
+			</xs:enumeration>
+			<xs:enumeration value="seal">
+				<xs:annotation>
+					<xs:documentation>Impermeable volume that provides the seal for a hydrostatic fluid column.</xs:documentation>
+				</xs:annotation>
+			</xs:enumeration>
+		</xs:restriction>
+	</xs:simpleType>
+	<xs:complexType name="AbstractFeature" abstract="true">
+		<xs:annotation>
+			<xs:documentation>Something that has physical existence at some point during the exploration, development, production or abandonment of a reservoir. For example: It can be a boundary, a rock volume, a basin area, but also extends to a drilled well, a drilling rig, an injected or produced fluid, or a 2D, 3D, or 4D seismic survey.
+Features are divided into these categories: geologic or technical. </xs:documentation>
+		</xs:annotation>
+		<xs:complexContent>
+			<xs:extension base="eml:AbstractObject">
+				<xs:sequence/>
+			</xs:extension>
+		</xs:complexContent>
+	</xs:complexType>
+	<xs:complexType name="AbstractTechnicalFeature" abstract="true">
+		<xs:annotation>
+			<xs:documentation>Objects that exist by the action of humans. Examples include: wells and all they may contain, seismic surveys (surface, permanent water bottom), or injected fluid volumes. Because the decision to deploy such equipment is the result of studies or decisions by humans, technical features are usually not subject to the same kind of large changes in interpretation as geologic features. However, they are still subject to measurement error and other sources of uncertainty, and so still can be considered as subject to “interpretation”.</xs:documentation>
+		</xs:annotation>
+		<xs:complexContent>
+			<xs:extension base="resqml:AbstractFeature">
+				<xs:sequence/>
+			</xs:extension>
+		</xs:complexContent>
+	</xs:complexType>
+	<xs:element name="BoundaryFeature" type="resqml:BoundaryFeature" substitutionGroup="eml:AbstractDataObject"/>
+	<xs:complexType name="BoundaryFeature">
+		<xs:annotation>
+			<xs:documentation>An interface between two objects, such as horizons and faults. It is a surface object.
+A RockVolumeFeature is a geological feature (which is the general concept that refers to the various categories of geological objects that exist in the natural world).
+For example: the stratigraphic boundaries, the =geobody boundaries or the fluid boundaries that are present before production. To simplify the hierarchy of concepts, the geological feature is not represented in the RESQML design.</xs:documentation>
+		</xs:annotation>
+		<xs:complexContent>
+			<xs:extension base="resqml:AbstractFeature">
+				<xs:sequence/>
+			</xs:extension>
+		</xs:complexContent>
+	</xs:complexType>
+	<xs:element name="FrontierFeature" type="resqml:FrontierFeature" substitutionGroup="eml:AbstractDataObject"/>
+	<xs:complexType name="FrontierFeature">
+		<xs:annotation>
+			<xs:documentation>Identifies a frontier or boundary in the earth model that is not a geological feature but an arbitrary geographic/geometric surface used to delineate the boundary of the model.</xs:documentation>
+		</xs:annotation>
+		<xs:complexContent>
+			<xs:extension base="resqml:AbstractTechnicalFeature">
+				<xs:sequence/>
+			</xs:extension>
+		</xs:complexContent>
+	</xs:complexType>
+	<xs:element name="Model" type="resqml:Model" substitutionGroup="eml:AbstractDataObject"/>
+	<xs:complexType name="Model">
+		<xs:annotation>
+			<xs:documentation>The explicit description of the relationships between geologic features, such as rock features (e.g. stratigraphic units, geobodies, phase unit) and boundary features (e.g., genetic, tectonic, and fluid boundaries). In general, this concept is usually called an “earth model”, but it is not called that in RESQML. In RESQML, model is not to be confused with the concept of earth model organization interpretation.</xs:documentation>
+		</xs:annotation>
+		<xs:complexContent>
+			<xs:extension base="resqml:AbstractFeature">
+				<xs:sequence/>
+			</xs:extension>
+		</xs:complexContent>
+	</xs:complexType>
+	<xs:element name="RockVolumeFeature" type="resqml:RockVolumeFeature" substitutionGroup="eml:AbstractDataObject"/>
+	<xs:complexType name="RockVolumeFeature">
+		<xs:annotation>
+			<xs:documentation>A continuous portion of rock material bounded by definite rock boundaries. It is a volume object.
+Some of these rock volumes are “static”, while others are “dynamic”. Reservoir fluids are dynamic because their properties, geometries, and quantities may change over time during the course of field production.
+A RockVolume feature is a geological feature--which is the general concept that refers to the various categories of geological objects that exist in the natural world, for example, the rock volume or the fluids that are present before production. The geological feature is not represented in the RESQML design.</xs:documentation>
+		</xs:annotation>
+		<xs:complexContent>
+			<xs:extension base="resqml:AbstractFeature">
+				<xs:sequence/>
+			</xs:extension>
+		</xs:complexContent>
+	</xs:complexType>
+	<xs:element name="RockVolumeFeatureDictionary" type="resqml:RockVolumeFeatureDictionary" substitutionGroup="eml:AbstractDataObject"/>
+	<xs:complexType name="RockVolumeFeatureDictionary">
+		<xs:complexContent>
+			<xs:extension base="eml:AbstractObject">
+				<xs:sequence>
+					<xs:element name="RockVolumeFeature" type="resqml:RockVolumeFeature" minOccurs="2" maxOccurs="unbounded"/>
+				</xs:sequence>
+			</xs:extension>
+		</xs:complexContent>
+	</xs:complexType>
+	<!--														-->
+	</xs:schema>

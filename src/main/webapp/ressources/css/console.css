@@ -1,0 +1,132 @@
+#rws__ID_CONSOLE_MODAL__{
+    position: fixed;
+    bottom: 5px;
+    width: calc(100% - 2em);
+    margin-left: 1em;
+    margin-right: 1em;
+    padding: 1px;
+    height: max-content;
+    background-color: #e9ecef;
+    border: 1px solid black;
+    color: #5c75c5;
+}
+
+#rws__ID_CONSOLE__{
+    width: calc(100% - 2px);
+    margin: 1px;
+}
+
+.rws__CL_CONSOLE_UL__{
+    height: 400px;
+    overflow-y: auto;
+    overflow-wrap: break-word;
+    scrollbar-width: thin;
+    scrollbar-color: #242939 #5d87b5;
+    border: 1px solid black;
+    padding-right: 20px;
+    padding-left: 10px;
+    background-color: #121620;
+}
+
+.rws__CL_CONSOLE_LI__{
+    align-items: flex-start;
+    flex-wrap: nowrap;
+    width: 100%;
+    display: flex;
+    margin-bottom: 5px;
+    font-weight: bold;
+}
+
+.rws__CL_CONSOLE_MSG_CONTENT__{
+    display: flex;
+    position: relative;
+    left: 20px;
+    word-break: break-word;
+    flex-grow: 1!important;
+    flex-wrap: nowrap;
+    align-items: flex-start;
+}
+
+.rws__CL_CONSOLE_MSG_DATE__{
+    color: #3b91e8;
+    font-weight: bold;
+    display: flex;
+/*    flex-shrink: 0!important;*/
+    white-space: nowrap;
+    vertical-align: baseline;
+}
+
+.rws__CL_CONSOLE_CLEAR_BUT:hover{
+    color: blue;
+}
+.rws__CL_CONSOLE_CLEAR_BUT{
+    color: #1f267e;
+    top: 6px;
+    position: absolute;
+    right: 40px;
+    font-size: 15pt;
+    cursor: pointer;
+}
+
+.rws__CL_CONSOLE_HIDE_BUT{
+    top: 6px;
+    position: absolute;
+    right: 5px;
+    font-size: 15pt;
+    cursor: pointer;
+}
+
+
+#logConsoleClearBut{
+    height: max-content;
+}
+
+/*
+   ________                                   ____              _____                     _ __
+  / ____/ /_  ____ _____  ____ ____  _____   / __/___  _____   / ___/___ _   _____  _____(_) /___  __
+ / /   / __ \/ __ `/ __ \/ __ `/ _ \/ ___/  / /_/ __ \/ ___/   \__ \/ _ \ | / / _ \/ ___/ / __/ / / /
+/ /___/ / / / /_/ / / / / /_/ /  __(__  )  / __/ /_/ / /      ___/ /  __/ |/ /  __/ /  / / /_/ /_/ /
+\____/_/ /_/\__,_/_/ /_/\__, /\___/____/  /_/  \____/_/      /____/\___/|___/\___/_/  /_/\__/\__, /
+                       /____/                                                               /____/*/
+
+/* 
+    Please see variable.js to know severity classes names : 
+    For example : 
+
+
+*/
+
+.rws__CL_CONSOLE_LI__LOG{
+    color: #9d9d9d;
+}
+.rws__CL_CONSOLE_LI__INFO{
+    color: #3c763d;
+}
+.rws__CL_CONSOLE_LI__DEBUG{
+    color: #31708f;
+}
+.rws__CL_CONSOLE_LI__WARNING{
+    color: #8a6d3b!important;
+}
+.rws__CL_CONSOLE_LI__ERROR{
+    color: #a94442!important;
+}
+/*
+.rws__CL_CONSOLE_MSG_CONTENT__{
+    display: flex;
+    position: relative;
+    left: 20px;
+    word-break: break-word;
+    flex-grow: 1!important;
+    flex-wrap: nowrap;
+    align-items: flex-start;
+}
+
+.rws__CL_CONSOLE_MSG_DATE__{
+    color: #3b91e8;
+    font-weight: bold;
+    display: flex;
+/*    flex-shrink: 0!important;*/
+    white-space: nowrap;
+    vertical-align: baseline;
+}*/

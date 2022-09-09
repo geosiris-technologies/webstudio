@@ -1,0 +1,1446 @@
+<?xml version="1.0" encoding="utf-8"?>
+<xs:schema targetNamespace="http://www.energistics.org/energyml/data/resqmlv2" xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:resqml="http://www.energistics.org/energyml/data/resqmlv2" xmlns:eml="http://www.energistics.org/energyml/data/commonv2" elementFormDefault="qualified" version="2.2" attributeFormDefault="unqualified">
+	<!--														-->
+	<!-- Energistics License Agreement
+			This file is distributed under the Energistics Product License Agreement at
+			http://www.energistics.org/product-license-agreement
+			Use of this file constitutes agreement with the Energistics Product License Agreement.
+			Copyright (c) 2021 Energistics. All rights reserved.
+			Energistics, WITSML, PRODML and RESQML are trademarks or registered trademarks of Energistics.
+			-->
+	<!--														-->
+	<xs:annotation>
+		<xs:documentation>This package contains classes used to define and exchange grid representations in RESQML.
+A grid is a RESQML representation that provides a cellular discretization of space. A grid shares three important characteristics with all other RESQML representations:
+	- A description of the topology (indexing) and geometry of the grid representation.
+	- A grid, or a subrepresentation of a grid, may provide a representation of an interpretation of a RESQML geologic feature, most often an earth model or a structural organization.
+	- Properties may be attached to a grid representation, i.e., a grid supplies the topological support for properties.
+RESQML also provides a closely related “grid connection set” representation, which is based on “cell-face-pairs”, for the purpose of describing the connections between grid cells, and a “blocked wellbore” representation to describe wellbore trajectories discretized on a grid.
+Although it may seem reasonable to organize grids by the geometry of their cells, industry applications more naturally segregate grids by their topology, i.e., the dimensionality of the indexing of the cells. RESQML follows this approach and supports six distinct grid classes:
+	- Three grid classes are fundamental and will be recognizable to most practitioners.
+	- Three grid classes are combinations of these fundamental classes, and provide support for advanced variations in unstructured grids.
+All grids support various extensions, such as higher order cell geometry, although some extensions may only exist for particular classes. For example, only IJK grids support radial grid cell interpolation. The corner point grid supported by many applications is a specific example of an IJK grid, although without all of the extensions now supported in RESQML
+For more information, see the Grid chapter in the RESQML Technical Usage Guide.</xs:documentation>
+	</xs:annotation>
+	<!--														-->
+	<xs:import namespace="http://www.energistics.org/energyml/data/commonv2" schemaLocation="../../../common/v2.3/xsd_schemas/EmlAllObjects.xsd"/>
+	<!--														-->
+	<xs:include schemaLocation="Structural.xsd"/>
+	<xs:include schemaLocation="Geometry.xsd"/>
+	<xs:include schemaLocation="Representations.xsd"/>
+	<xs:include schemaLocation="Interpretations.xsd"/>
+	<xs:simpleType name="CellShape">
+		<xs:annotation>
+			<xs:documentation>Used to indicate that all cells are of a uniform topology, i.e., have the same number of nodes per cell. This information is supplied by the RESQML writer to indicate the complexity of the grid geometry, as an aide to the RESQML reader.
+
+If a specific cell shape is not appropriate, then use polyhedral.
+
+BUSINESS RULE: Should be consistent with the actual geometry of the grid.</xs:documentation>
+		</xs:annotation>
+		<xs:restriction base="eml:TypeEnum">
+			<xs:enumeration value="tetrahedral">
+				<xs:annotation>
+					<xs:documentation>All grid cells are constrained to have only 4 nodes/cell with 4 faces/cell, 3 nodes/face, 4 nodes/cell for all cells (degeneracy allowed).</xs:documentation>
+				</xs:annotation>
+			</xs:enumeration>
+			<xs:enumeration value="pyramidal">
+				<xs:annotation>
+					<xs:documentation>All grid cells are constrained to have only 5 nodes/cell with 5 faces/cell, with 1 quadrilateral face and 4 triangular faces.</xs:documentation>
+				</xs:annotation>
+			</xs:enumeration>
+			<xs:enumeration value="prism">
+				<xs:annotation>
+					<xs:documentation>All grid cells are constrained to have 6 nodes/cell with 5 faces/cell, with 3 quadrilateral faces and 2 non-adjacent triangular faces, as in a column layer grid with triangular columns.</xs:documentation>
+				</xs:annotation>
+			</xs:enumeration>
+			<xs:enumeration value="hexahedral">
+				<xs:annotation>
+					<xs:documentation>All grid cells are constrained to have 8 nodes/cell with 6 faces/cell, 4 nodes/face, 8 nodes/cell for all cells (degeneracy allowed). Equivalent to IJK grid cells.</xs:documentation>
+				</xs:annotation>
+			</xs:enumeration>
+			<xs:enumeration value="polyhedral">
+				<xs:annotation>
+					<xs:documentation>If the cell geometry is not of a more specific kind, use polyhedral.</xs:documentation>
+				</xs:annotation>
+			</xs:enumeration>
+		</xs:restriction>
+	</xs:simpleType>
+	<xs:simpleType name="ColumnShape">
+		<xs:annotation>
+			<xs:documentation>Used to indicate that all columns are of a uniform topology, i.e., have the same number of faces per column. This information is supplied by the RESQML writer to indicate the complexity of the grid geometry, as an aide to the RESQML reader.
+
+If a specific column shape is not appropriate, then use polygonal.
+
+BUSINESS RULE: Should be consistent with the actual geometry of the grid.</xs:documentation>
+		</xs:annotation>
+		<xs:restriction base="eml:TypeEnum">
+			<xs:enumeration value="triangular">
+				<xs:annotation>
+					<xs:documentation>All grid columns have 3 sides.</xs:documentation>
+				</xs:annotation>
+			</xs:enumeration>
+			<xs:enumeration value="quadrilateral">
+				<xs:annotation>
+					<xs:documentation>All grid columns have 4 sides. Includes tartan and corner point grids.</xs:documentation>
+				</xs:annotation>
+			</xs:enumeration>
+			<xs:enumeration value="polygonal">
+				<xs:annotation>
+					<xs:documentation>At least one grid column is a polygon, N&gt;4.</xs:documentation>
+				</xs:annotation>
+			</xs:enumeration>
+		</xs:restriction>
+	</xs:simpleType>
+	<xs:simpleType name="GridGeometryAttachment">
+		<xs:annotation>
+			<xs:documentation>Indexable grid elements to which point geometry may be attached to describe additional grid geometry.</xs:documentation>
+		</xs:annotation>
+		<xs:restriction base="eml:TypeEnum">
+			<xs:enumeration value="cells">
+				<xs:annotation>
+					<xs:documentation>Geometry may be attached to cells to distort the geometry of that specific cell, only (finite element grid).</xs:documentation>
+				</xs:annotation>
+			</xs:enumeration>
+			<xs:enumeration value="edges">
+				<xs:annotation>
+					<xs:documentation>Geometry may be attached to edges to distort the geometry of all cells that refer to that edge (finite element grid).
+
+BUSINESS RULE: The edges indexing must be known or defined in the grid representation if geometry is attached to the edges.</xs:documentation>
+				</xs:annotation>
+			</xs:enumeration>
+			<xs:enumeration value="faces">
+				<xs:annotation>
+					<xs:documentation>Geometry may be attached to faces to distort the geometry of all cells that refer to that face (finite element grid).
+
+BUSINESS RULE: The faces indexing must be known or defined in the grid representation if geometry is attached to the faces.</xs:documentation>
+				</xs:annotation>
+			</xs:enumeration>
+			<xs:enumeration value="hinge node faces">
+				<xs:annotation>
+					<xs:documentation>For column layer grids, these are the K faces. For unstructured grids these faces are enumerated as the hinge node faces.</xs:documentation>
+				</xs:annotation>
+			</xs:enumeration>
+			<xs:enumeration value="nodes">
+				<xs:annotation>
+					<xs:documentation>Additional grid geometry may be attached to split or truncated node patches for column layer grids. All other node geometry attachment should be done through the Points array of the AbstractGridGeometry, not through the additional grid geometry.</xs:documentation>
+				</xs:annotation>
+			</xs:enumeration>
+			<xs:enumeration value="radial origin polyline">
+				<xs:annotation>
+					<xs:documentation>NKL points must be attached to the radial origin polyline for a grid with radial interpolation.
+
+BUSINESS RULE: The optional radialGridIsComplete element must be defined in the grid representation if geometry is attached to the radial origin polyline.</xs:documentation>
+				</xs:annotation>
+			</xs:enumeration>
+			<xs:enumeration value="subnodes">
+				<xs:annotation>
+					<xs:documentation>Geometry may be attached to subnodes to distort the geometry of all cells that refer to that subnode (finite element grid).
+
+BUSINESS RULE: An optional subnode patch object must be defined in the grid representation if geometry is attached to the subnodes.</xs:documentation>
+				</xs:annotation>
+			</xs:enumeration>
+		</xs:restriction>
+	</xs:simpleType>
+	<xs:simpleType name="KDirection">
+		<xs:annotation>
+			<xs:documentation>Enumeration used to specify if the direction of the coordinate lines is uniquely defined for a grid. If not uniquely defined, e.g., for over-turned reservoirs, then indicate that the K direction is not monotonic.</xs:documentation>
+		</xs:annotation>
+		<xs:restriction base="eml:TypeEnum">
+			<xs:enumeration value="down">
+				<xs:annotation>
+					<xs:documentation>K is increasing with depth, dot(tangent,gradDepth)&gt;0.</xs:documentation>
+				</xs:annotation>
+			</xs:enumeration>
+			<xs:enumeration value="up">
+				<xs:annotation>
+					<xs:documentation>K is increasing with elevation, dot(tangent,gradDepth)&lt;0.</xs:documentation>
+				</xs:annotation>
+			</xs:enumeration>
+			<xs:enumeration value="not monotonic">
+				<xs:annotation>
+					<xs:documentation>K is not monotonic with elevation, e.g., for over-turned structures.</xs:documentation>
+				</xs:annotation>
+			</xs:enumeration>
+		</xs:restriction>
+	</xs:simpleType>
+	<xs:simpleType name="PillarShape">
+		<xs:annotation>
+			<xs:documentation>Used to indicate that all pillars are of a uniform kind, i.e., may be represented using the same number of nodes per pillar. This information is supplied by the RESQML writer to indicate the complexity of the grid geometry, as an aide to the RESQML reader.
+
+If a combination of vertical and straight, then use straight.
+
+If a specific pillar shape is not appropriate, then use curved.
+
+BUSINESS RULE: Should be consistent with the actual geometry of the grid.</xs:documentation>
+		</xs:annotation>
+		<xs:restriction base="eml:TypeEnum">
+			<xs:enumeration value="vertical">
+				<xs:annotation>
+					<xs:documentation>If represented by a parametric line, requires only a single control point per line.</xs:documentation>
+				</xs:annotation>
+			</xs:enumeration>
+			<xs:enumeration value="straight">
+				<xs:annotation>
+					<xs:documentation>If represented by a parametric line, requires 2 control points per line.</xs:documentation>
+				</xs:annotation>
+			</xs:enumeration>
+			<xs:enumeration value="curved">
+				<xs:annotation>
+					<xs:documentation>If represented by a parametric line, requires 3 or more control points per line.</xs:documentation>
+				</xs:annotation>
+			</xs:enumeration>
+		</xs:restriction>
+	</xs:simpleType>
+	<xs:simpleType name="SubnodeNodeObject">
+		<xs:annotation>
+			<xs:documentation>SubnodeNodeObject is used to specify the node object that supports the subnodes. This determines the number of nodes per subnode and the continuity of the associated geometry or property. For instance, for hexahedral cells, cell indicates a fixed value of 8, while for an unstructured column layer grid, cell indicates that this count varies from column to column.</xs:documentation>
+		</xs:annotation>
+		<xs:restriction base="eml:TypeEnum">
+			<xs:enumeration value="cell">
+				<xs:annotation>
+					<xs:documentation>If geometry or properties are discontinuous from cell to cell (i.e., their spatial support is cell), then attach them to cell subnodes. 
+
+BUSINESS RULE: If this object kind is selected, then an ordered list of nodes per cell must be specified or otherwise known.</xs:documentation>
+				</xs:annotation>
+			</xs:enumeration>
+			<xs:enumeration value="face">
+				<xs:annotation>
+					<xs:documentation>If geometry or properties are continuous between cells that share the same face (i.e., their spatial support is the face), then attach them to face subnodes. 
+
+BUSINESS RULE: If this object kind is selected, then an ordered list of nodes per face must be specified or otherwise known.</xs:documentation>
+				</xs:annotation>
+			</xs:enumeration>
+			<xs:enumeration value="edge">
+				<xs:annotation>
+					<xs:documentation>If geometry and properties are continuous between cells that share the same edge of a face (i.e. their spatial support is the edge), then attach them to edge subnodes.
+
+BUSINESS RULE: If this object kind is selected, then an ordered list of nodes per edge must be specified or otherwise known.</xs:documentation>
+				</xs:annotation>
+			</xs:enumeration>
+		</xs:restriction>
+	</xs:simpleType>
+	<xs:complexType name="AbstractColumnLayerGridGeometry" abstract="true">
+		<xs:annotation>
+			<xs:documentation>Description of the geometry of a column layer grid, e.g., parity and pinch, together with its supporting topology.
+
+	- Column layer grid cell geometry is based upon nodes on coordinate lines.
+	- Geometry is contained within the representation of a grid.
+	- Point Geometry is that of the column layer coordinate line nodes. Coordinate line nodes for all of the coordinate lines, with NKL nodes per line.
+	- The numbering of these lines follow the pillar numbering if no split coordinate lines are present.
+	- The unsplit coordinate lines share an indexing with the pillars. The numbering of the remaining lines are defined in the columnsPerSplitCoordinateLine list-of-lists if split coordinate lines are present.
+	- Pillar numbering is either 1D or 2D, so for unfaulted grids, the node dimensions may follow either a 2D or 3D array. Otherwise the nodes will be 2D.
+	- In HDF5 nodes are stored as separate X, Y, Z, values, so add another dimension (size=3) which is fastest in HDF5.</xs:documentation>
+		</xs:annotation>
+		<xs:complexContent>
+			<xs:extension base="resqml:AbstractGridGeometry">
+				<xs:sequence>
+					<xs:element name="CellGeometryIsDefined" type="eml:AbstractBooleanArray" minOccurs="0" maxOccurs="1">
+						<xs:annotation>
+							<xs:documentation>Indicator that a cell has a defined geometry. This attribute is grid metadata. If the indicator shows that the cell geometry is NOT defined, then this attribute overrides any other node geometry specification.
+
+Array index is 2D/3D.</xs:documentation>
+						</xs:annotation>
+					</xs:element>
+					<xs:element name="KDirection" type="resqml:KDirection" minOccurs="1" maxOccurs="1"/>
+					<xs:element name="NodeIsColocatedInKDirection" type="eml:AbstractBooleanArray" minOccurs="0" maxOccurs="1">
+						<xs:annotation>
+							<xs:documentation>Optional indicator that two adjacent nodes on a coordinate line are colocated. This is considered grid metadata, and is intended to over-ride any geometric comparison of node locations.
+
+Array index follows #CoordinateLines x (NKL-1).</xs:documentation>
+						</xs:annotation>
+					</xs:element>
+					<xs:element name="NodeIsColocatedOnKEdge" type="eml:AbstractBooleanArray" minOccurs="0" maxOccurs="1">
+						<xs:annotation>
+							<xs:documentation>Optional indicator that two adjacent nodes on the KEDGE of a cell are colocated. This is considered grid metadata, and is intended to over-ride any geometric comparison of node locations.
+
+Array index follows #EdgesPerColumn x NKL for unstructured column layer grids and 4 x NI x NJ x NKL for IJK grids.</xs:documentation>
+						</xs:annotation>
+					</xs:element>
+					<xs:element name="PillarGeometryIsDefined" type="eml:AbstractBooleanArray" minOccurs="1" maxOccurs="1">
+						<xs:annotation>
+							<xs:documentation>Indicator that a pillar has at least one node with a defined cell geometry. This is considered grid metadata. If the indicator does not indicate that the pillar geometry is defined, then this over-rides any other node geometry specification.
+
+Array index follows #Pillars and so may be either 2D or 1D.</xs:documentation>
+						</xs:annotation>
+					</xs:element>
+					<xs:element name="PillarShape" type="resqml:PillarShape" minOccurs="1" maxOccurs="1"/>
+					<xs:element name="SplitColumnEdges" type="resqml:SplitColumnEdges" minOccurs="0" maxOccurs="1"/>
+					<xs:element name="ColumnLayerSubnodeTopology" type="resqml:ColumnLayerSubnodeTopology" minOccurs="0" maxOccurs="1"/>
+					<xs:element name="ColumnLayerSplitCoordinateLines" type="resqml:ColumnLayerSplitCoordinateLines" minOccurs="0" maxOccurs="1"/>
+					<xs:element name="SplitNodePatch" type="resqml:SplitNodePatch" minOccurs="0" maxOccurs="1"/>
+				</xs:sequence>
+			</xs:extension>
+		</xs:complexContent>
+	</xs:complexType>
+	<xs:complexType name="AbstractColumnLayerGridRepresentation" abstract="true">
+		<xs:annotation>
+			<xs:documentation>Abstract class that includes IJK grids and unstructured column layer grids. All column layer grids have a layer index K=1,...,NK or K0=0,...,NK-1.
+
+Cell geometry is characterized by nodes on coordinate lines.</xs:documentation>
+		</xs:annotation>
+		<xs:complexContent>
+			<xs:extension base="resqml:AbstractGridRepresentation">
+				<xs:sequence>
+					<xs:element name="Nk" type="eml:PositiveLong" minOccurs="1" maxOccurs="1">
+						<xs:annotation>
+							<xs:documentation>Number of layers in the grid. Must be positive.</xs:documentation>
+						</xs:annotation>
+					</xs:element>
+				</xs:sequence>
+			</xs:extension>
+		</xs:complexContent>
+	</xs:complexType>
+	<xs:complexType name="AbstractGridGeometry" abstract="true">
+		<xs:annotation>
+			<xs:documentation>Grid geometry described by means of points attached to nodes and additional optional points which may be attached to other indexable elements of the grid representation.</xs:documentation>
+		</xs:annotation>
+		<xs:complexContent>
+			<xs:extension base="resqml:PointGeometry">
+				<xs:sequence>
+					<xs:element name="AdditionalGridPoints" type="resqml:AdditionalGridPoints" minOccurs="0" maxOccurs="unbounded"/>
+				</xs:sequence>
+			</xs:extension>
+		</xs:complexContent>
+	</xs:complexType>
+	<xs:complexType name="AbstractGridRepresentation" abstract="true">
+		<xs:annotation>
+			<xs:documentation>Abstract class for all grid representations.</xs:documentation>
+		</xs:annotation>
+		<xs:complexContent>
+			<xs:extension base="resqml:AbstractRepresentation">
+				<xs:sequence>
+					<xs:element name="CellFluidPhaseUnits" type="resqml:CellFluidPhaseUnits" minOccurs="0" maxOccurs="1"/>
+					<xs:element name="ParentWindow" type="resqml:AbstractParentWindow" minOccurs="0" maxOccurs="1"/>
+					<xs:element name="IntervalStratigraphicUnits" type="resqml:IntervalStratigraphicUnits" minOccurs="0" maxOccurs="1"/>
+				</xs:sequence>
+			</xs:extension>
+		</xs:complexContent>
+	</xs:complexType>
+	<xs:complexType name="AbstractParentWindow" abstract="true">
+		<xs:annotation>
+			<xs:documentation>Parent window specification, organized according to the topology of the parent grid. In addition to a window specification, for grids with I, J, and/or K coordinates, the parentage construction includes a regridding description that covers grid refinement, coarsening, or any combination of the two.</xs:documentation>
+		</xs:annotation>
+		<xs:sequence>
+			<xs:element name="CellOverlap" type="resqml:CellOverlap" minOccurs="0" maxOccurs="1"/>
+		</xs:sequence>
+	</xs:complexType>
+	<xs:complexType name="AbstractTruncatedColumnLayerGridRepresentation" abstract="true">
+		<xs:annotation>
+			<xs:documentation>Abstract class for truncated IJK grids and truncated unstructured column layer grids. Each column layer grid class must have a defined geometry in which cells are truncated and additional split cells are defined.</xs:documentation>
+		</xs:annotation>
+		<xs:complexContent>
+			<xs:extension base="resqml:AbstractGridRepresentation">
+				<xs:sequence>
+					<xs:element name="Nk" type="eml:PositiveLong" minOccurs="1" maxOccurs="1">
+						<xs:annotation>
+							<xs:documentation>Number of layers in the grid. Must be positive.</xs:documentation>
+						</xs:annotation>
+					</xs:element>
+					<xs:element name="TruncationCellPatch" type="resqml:TruncationCellPatch" minOccurs="1" maxOccurs="1"/>
+				</xs:sequence>
+			</xs:extension>
+		</xs:complexContent>
+	</xs:complexType>
+	<xs:complexType name="Activation">
+		<xs:annotation>
+			<xs:documentation>Used to activate and deactivate the referencing object at the times indicated.
+
+	- If the activation object is not present, then the referencing object is always active.
+
+	- If the activation object is present, then the referencing object is not active until activated.</xs:documentation>
+		</xs:annotation>
+		<xs:sequence>
+			<xs:element name="ActivationToggleIndices" type="eml:AbstractIntegerArray" minOccurs="1" maxOccurs="1">
+				<xs:annotation>
+					<xs:documentation>The index in the time series at which the state of the referencing object is changed. Toggle changes state from inactive to active, or toggle changes state from active to inactive.</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element name="TimeSeries" type="eml:DataObjectReference" minOccurs="1" maxOccurs="1"/>
+		</xs:sequence>
+	</xs:complexType>
+	<xs:complexType name="AdditionalGridPoints">
+		<xs:annotation>
+			<xs:documentation>Geometry given by means of points attached to additional elements of a grid.</xs:documentation>
+		</xs:annotation>
+		<xs:sequence>
+			<xs:element name="RepresentationPatchIndex" type="eml:NonNegativeLong" minOccurs="0" maxOccurs="1">
+				<xs:annotation>
+					<xs:documentation>Used to remove ambiguity in geometry attachment, if the attachment element is not sufficient. Usually required for subnodes and for the general purpose grid, but not otherwise.</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element name="Attachment" type="resqml:GridGeometryAttachment" minOccurs="1" maxOccurs="1"/>
+			<xs:element name="Points" type="resqml:AbstractPoint3dArray" minOccurs="1" maxOccurs="1"/>
+		</xs:sequence>
+	</xs:complexType>
+	<xs:complexType name="AdditionalGridTopology">
+		<xs:annotation>
+			<xs:documentation>Additional grid topology and/or patches, if required, for indexable elements that otherwise do not have their topology defined within the grid representation. For example, column edges need to be defined if you want to have an enumeration for the faces of a column layer grid, but not otherwise.</xs:documentation>
+		</xs:annotation>
+		<xs:sequence>
+			<xs:element name="SplitEdges" type="resqml:SplitEdges" minOccurs="0" maxOccurs="1"/>
+			<xs:element name="SplitNodePatch" type="resqml:SplitNodePatch" minOccurs="0" maxOccurs="1"/>
+			<xs:element name="SplitColumnEdges" type="resqml:SplitColumnEdges" minOccurs="0" maxOccurs="1"/>
+			<xs:element name="UnstructuredColumnEdges" type="resqml:UnstructuredColumnEdges" minOccurs="0" maxOccurs="1"/>
+			<xs:element name="SplitFaces" type="resqml:SplitFaces" minOccurs="0" maxOccurs="1"/>
+			<xs:element name="UnstructuredSubnodeTopology" type="resqml:UnstructuredSubnodeTopology" minOccurs="0" maxOccurs="1"/>
+			<xs:element name="ColumnLayerSubnodeTopology" type="resqml:ColumnLayerSubnodeTopology" minOccurs="0" maxOccurs="1"/>
+		</xs:sequence>
+	</xs:complexType>
+	<xs:complexType name="AlternateCellIndex">
+		<xs:annotation>
+			<xs:documentation>Allows definition of an alternate cell indexing for a representation. If defined, this alternate cell indexing is the only one to rely on when referencing the representation cells. The alternate cell indices must come from existing grid representations. Because this alternate indexing requires a lot of extra work for software readers to process, use only when no other solution is acceptable.</xs:documentation>
+		</xs:annotation>
+		<xs:sequence>
+			<xs:element name="CellIndex" type="eml:AbstractIntegerArray" minOccurs="1" maxOccurs="1">
+				<xs:annotation>
+					<xs:documentation>Defines each alternate cell index for each representation cell.
+BUSINESS RULE :CellIndex.Count = GridIndex.Count = Representation.Cell.Count</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element name="GridIndex" type="eml:AbstractIntegerArray" minOccurs="1" maxOccurs="1">
+				<xs:annotation>
+					<xs:documentation>Defines which grid each alternate cell index comes from. The grids are defined by means of an index of the OriginalGrids set.
+BUSINESS RULE : GridIndex.Count = CellIndex.Count = Representation.Cell.Count</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element name="OriginalGrids" type="eml:DataObjectReference" minOccurs="1" maxOccurs="unbounded"/>
+		</xs:sequence>
+	</xs:complexType>
+	<xs:complexType name="CellFluidPhaseUnits">
+		<xs:annotation>
+			<xs:documentation>A mapping from cells to fluid phase unit interpretation to describe the initial hydrostatic fluid column.</xs:documentation>
+		</xs:annotation>
+		<xs:sequence>
+			<xs:element name="PhaseUnitIndices" type="eml:JaggedArray" minOccurs="1" maxOccurs="1">
+				<xs:annotation>
+					<xs:documentation>Index of the phase unit kind within a given fluid phase organization for each cell. Follows the indexing defined by the PhaseUnit enumeration. When applied to the wellbore frame representation, the indexing is identical to the number of intervals.
+Since a single cell or interval may corresponds to several units, the mapping is done using a jagged array.
+
+Use null value if no fluid phase is present, e.g., within the seal.
+
+BUSINESS RULE: Array length is equal to the number of cells in the representation (grid, wellbore frame or blocked well).</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element name="RockFluidOrganizationInterpretation" type="eml:DataObjectReference" minOccurs="1" maxOccurs="1"/>
+		</xs:sequence>
+	</xs:complexType>
+	<xs:complexType name="CellOverlap">
+		<xs:annotation>
+			<xs:documentation>Optional cell volume overlap information between the current grid (the child) and the parent grid. Use this data-object when the child grid has an explicitly defined geometry, and these relationships cannot be inferred from the regrid descriptions.</xs:documentation>
+		</xs:annotation>
+		<xs:sequence>
+			<xs:element name="Count" type="eml:PositiveLong" minOccurs="1" maxOccurs="1">
+				<xs:annotation>
+					<xs:documentation>Number of parent-child cell overlaps. Must be positive.</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element name="ParentChildCellPairs" type="eml:AbstractIntegerArray" minOccurs="1" maxOccurs="1">
+				<xs:annotation>
+					<xs:documentation>(Parent cell index, child cell index) pair for each overlap.
+
+BUSINESS RULE: Length of array must equal 2 x overlapCount.</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element name="OverlapVolume" type="resqml:OverlapVolume" minOccurs="0" maxOccurs="1"/>
+		</xs:sequence>
+	</xs:complexType>
+	<xs:complexType name="CellParentWindow">
+		<xs:annotation>
+			<xs:documentation>Parent window for ANY grid indexed as if it were an unstructured cell grid, i.e., using a 1D index.</xs:documentation>
+		</xs:annotation>
+		<xs:complexContent>
+			<xs:extension base="resqml:AbstractParentWindow">
+				<xs:sequence>
+					<xs:element name="CellIndices" type="eml:AbstractIntegerArray" minOccurs="1" maxOccurs="1">
+						<xs:annotation>
+							<xs:documentation>Cell indices that list the cells in the parent window.
+
+BUSINESS RULE: The ratio of fine to coarse cell counts must be an integer for each coarse cell.</xs:documentation>
+						</xs:annotation>
+					</xs:element>
+					<xs:element name="ParentGridRepresentation" type="eml:DataObjectReference" minOccurs="1" maxOccurs="1"/>
+				</xs:sequence>
+			</xs:extension>
+		</xs:complexContent>
+	</xs:complexType>
+	<xs:complexType name="ColumnLayerGpGrid">
+		<xs:annotation>
+			<xs:documentation>Used to construct a column layer grid patch based upon multiple unstructured column-layer and IJK grids that share a layering scheme.
+
+Multiple patches are supported.</xs:documentation>
+		</xs:annotation>
+		<xs:sequence>
+			<xs:element name="Nk" type="eml:NonNegativeLong" minOccurs="1" maxOccurs="1">
+				<xs:annotation>
+					<xs:documentation>Number of layers. Degenerate case (nk=0) is allowed for GPGrid.</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element name="KGaps" type="resqml:KGaps" minOccurs="0" maxOccurs="1"/>
+			<xs:element name="IjkGpGridPatch" type="resqml:IjkGpGridPatch" minOccurs="0" maxOccurs="unbounded"/>
+			<xs:element name="UnstructuredColumnLayerGpGridPatch" type="resqml:UnstructuredColumnLayerGpGridPatch" minOccurs="0" maxOccurs="unbounded"/>
+		</xs:sequence>
+	</xs:complexType>
+	<xs:complexType name="ColumnLayerParentWindow">
+		<xs:annotation>
+			<xs:documentation>Parent window for any column-layer grid indexed as if it were an unstructured column layer grid, i.e., IJ columns are replaced by a column index.</xs:documentation>
+		</xs:annotation>
+		<xs:complexContent>
+			<xs:extension base="resqml:AbstractParentWindow">
+				<xs:sequence>
+					<xs:element name="ColumnIndices" type="eml:AbstractIntegerArray" minOccurs="1" maxOccurs="1">
+						<xs:annotation>
+							<xs:documentation>Column indices that list the columns in the parent window.
+
+BUSINESS RULE: The ratio of fine to coarse column counts must be an integer for each coarse column.</xs:documentation>
+						</xs:annotation>
+					</xs:element>
+					<xs:element name="OmitParentCells" type="eml:AbstractIntegerArray" minOccurs="0" maxOccurs="1">
+						<xs:annotation>
+							<xs:documentation>List of parent cells that are to be retained at their original resolution and are not to be included within a local grid. The "omit" allows non-rectangular local grids to be specified.
+
+0-based indexing follows #Columns x #Layers relative to the parent window cell count, not to the parent grid.</xs:documentation>
+						</xs:annotation>
+					</xs:element>
+					<xs:element name="KRegrid" type="resqml:Regrid" minOccurs="1" maxOccurs="1"/>
+					<xs:element name="ParentColumnLayerGridRepresentation" type="eml:DataObjectReference" minOccurs="1" maxOccurs="1"/>
+				</xs:sequence>
+			</xs:extension>
+		</xs:complexContent>
+	</xs:complexType>
+	<xs:complexType name="ColumnLayerSplitCoordinateLines">
+		<xs:annotation>
+			<xs:documentation>Definition of the indexing for the split coordinate lines. When present, this indexing contributes to the coordinate line nodes.</xs:documentation>
+		</xs:annotation>
+		<xs:sequence>
+			<xs:element name="Count" type="eml:PositiveLong" minOccurs="1" maxOccurs="1">
+				<xs:annotation>
+					<xs:documentation>Number of split coordinate lines. The count must be positive.</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element name="PillarIndices" type="eml:AbstractIntegerArray" minOccurs="1" maxOccurs="1">
+				<xs:annotation>
+					<xs:documentation>Pillar index for each split coordinate line.
+Length of this array is equal to the number of split coordinate lines.
+
+For the first pillarCount lines, the index of the coordinate line equals the index of the corresponding pillar.  This array provides the pillar indices for the additional (split) coordinate lines.
+
+Used to implicitly define column and cell geometry.</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element name="ColumnsPerSplitCoordinateLine" type="eml:JaggedArray" minOccurs="1" maxOccurs="1">
+				<xs:annotation>
+					<xs:documentation>Column indices for each of the split coordinate lines. Used to implicitly define column and cell geometry. List-of-lists construction used to support shared coordinate lines. </xs:documentation>
+				</xs:annotation>
+			</xs:element>
+		</xs:sequence>
+	</xs:complexType>
+	<xs:complexType name="ColumnLayerSubnodeTopology">
+		<xs:annotation>
+			<xs:documentation>This data-object consists of the unstructured cell finite elements subnode topology plus the column subnodes.</xs:documentation>
+		</xs:annotation>
+		<xs:complexContent>
+			<xs:extension base="resqml:SubnodeTopology">
+				<xs:sequence>
+					<xs:element name="ColumnSubnodePatch" type="resqml:ColumnSubnodePatch" minOccurs="0" maxOccurs="unbounded"/>
+				</xs:sequence>
+			</xs:extension>
+		</xs:complexContent>
+	</xs:complexType>
+	<xs:complexType name="ColumnSubnodePatch">
+		<xs:annotation>
+			<xs:documentation>Use this subnode construction if the number of subnodes per object varies from column to column, but does not vary from layer to layer.</xs:documentation>
+		</xs:annotation>
+		<xs:complexContent>
+			<xs:extension base="resqml:SubnodePatch">
+				<xs:sequence>
+					<xs:element name="SubnodeCountPerObject" type="eml:AbstractIntegerArray" minOccurs="1" maxOccurs="1">
+						<xs:annotation>
+							<xs:documentation>Number of subnodes per object, with a different number in each column of the grid.</xs:documentation>
+						</xs:annotation>
+					</xs:element>
+				</xs:sequence>
+			</xs:extension>
+		</xs:complexContent>
+	</xs:complexType>
+	<xs:complexType name="ConnectionInterpretations">
+		<xs:annotation>
+			<xs:documentation>For each connection in the grid connection set representation, zero, one or more feature-interpretations. The use of a jagged array allows multiple interpretations for each connection, e.g., to represent multiple faults discretized onto a single connection. Note: Feature-interpretations are not restricted to faults, so that a connection may also represent a horizon or geobody boundary, for example.</xs:documentation>
+		</xs:annotation>
+		<xs:sequence>
+			<xs:element name="InterpretationIndices" type="eml:JaggedArray" minOccurs="1" maxOccurs="1">
+				<xs:annotation>
+					<xs:documentation>Indices for the interpretations for each connection, if any. The use of a RESQML jagged array allows zero or more than one interpretation to be associated with a single connection.</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element name="FeatureInterpretation" type="eml:DataObjectReference" minOccurs="1" maxOccurs="unbounded"/>
+		</xs:sequence>
+	</xs:complexType>
+	<xs:complexType name="Edges">
+		<xs:annotation>
+			<xs:documentation>Unstructured cell grids require the definition of edges if the subnode attachment is of kind edges.
+
+Use Case: Finite elements, especially for higher order geometry.
+
+BUSINESS RULE: Edges must be defined for unstructured cell grids if subnode nodes of kind edges are used.</xs:documentation>
+		</xs:annotation>
+		<xs:sequence>
+			<xs:element name="Count" type="eml:PositiveLong" minOccurs="1" maxOccurs="1">
+				<xs:annotation>
+					<xs:documentation>Number of edges. Must be positive.</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element name="NodesPerEdge" type="eml:AbstractIntegerArray" minOccurs="1" maxOccurs="1">
+				<xs:annotation>
+					<xs:documentation>Defines a list of 2 nodes per edge.
+
+Count = 2 x EdgeCount</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+		</xs:sequence>
+	</xs:complexType>
+	<xs:element name="GpGridRepresentation" type="resqml:GpGridRepresentation" substitutionGroup="eml:AbstractDataObject"/>
+	<xs:complexType name="GpGridRepresentation">
+		<xs:annotation>
+			<xs:documentation>General purpose (GP) grid representation, which includes and/or extends the features from all other grid representations. This general purpose representation is included in the schema for research and/or advanced modeling purposes, but is not expected to be used for routine data transfer.</xs:documentation>
+		</xs:annotation>
+		<xs:complexContent>
+			<xs:extension base="resqml:AbstractGridRepresentation">
+				<xs:sequence>
+					<xs:element name="ColumnLayerGpGrid" type="resqml:ColumnLayerGpGrid" minOccurs="0" maxOccurs="unbounded"/>
+					<xs:element name="UnstructuredGpGridPatch" type="resqml:UnstructuredGpGridPatch" minOccurs="0" maxOccurs="unbounded"/>
+				</xs:sequence>
+			</xs:extension>
+		</xs:complexContent>
+	</xs:complexType>
+	<xs:element name="Grid2dRepresentation" type="resqml:Grid2dRepresentation" substitutionGroup="eml:AbstractDataObject"/>
+	<xs:complexType name="Grid2dRepresentation">
+		<xs:annotation>
+			<xs:documentation>Representation based on a 2D grid. For definitions of slowest and fastest axes of the array, see Grid2dPatch. </xs:documentation>
+		</xs:annotation>
+		<xs:complexContent>
+			<xs:extension base="resqml:AbstractSurfaceRepresentation">
+				<xs:sequence>
+					<xs:element name="FastestAxisCount" type="eml:PositiveLong" minOccurs="1" maxOccurs="1"/>
+					<xs:element name="SlowestAxisCount" type="eml:PositiveLong" minOccurs="1" maxOccurs="1"/>
+					<xs:element name="Geometry" type="resqml:PointGeometry" minOccurs="1" maxOccurs="1"/>
+				</xs:sequence>
+			</xs:extension>
+		</xs:complexContent>
+	</xs:complexType>
+	<xs:element name="GridConnectionSetRepresentation" type="resqml:GridConnectionSetRepresentation" substitutionGroup="eml:AbstractDataObject"/>
+	<xs:complexType name="GridConnectionSetRepresentation">
+		<xs:annotation>
+			<xs:documentation>Representation that consists of a list of connections between grid cells, potentially on different grids.
+
+Connections are in the form of (Grid,Cell,Face)1&lt;=&gt;(Grid,Cell,Face)2 and are stored as three integer pair arrays corresponding to these six elements.
+
+Grid connection sets are the preferred means of representing faults on a grid. The use of cell-face-pairs is more complete than single cell-faces, which are missing a corresponding cell face entry, and only provide an incomplete representation of the topology of a fault.
+
+Unlike what is sometimes the case in reservoir simulation software, RESQML does not distinguish between standard and non-standard connections. 
+Within RESQML, if a grid connection corresponds to a "nearest neighbor" as defined by the cell indices, then it is never additive to the implicit nearest neighbor connection.
+
+BUSINESS RULE: A single cell-face-pair should not appear within more than a single grid connection set. This rule is designed to simplify the interpretation of properties assigned to multiple grid connection sets, which might otherwise have the same property defined more than once on a single connection, with no clear means of resolving the multiple values.</xs:documentation>
+		</xs:annotation>
+		<xs:complexContent>
+			<xs:extension base="resqml:AbstractRepresentation">
+				<xs:sequence>
+					<xs:element name="Count" type="eml:PositiveLong" minOccurs="1" maxOccurs="1">
+						<xs:annotation>
+							<xs:documentation>count of connections. Must be positive.</xs:documentation>
+						</xs:annotation>
+					</xs:element>
+					<xs:element name="CellIndexPairs" type="eml:AbstractIntegerArray" minOccurs="1" maxOccurs="1">
+						<xs:annotation>
+							<xs:documentation>2 x #Connections array of cell indices for (Cell1,Cell2) for each connection.</xs:documentation>
+						</xs:annotation>
+					</xs:element>
+					<xs:element name="GridIndexPairs" type="eml:AbstractIntegerArray" minOccurs="0" maxOccurs="1">
+						<xs:annotation>
+							<xs:documentation>2 x #Connections array of grid indices for (Cell1,Cell2) for each connection. The grid indices are obtained from the grid index pairs.
+
+If only a single grid is referenced from the grid index, then this array need not be used.
+
+BUSINESS RULE: If more than one grid index pair is referenced, then this array should appear.</xs:documentation>
+						</xs:annotation>
+					</xs:element>
+					<xs:element name="LocalFacePerCellIndexPairs" type="eml:AbstractIntegerArray" minOccurs="0" maxOccurs="1">
+						<xs:annotation>
+							<xs:documentation>Optional 2 x #Connections array of local face-per-cell indices for (Cell1,Cell2) for each connection. Local face-per-cell indices are used because global face indices need not have been defined.
+
+If no face-per-cell definition occurs as part of the grid representation, e.g., for a block-centered grid, then this array need not appear.</xs:documentation>
+						</xs:annotation>
+					</xs:element>
+					<xs:element name="ConnectionInterpretations" type="resqml:ConnectionInterpretations" minOccurs="0" maxOccurs="1"/>
+					<xs:element name="Grid" type="eml:DataObjectReference" minOccurs="1" maxOccurs="unbounded"/>
+				</xs:sequence>
+			</xs:extension>
+		</xs:complexContent>
+	</xs:complexType>
+	<xs:complexType name="IjGaps">
+		<xs:annotation>
+			<xs:documentation>Optional object used to indicate that adjacent columns of the model are split from each other, which is modeled by introducing additional (split) pillars.
+
+Use the ColumnLayerSplitColumnEdges object to specify the numbering  of the additional column edges generated by the IJ Gaps.</xs:documentation>
+		</xs:annotation>
+		<xs:sequence>
+			<xs:element name="SplitPillarCount" type="eml:PositiveLong" minOccurs="1" maxOccurs="1">
+				<xs:annotation>
+					<xs:documentation>Number of split pillars in the model. Count must be positive.</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element name="ParentPillarIndices" type="eml:AbstractIntegerArray" minOccurs="1" maxOccurs="1">
+				<xs:annotation>
+					<xs:documentation>Parent pillar index for each of the split pillars. This information is used to infer the grid cell geometry.
+
+BUSINESS RULE: Array length must match splitPillarCount.</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element name="ColumnsPerSplitPillar" type="eml:JaggedArray" minOccurs="1" maxOccurs="1">
+				<xs:annotation>
+					<xs:documentation>List of columns for each of the split pillars. This information is used to infer the grid cell geometry.
+
+BUSINESS RULE: The length of the first list-of-lists array must match the splitPillarCount.</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+		</xs:sequence>
+	</xs:complexType>
+	<xs:complexType name="IjkGpGridPatch">
+		<xs:annotation>
+			<xs:documentation>Used to specify IJK grid patch(es) within a general purpose grid.
+
+Multiple patches are supported.</xs:documentation>
+		</xs:annotation>
+		<xs:sequence>
+			<xs:element name="Ni" type="eml:NonNegativeLong" minOccurs="1" maxOccurs="1">
+				<xs:annotation>
+					<xs:documentation>Count of I indices. Degenerate case (ni=0) is allowed for GPGrid representations.</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element name="Nj" type="eml:NonNegativeLong" minOccurs="1" maxOccurs="1">
+				<xs:annotation>
+					<xs:documentation>Count of J indices. Degenerate case (nj=0) is allowed for GPGrid representations.</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element name="RadialGridIsComplete" type="xs:boolean" minOccurs="0" maxOccurs="1">
+				<xs:annotation>
+					<xs:documentation>TRUE if the grid is periodic in J, i.e., has the topology of a complete 360 degree circle.
+
+If TRUE, then NJL=NJ. Otherwise, NJL=NJ+1</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element name="Geometry" type="resqml:IjkGridGeometry" minOccurs="0" maxOccurs="1"/>
+			<xs:element name="TruncationCellPatch" type="resqml:TruncationCellPatch" minOccurs="0" maxOccurs="1"/>
+		</xs:sequence>
+	</xs:complexType>
+	<xs:complexType name="IjkGridGeometry">
+		<xs:annotation>
+			<xs:documentation>Explicit geometry definition for the cells of the IJK grid.
+
+Grid options are also defined through this data-object.</xs:documentation>
+		</xs:annotation>
+		<xs:complexContent>
+			<xs:extension base="resqml:AbstractColumnLayerGridGeometry">
+				<xs:sequence>
+					<xs:element name="GridIsRighthanded" type="xs:boolean" minOccurs="1" maxOccurs="1">
+						<xs:annotation>
+							<xs:documentation>Indicates that the IJK grid is right handed, as determined by the triple product of tangent vectors in the I, J, and K directions.</xs:documentation>
+						</xs:annotation>
+					</xs:element>
+					<xs:element name="IjGaps" type="resqml:IjGaps" minOccurs="0" maxOccurs="1"/>
+				</xs:sequence>
+			</xs:extension>
+		</xs:complexContent>
+	</xs:complexType>
+	<xs:element name="IjkGridRepresentation" type="resqml:IjkGridRepresentation" substitutionGroup="eml:AbstractDataObject"/>
+	<xs:complexType name="IjkGridRepresentation">
+		<xs:annotation>
+			<xs:documentation>Grid whose topology is characterized by structured column indices (I,J) and a layer index, K.
+
+Cell geometry is characterized by nodes on coordinate lines, where each column of the model has 4 sides. Geometric degeneracy is permitted.
+
+IJK grids support the following specific extensions:
+	- IJK radial grids
+	- K-Layer gaps
+	- IJ-Column gaps</xs:documentation>
+		</xs:annotation>
+		<xs:complexContent>
+			<xs:extension base="resqml:AbstractColumnLayerGridRepresentation">
+				<xs:sequence>
+					<xs:element name="Ni" type="eml:PositiveLong" minOccurs="1" maxOccurs="1">
+						<xs:annotation>
+							<xs:documentation>Count of cells in the I-direction in the grid. Must be positive. I=1,...,NI, I0=0,...,NI-1.</xs:documentation>
+						</xs:annotation>
+					</xs:element>
+					<xs:element name="Nj" type="eml:PositiveLong" minOccurs="1" maxOccurs="1">
+						<xs:annotation>
+							<xs:documentation>Count of cells in the J-direction in the grid. Must be positive. J=1,...,NJ, J0=0,...,NJ-1.</xs:documentation>
+						</xs:annotation>
+					</xs:element>
+					<xs:element name="RadialGridIsComplete" type="xs:boolean" minOccurs="0" maxOccurs="1">
+						<xs:annotation>
+							<xs:documentation>TRUE if the grid is periodic in J, i.e., has the topology of a complete 360 degree circle.
+
+If TRUE, then NJL=NJ. Otherwise, NJL=NJ+1
+
+May be used to change the grid topology for either a Cartesian or a radial grid, although radial grid usage is by far the more common.</xs:documentation>
+						</xs:annotation>
+					</xs:element>
+					<xs:element name="KGaps" type="resqml:KGaps" minOccurs="0" maxOccurs="1"/>
+					<xs:element name="Geometry" type="resqml:IjkGridGeometry" minOccurs="0" maxOccurs="1"/>
+				</xs:sequence>
+			</xs:extension>
+		</xs:complexContent>
+	</xs:complexType>
+	<xs:complexType name="IjkParentWindow">
+		<xs:annotation>
+			<xs:documentation>Parent window for any IJK grid.</xs:documentation>
+		</xs:annotation>
+		<xs:complexContent>
+			<xs:extension base="resqml:AbstractParentWindow">
+				<xs:sequence>
+					<xs:element name="OmitParentCells" type="eml:AbstractIntegerArray" minOccurs="0" maxOccurs="1">
+						<xs:annotation>
+							<xs:documentation>List of parent cells that are to be retained at their original resolution and are not to be included within a local grid. The "omit" allows non-rectangular local grids to be specified.
+
+0-based indexing follows NI x NJ x NK relative to the parent window cell count—not to the parent grid.</xs:documentation>
+						</xs:annotation>
+					</xs:element>
+					<xs:element name="JRegrid" type="resqml:Regrid" minOccurs="1" maxOccurs="1"/>
+					<xs:element name="ParentIjkGridRepresentation" type="eml:DataObjectReference" minOccurs="1" maxOccurs="1"/>
+					<xs:element name="KRegrid" type="resqml:Regrid" minOccurs="1" maxOccurs="1"/>
+					<xs:element name="IRegrid" type="resqml:Regrid" minOccurs="1" maxOccurs="1"/>
+				</xs:sequence>
+			</xs:extension>
+		</xs:complexContent>
+	</xs:complexType>
+	<xs:complexType name="IntervalGridCells">
+		<xs:annotation>
+			<xs:documentation>Specifies the (Grid,Cell) intersection of each interval of the representation, if any.
+The information allows you to locate, on one or several grids, the intersection of volume (cells) and surface (faces) elements with a wellbore trajectory (existing or planned), streamline trajectories, or any polyline set.</xs:documentation>
+		</xs:annotation>
+		<xs:sequence>
+			<xs:element name="CellCount" type="eml:PositiveLong" minOccurs="1" maxOccurs="1">
+				<xs:annotation>
+					<xs:documentation>The number of non-null entries in the grid indices array.</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element name="GridIndices" type="eml:AbstractIntegerArray" minOccurs="1" maxOccurs="1">
+				<xs:annotation>
+					<xs:documentation>The grid index for each interval of a representation. The grid index is specified by grid index array, to give the (Grid,Cell) index pair. Null values signify that the interval is not within a grid.
+BUSINESS RULE : Size of array = IntervalCount</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element name="CellIndices" type="eml:AbstractIntegerArray" minOccurs="1" maxOccurs="1">
+				<xs:annotation>
+					<xs:documentation>The cell index for each interval of a representation. The grid index is specified by grid index array, to give the (Grid,Cell) index pair. Null values signify that interval is not within a grid.
+BUSINESS RULE : Size of array = IntervalCount</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element name="LocalFacePairPerCellIndices" type="eml:AbstractIntegerArray" minOccurs="1" maxOccurs="1">
+				<xs:annotation>
+					<xs:documentation>For each cell, these are the entry and exit intersection faces of the trajectory in the cell. Use null for missing intersections, e.g., when a trajectory originates or terminates within a cell or when an interval is not within a grid. The local face-per-cell index is used because a global face index need not have been defined on the grid.
+BUSINESS RULE: Size of array = 2 * IntervalCount</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element name="Grid" type="eml:DataObjectReference" minOccurs="1" maxOccurs="unbounded"/>
+		</xs:sequence>
+	</xs:complexType>
+	<xs:complexType name="Intervals">
+		<xs:annotation>
+			<xs:documentation>Refinement and/or coarsening per interval.
+
+If there is a 1:1 correspondence between the parent and child cells, then this object is not needed.</xs:documentation>
+		</xs:annotation>
+		<xs:sequence>
+			<xs:element name="ChildCellWeights" type="eml:AbstractFloatingPointArray" minOccurs="0" maxOccurs="1">
+				<xs:annotation>
+					<xs:documentation>Weights that are proportional to the relative sizes of child cells within each interval. The weights need not be normalized.</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element name="ChildCountPerInterval" type="eml:AbstractIntegerArray" minOccurs="1" maxOccurs="1">
+				<xs:annotation>
+					<xs:documentation>The number of child cells in each interval.
+
+If the child grid type is not commensurate with the parent type, then this attribute is ignored by a reader and its value should be set to null value. For example, for a parent IJK grid with a child unstructured column-layer grid, then the child count is non-null for a K regrid, but null for an I or J regrid.
+
+BUSINESS RULES:
+1.) The array length must be equal to intervalCount.
+2.) If the child grid type is commensurate with the parent grid, then the sum of values over all intervals must be equal to the corresponding child grid dimension.</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element name="IntervalCount" type="eml:PositiveLong" minOccurs="1" maxOccurs="1">
+				<xs:annotation>
+					<xs:documentation>The number of intervals in the regrid description. Must be positive.</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element name="ParentCountPerInterval" type="eml:AbstractIntegerArray" minOccurs="1" maxOccurs="1">
+				<xs:annotation>
+					<xs:documentation>The number of parent cells in each interval.
+
+BUSINESS RULES:
+1.) The array length must be equal to intervalCount.
+2.) For the given parentIndex, the total count of parent cells should not extend beyond the boundary of the parent grid.</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+		</xs:sequence>
+	</xs:complexType>
+	<xs:complexType name="IntervalStratigraphicUnits">
+		<xs:annotation>
+			<xs:documentation>A mapping from intervals to stratigraphic units for representations (grids or wellbore frames). Since a single interval may corresponds to several units, the mapping is done using a jagged array.</xs:documentation>
+		</xs:annotation>
+		<xs:sequence>
+			<xs:element name="UnitIndices" type="eml:JaggedArray" minOccurs="1" maxOccurs="1">
+				<xs:annotation>
+					<xs:documentation>Index of the stratigraphic unit per interval, of a given stratigraphic column.
+
+Notes:
+1.) For grids:
+if it does not exist a property kind "geologic k" attached to the grid then
+intervals = layers + K gaps
+else
+intervals = values property of property kind "geologic k"
+2.) If there is no stratigraphic column, e.g., within salt, use null value
+
+BUSINESS RULE: Array length must equal the number of intervals.</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element name="StratigraphicOrganizationInterpretation" type="eml:DataObjectReference" minOccurs="1" maxOccurs="1"/>
+		</xs:sequence>
+	</xs:complexType>
+	<xs:complexType name="KGaps">
+		<xs:annotation>
+			<xs:documentation>Optional data-object used to indicate that there are global gaps between layers in the grid. With K gaps, the bottom of one layer need not be continuous with the top of the next layer, so the resulting number of intervals is greater than the number of layers.</xs:documentation>
+		</xs:annotation>
+		<xs:sequence>
+			<xs:element name="Count" type="eml:PositiveLong" minOccurs="1" maxOccurs="1">
+				<xs:annotation>
+					<xs:documentation>Number of gaps between layers. Must be positive.
+
+Number of intervals = gapCount + NK.</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element name="GapAfterLayer" type="eml:AbstractBooleanArray" minOccurs="1" maxOccurs="1">
+				<xs:annotation>
+					<xs:documentation>Boolean array of length NK-1. TRUE if there is a gap after the corresponding layer.
+
+NKL = NK + gapCount + 1
+
+BUSINESS RULE: gapCount must be consistent with the number of gaps specified by the gapAfterLayer array.</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+		</xs:sequence>
+	</xs:complexType>
+	<xs:element name="LocalGridSet" type="resqml:LocalGridSet" substitutionGroup="eml:AbstractDataObject"/>
+	<xs:complexType name="LocalGridSet">
+		<xs:annotation>
+			<xs:documentation>Used to activate and/or deactivate the specified children grids as local grids on their parents. Once activated, this object indicates that a child grid replaces local portions of the corresponding parent grid. Specifically, properties and/or geometry in the region of a parent window will be stored on both the parent and child grids, usually with differing spatial resolutions. The choice of whether non-null properties are stored on both grids, or only the child grid, is application specific. Parentage is inferred from the child grid construction. Without a grid set activation, the local grids are always active. Otherwise, the grid set activation is used to activate and/or deactivate the local grids in the set at specific times.</xs:documentation>
+		</xs:annotation>
+		<xs:complexContent>
+			<xs:extension base="eml:AbstractObject">
+				<xs:sequence>
+					<xs:element name="Activation" type="resqml:Activation" minOccurs="0" maxOccurs="1"/>
+					<xs:element name="ChildGrid" type="eml:DataObjectReference" minOccurs="1" maxOccurs="unbounded"/>
+				</xs:sequence>
+			</xs:extension>
+		</xs:complexContent>
+	</xs:complexType>
+	<xs:complexType name="OverlapVolume">
+		<xs:annotation>
+			<xs:documentation>Optional parent-child cell overlap volume information. If not present, then the CellOverlap data-object lists the overlaps, but with no additional information.</xs:documentation>
+		</xs:annotation>
+		<xs:sequence>
+			<xs:element name="OverlapVolumes" type="eml:AbstractFloatingPointArray" minOccurs="1" maxOccurs="1">
+				<xs:annotation>
+					<xs:documentation>Parent-child cell volume overlap.
+
+BUSINESS RULE: Length of array must equal the cell overlap count.</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element name="VolumeUom" type="eml:VolumeUom" minOccurs="1" maxOccurs="1">
+				<xs:annotation>
+					<xs:documentation>Units of measure for the overlapVolume.</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+		</xs:sequence>
+	</xs:complexType>
+	<xs:complexType name="Regrid">
+		<xs:annotation>
+			<xs:documentation>One-dimensional I, J, or K refinement and coarsening regrid specification. 
+
+The regrid description is organized using intervals. Within each interval, the number of parent and child cells is specified. Parent and child grid cell faces are aligned at interval boundaries. By default, child cells are uniformly sized within an interval unless weights are used to modify their size.
+
+If the child grid is a root grid with an independent geometry, then there will usually be only a single interval for a regrid, because internal cell faces are not necessarily aligned.</xs:documentation>
+		</xs:annotation>
+		<xs:sequence>
+			<xs:element name="InitialIndexOnParentGrid" type="eml:NonNegativeLong" minOccurs="1" maxOccurs="1">
+				<xs:annotation>
+					<xs:documentation>0-based index for the placement of the window on the parent grid.</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element name="Intervals" type="resqml:Intervals" minOccurs="0" maxOccurs="1"/>
+		</xs:sequence>
+	</xs:complexType>
+	<xs:complexType name="SplitColumnEdges">
+		<xs:annotation>
+			<xs:documentation>Column edges are needed to construct the indices for the cell faces for column-layer grids. For split column-layer grids, the column edge indices must be defined explicitly. Column edges are not required to describe the lowest order grid geometry, but may be required for higher order geometries or properties.</xs:documentation>
+		</xs:annotation>
+		<xs:sequence>
+			<xs:element name="Count" type="eml:PositiveLong" minOccurs="1" maxOccurs="1">
+				<xs:annotation>
+					<xs:documentation>Number of split column edges in this grid. Must be positive.</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element name="ParentColumnEdgeIndices" type="eml:AbstractIntegerArray" minOccurs="1" maxOccurs="1">
+				<xs:annotation>
+					<xs:documentation>Parent unsplit column edge index for each of the split column edges. Used to implicitly define split face indexing.</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element name="ColumnPerSplitColumnEdge" type="eml:AbstractIntegerArray" minOccurs="1" maxOccurs="1">
+				<xs:annotation>
+					<xs:documentation>Column index for each of the split column edges. Used to implicitly define column and cell faces. List-of-lists construction not required because each split column edge must be in a single column.</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+		</xs:sequence>
+	</xs:complexType>
+	<xs:complexType name="SplitEdges">
+		<xs:annotation>
+			<xs:documentation>If split nodes are used in the construction of a column-layer grid and indexable elements of kind edges are referenced, then the grid edges need to be re-defined.
+
+Use Case: finite elements, especially for higher order geometry.</xs:documentation>
+		</xs:annotation>
+		<xs:sequence>
+			<xs:element name="Count" type="eml:PositiveLong" minOccurs="1" maxOccurs="1">
+				<xs:annotation>
+					<xs:documentation>Number of edges. Must be positive.</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element name="ParentEdgeIndices" type="eml:AbstractIntegerArray" minOccurs="1" maxOccurs="1">
+				<xs:annotation>
+					<xs:documentation>Parent unsplit edge index for each of the additional split edges.</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element name="FacesPerSplitEdge" type="eml:JaggedArray" minOccurs="1" maxOccurs="1">
+				<xs:annotation>
+					<xs:documentation>Association of faces with the split edges, used to infer continuity of property, geometry, or interpretation with an attachment kind of edges.</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+		</xs:sequence>
+	</xs:complexType>
+	<xs:complexType name="SplitFaces">
+		<xs:annotation>
+			<xs:documentation>Optional construction used to introduce additional faces created by split nodes. Used to represent complex geometries, e.g., for stair-step grids and reverse faults.</xs:documentation>
+		</xs:annotation>
+		<xs:sequence>
+			<xs:element name="Count" type="eml:PositiveLong" minOccurs="1" maxOccurs="1">
+				<xs:annotation>
+					<xs:documentation>Number of additional split faces. Count must be positive.</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element name="ParentFaceIndices" type="eml:AbstractIntegerArray" minOccurs="1" maxOccurs="1">
+				<xs:annotation>
+					<xs:documentation>Parent unsplit face index for each of the additional split faces.</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element name="CellPerSplitFace" type="eml:AbstractIntegerArray" minOccurs="1" maxOccurs="1">
+				<xs:annotation>
+					<xs:documentation>Cell index for each split face. Used to implicitly define cell geometry.</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element name="SplitEdges" type="resqml:SplitEdges" minOccurs="0" maxOccurs="1"/>
+		</xs:sequence>
+	</xs:complexType>
+	<xs:complexType name="SplitNodePatch">
+		<xs:annotation>
+			<xs:documentation>Optional construction used to introduce additional nodes on coordinate lines. Used to represent complex geometries, e.g., for stair-step grids and reverse faults.
+
+BUSINESS RULE: Patch index must be positive because a patch index of 0 refers to the fundamental column-layer coordinate line nodes.</xs:documentation>
+		</xs:annotation>
+		<xs:sequence>
+			<xs:element name="Count" type="eml:PositiveLong" minOccurs="1" maxOccurs="1">
+				<xs:annotation>
+					<xs:documentation>Number of additional split nodes. Count must be positive.</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element name="ParentNodeIndices" type="eml:AbstractIntegerArray" minOccurs="1" maxOccurs="1">
+				<xs:annotation>
+					<xs:documentation>Parent coordinate line node index for each of the split nodes. Used to implicitly define cell geometry.</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element name="CellsPerSplitNode" type="eml:JaggedArray" minOccurs="1" maxOccurs="1">
+				<xs:annotation>
+					<xs:documentation>Cell indices for each of the split nodes. Used to implicitly define cell geometry. List-of-lists construction used to support split nodes shared between multiple cells.</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element name="SplitFaces" type="resqml:SplitFaces" minOccurs="0" maxOccurs="1"/>
+		</xs:sequence>
+	</xs:complexType>
+	<xs:complexType name="SubnodePatch">
+		<xs:annotation>
+			<xs:documentation>Each patch of subnodes is defined independently of the others. Number of nodes per object is determined by the subnode kind.</xs:documentation>
+		</xs:annotation>
+		<xs:sequence>
+			<xs:element name="SubnodeNodeObject" type="resqml:SubnodeNodeObject" minOccurs="1" maxOccurs="1"/>
+			<xs:element name="NodeWeightsPerSubnode" type="eml:AbstractValueArray" minOccurs="1" maxOccurs="1">
+				<xs:annotation>
+					<xs:documentation>Node weights for each subnode. Count of nodes per subnode is known for each specific subnode construction.
+
+Data order consists of all the nodes for each subnode in turn. For example, if uniform and stored as a multi-dimensional array, the node index cycles first.
+
+BUSINESS RULE: Weights must be non-negative.
+
+BUSINESS RULE: Length of array must be consistent with the sum of nodeCount x subnodeCount per object, e.g., for 3 subnodes per edge (uniform), there are 6 weights.</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+		</xs:sequence>
+	</xs:complexType>
+	<xs:complexType name="SubnodeTopology">
+		<xs:annotation>
+			<xs:documentation>Finite element subnode topology for an unstructured cell can be either variable or uniform, but not columnar.</xs:documentation>
+		</xs:annotation>
+		<xs:sequence>
+			<xs:element name="VariableSubnodePatch" type="resqml:VariableSubnodePatch" minOccurs="0" maxOccurs="unbounded"/>
+			<xs:element name="UniformSubnodePatch" type="resqml:UniformSubnodePatch" minOccurs="0" maxOccurs="unbounded"/>
+		</xs:sequence>
+	</xs:complexType>
+	<xs:element name="TruncatedIjkGridRepresentation" type="resqml:TruncatedIjkGridRepresentation" substitutionGroup="eml:AbstractDataObject"/>
+	<xs:complexType name="TruncatedIjkGridRepresentation">
+		<xs:annotation>
+			<xs:documentation>Grid class with an underlying IJK topology, together with a 1D split-cell list. The truncated IJK cells have more than the usual 6 faces. The split cells are arbitrary polyhedra, identical to those of an unstructured cell grid.</xs:documentation>
+		</xs:annotation>
+		<xs:complexContent>
+			<xs:extension base="resqml:AbstractTruncatedColumnLayerGridRepresentation">
+				<xs:sequence>
+					<xs:element name="Ni" type="eml:PositiveLong" minOccurs="1" maxOccurs="1">
+						<xs:annotation>
+							<xs:documentation>Count of I-indices in the grid. Must be positive.</xs:documentation>
+						</xs:annotation>
+					</xs:element>
+					<xs:element name="Nj" type="eml:PositiveLong" minOccurs="1" maxOccurs="1">
+						<xs:annotation>
+							<xs:documentation>Count of J-indices in the grid. Must be positive.</xs:documentation>
+						</xs:annotation>
+					</xs:element>
+					<xs:element name="Geometry" type="resqml:IjkGridGeometry" minOccurs="1" maxOccurs="1"/>
+				</xs:sequence>
+			</xs:extension>
+		</xs:complexContent>
+	</xs:complexType>
+	<xs:element name="TruncatedUnstructuredColumnLayerGridRepresentation" type="resqml:TruncatedUnstructuredColumnLayerGridRepresentation" substitutionGroup="eml:AbstractDataObject"/>
+	<xs:complexType name="TruncatedUnstructuredColumnLayerGridRepresentation">
+		<xs:annotation>
+			<xs:documentation>Grid class with an underlying unstructured column-layer topology, together with a 1D split-cell list. The truncated cells have more than the usual number of faces within each column. The split cells are arbitrary polyhedra, identical to those of an unstructured cell grid.</xs:documentation>
+		</xs:annotation>
+		<xs:complexContent>
+			<xs:extension base="resqml:AbstractTruncatedColumnLayerGridRepresentation">
+				<xs:sequence>
+					<xs:element name="ColumnCount" type="eml:PositiveLong" minOccurs="1" maxOccurs="1">
+						<xs:annotation>
+							<xs:documentation>Number of unstructured columns in the grid. Must be positive.</xs:documentation>
+						</xs:annotation>
+					</xs:element>
+					<xs:element name="Geometry" type="resqml:UnstructuredColumnLayerGridGeometry" minOccurs="1" maxOccurs="1"/>
+				</xs:sequence>
+			</xs:extension>
+		</xs:complexContent>
+	</xs:complexType>
+	<xs:complexType name="TruncationCellPatch">
+		<xs:annotation>
+			<xs:documentation>Truncation definitions for the truncated and split cells.
+
+BUSINESS RULE: Patch Index must be positive because a patch index of 0 refers to the fundamental column-layer coordinate line nodes and cells.</xs:documentation>
+		</xs:annotation>
+		<xs:sequence>
+			<xs:element name="LocalFacesPerCell" type="eml:JaggedArray" minOccurs="1" maxOccurs="1">
+				<xs:annotation>
+					<xs:documentation>Local cell face index for those faces that are retained from the parent cell in the definition of the truncation cell.
+
+The use of a local cell-face index, e.g., 0...5 for an IJK cell, can be used even if the face indices have not been defined.</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element name="NodesPerTruncationFace" type="eml:JaggedArray" minOccurs="1" maxOccurs="1">
+				<xs:annotation>
+					<xs:documentation>Definition of the truncation faces is in terms of an ordered list of nodes. Node indexing is EXTENDED, i.e., is based on the list of untruncated grid nodes (always first) plus the split nodes (if any) and the truncation face nodes. Relative order of split nodes and truncation face nodes is set by the pillar indices.</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element name="ParentCellIndices" type="eml:AbstractIntegerArray" minOccurs="1" maxOccurs="1">
+				<xs:annotation>
+					<xs:documentation>Parent cell index for each of the truncation cells.
+
+BUSINESS RULE: Size must match truncationCellCount</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element name="TruncationCellCount" type="eml:PositiveLong" minOccurs="1" maxOccurs="1">
+				<xs:annotation>
+					<xs:documentation>Number of polyhedral cells created by truncation. Must be positive. Note: Parent cells are replaced.</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element name="TruncationCellFaceIsRightHanded" type="eml:AbstractBooleanArray" minOccurs="1" maxOccurs="1">
+				<xs:annotation>
+					<xs:documentation>Boolean mask used to indicate which truncation cell faces have an outwardly directed normal, following a right hand rule. Data size and order follows the truncationFacesPerCell list-of-lists.</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element name="TruncationFaceCount" type="eml:PositiveLong" minOccurs="1" maxOccurs="1">
+				<xs:annotation>
+					<xs:documentation>Number of additional faces required for the split and truncation construction. The construction does not modify existing face definitions, but instead uses these new faces to redefine the truncated cell geometry. Must be positive.
+
+These faces are added to the enumeration of faces for the grid</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element name="TruncationFacesPerCell" type="eml:JaggedArray" minOccurs="1" maxOccurs="1">
+				<xs:annotation>
+					<xs:documentation>Truncation face index for the additional cell faces that are required to complete the definition of the truncation cell.
+
+The resulting local cell face index follows the local faces-per-cell list, followed by the truncation faces in the order within the list-of-lists constructions.</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element name="TruncationNodeCount" type="eml:PositiveLong" minOccurs="1" maxOccurs="1">
+				<xs:annotation>
+					<xs:documentation>Number of additional nodes required for the truncation construction. Must be positive. Uses a separate enumeration and does not increase the number of nodes, except as noted below.</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+		</xs:sequence>
+	</xs:complexType>
+	<xs:complexType name="UniformSubnodePatch">
+		<xs:annotation>
+			<xs:documentation>Use this subnode construction if the number of subnodes is the same for every object, e.g., 3 subnodes per edge for all edges.</xs:documentation>
+		</xs:annotation>
+		<xs:complexContent>
+			<xs:extension base="resqml:SubnodePatch">
+				<xs:sequence>
+					<xs:element name="SubnodeCountPerObject" type="eml:PositiveLong" minOccurs="1" maxOccurs="1">
+						<xs:annotation>
+							<xs:documentation>Number of subnodes per object, with the same number for each of this data-object kind in the grid.</xs:documentation>
+						</xs:annotation>
+					</xs:element>
+				</xs:sequence>
+			</xs:extension>
+		</xs:complexContent>
+	</xs:complexType>
+	<xs:complexType name="UnstructuredColumnEdges">
+		<xs:annotation>
+			<xs:documentation>Column edges are used to construct the index for faces. For unstructured column-layer grids, the column edge indices must be defined explicitly. Column edges are not required to describe lowest order grid geometry, but may be needed for higher order geometries or properties.</xs:documentation>
+		</xs:annotation>
+		<xs:sequence>
+			<xs:element name="Count" type="eml:PositiveLong" minOccurs="1" maxOccurs="1">
+				<xs:annotation>
+					<xs:documentation>Number of unstructured column edges in this grid. Must be positive.</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element name="PillarsPerColumnEdge" type="eml:JaggedArray" minOccurs="1" maxOccurs="1">
+				<xs:annotation>
+					<xs:documentation>Definition of the column edges in terms of the pillars-per-column edge. Pillar count per edge is usually 2, but the list-of-lists construction is used to allow column edges to be defined by more than 2 pillars.</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+		</xs:sequence>
+	</xs:complexType>
+	<xs:complexType name="UnstructuredColumnLayerGpGridPatch">
+		<xs:annotation>
+			<xs:documentation>Used to specify unstructured column-layer grid patch(es) within a general purpose grid.
+
+Multiple patches are supported.</xs:documentation>
+		</xs:annotation>
+		<xs:sequence>
+			<xs:element name="UnstructuredColumnCount" type="eml:NonNegativeLong" minOccurs="1" maxOccurs="1">
+				<xs:annotation>
+					<xs:documentation>Number of unstructured columns. Degenerate case (count=0) is allowed for GPGrid.</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element name="Geometry" type="resqml:UnstructuredColumnLayerGridGeometry" minOccurs="0" maxOccurs="1"/>
+			<xs:element name="TruncationCellPatch" type="resqml:TruncationCellPatch" minOccurs="0" maxOccurs="1"/>
+		</xs:sequence>
+	</xs:complexType>
+	<xs:complexType name="UnstructuredColumnLayerGridGeometry">
+		<xs:annotation>
+			<xs:documentation>Description of the geometry of an unstructured column-layer grid, e.g., parity and pinch, together with its supporting topology.
+
+Unstructured column-layer cell geometry is derived from column-layer cell geometry and hence is based upon nodes on coordinate lines.
+
+Geometry is contained within the representation of a grid.</xs:documentation>
+		</xs:annotation>
+		<xs:complexContent>
+			<xs:extension base="resqml:AbstractColumnLayerGridGeometry">
+				<xs:sequence>
+					<xs:element name="ColumnIsRightHanded" type="eml:AbstractBooleanArray" minOccurs="1" maxOccurs="1">
+						<xs:annotation>
+							<xs:documentation>List of columns that are right handed. Right handedness is evaluated following the pillar order and the K-direction tangent vector for each column.</xs:documentation>
+						</xs:annotation>
+					</xs:element>
+					<xs:element name="ColumnShape" type="resqml:ColumnShape" minOccurs="1" maxOccurs="1"/>
+					<xs:element name="PillarCount" type="eml:PositiveLong" minOccurs="1" maxOccurs="1">
+						<xs:annotation>
+							<xs:documentation>Number of pillars in the grid. Must be positive. Pillars are used to describe the shape of the columns in the grid.</xs:documentation>
+						</xs:annotation>
+					</xs:element>
+					<xs:element name="PillarsPerColumn" type="eml:JaggedArray" minOccurs="1" maxOccurs="1">
+						<xs:annotation>
+							<xs:documentation>List of pillars for each column. The pillars define the corners of each column.
+
+The number of pillars per column can be obtained from the offsets in the first list-of-lists array.
+
+BUSINESS RULE: The length of the first array in the list -of-lists construction must equal the columnCount.</xs:documentation>
+						</xs:annotation>
+					</xs:element>
+					<xs:element name="UnstructuredColumnEdges" type="resqml:UnstructuredColumnEdges" minOccurs="0" maxOccurs="1"/>
+				</xs:sequence>
+			</xs:extension>
+		</xs:complexContent>
+	</xs:complexType>
+	<xs:element name="UnstructuredColumnLayerGridRepresentation" type="resqml:UnstructuredColumnLayerGridRepresentation" substitutionGroup="eml:AbstractDataObject"/>
+	<xs:complexType name="UnstructuredColumnLayerGridRepresentation">
+		<xs:annotation>
+			<xs:documentation>Grid whose topology is characterized by an unstructured column index and a layer index, K.
+
+Cell geometry is characterized by nodes on coordinate lines, where each column of the model may have an arbitrary number of sides.</xs:documentation>
+		</xs:annotation>
+		<xs:complexContent>
+			<xs:extension base="resqml:AbstractColumnLayerGridRepresentation">
+				<xs:sequence>
+					<xs:element name="ColumnCount" type="eml:PositiveLong" minOccurs="1" maxOccurs="1">
+						<xs:annotation>
+							<xs:documentation>Number of unstructured columns in the grid. Must be positive.</xs:documentation>
+						</xs:annotation>
+					</xs:element>
+					<xs:element name="Geometry" type="resqml:UnstructuredColumnLayerGridGeometry" minOccurs="0" maxOccurs="1"/>
+				</xs:sequence>
+			</xs:extension>
+		</xs:complexContent>
+	</xs:complexType>
+	<xs:complexType name="UnstructuredGpGridPatch">
+		<xs:annotation>
+			<xs:documentation>Used to specify unstructured cell grid patch(es) within a general purpose grid.
+
+Multiple patches are supported.</xs:documentation>
+		</xs:annotation>
+		<xs:sequence>
+			<xs:element name="UnstructuredCellCount" type="eml:NonNegativeLong" minOccurs="1" maxOccurs="1">
+				<xs:annotation>
+					<xs:documentation>Number of unstructured cells. Degenerate case (count=0) is allowed for GPGrid.</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element name="Geometry" type="resqml:UnstructuredGridGeometry" minOccurs="0" maxOccurs="1"/>
+		</xs:sequence>
+	</xs:complexType>
+	<xs:complexType name="UnstructuredGridGeometry">
+		<xs:annotation>
+			<xs:documentation>Description of the geometry of an unstructured cell grid, which includes geometric characteristics, e.g., cell face parity, and supporting topology.
+
+Each grid cell is defined by a (signed) list of cell faces. Each cell face is defined by a list of nodes.</xs:documentation>
+		</xs:annotation>
+		<xs:complexContent>
+			<xs:extension base="resqml:AbstractGridGeometry">
+				<xs:sequence>
+					<xs:element name="CellFaceIsRightHanded" type="eml:AbstractBooleanArray" minOccurs="1" maxOccurs="1">
+						<xs:annotation>
+							<xs:documentation>Boolean mask used to indicate which cell faces have an outwardly directed normal following a right hand rule. Array length is the sum of the cell face count per cell, and the data follows the order of the faces per cell RESQMLlist-of-lists.</xs:documentation>
+						</xs:annotation>
+					</xs:element>
+					<xs:element name="CellShape" type="resqml:CellShape" minOccurs="1" maxOccurs="1"/>
+					<xs:element name="FaceCount" type="eml:PositiveLong" minOccurs="1" maxOccurs="1">
+						<xs:annotation>
+							<xs:documentation>Total number of faces in the grid. Must be positive.</xs:documentation>
+						</xs:annotation>
+					</xs:element>
+					<xs:element name="FacesPerCell" type="eml:JaggedArray" minOccurs="1" maxOccurs="1">
+						<xs:annotation>
+							<xs:documentation>List of faces per cell. Face count per cell can be obtained from the offsets in the first list-of-lists array.
+
+BUSINESS RULE: CellCount must match the length of the first list-of-lists array.</xs:documentation>
+						</xs:annotation>
+					</xs:element>
+					<xs:element name="NodeCount" type="eml:PositiveLong" minOccurs="1" maxOccurs="1">
+						<xs:annotation>
+							<xs:documentation>Total number of nodes in the grid. Must be positive.</xs:documentation>
+						</xs:annotation>
+					</xs:element>
+					<xs:element name="NodesPerFace" type="eml:JaggedArray" minOccurs="1" maxOccurs="1">
+						<xs:annotation>
+							<xs:documentation>List of nodes per face. Node count per face can be obtained from the offsets in the first list-of-lists array.
+
+BUSINESS RULE: FaceCount must match the length of the first list- of-lists array.</xs:documentation>
+						</xs:annotation>
+					</xs:element>
+					<xs:element name="UnstructuredGridHingeNodeFaces" type="resqml:UnstructuredGridHingeNodeFaces" minOccurs="0" maxOccurs="1"/>
+					<xs:element name="UnstructuredSubnodeTopology" type="resqml:UnstructuredSubnodeTopology" minOccurs="0" maxOccurs="1"/>
+				</xs:sequence>
+			</xs:extension>
+		</xs:complexContent>
+	</xs:complexType>
+	<xs:complexType name="UnstructuredGridHingeNodeFaces">
+		<xs:annotation>
+			<xs:documentation>Hinge nodes define a triangulated interpolation on a cell face. In practice, they arise on the K faces of column layer cells and are used to add additional geometric resolution to the shape of the cell. The specification of triangulated interpolation also uniquely defines the interpolation schema on the cell face, and hence the cell volume.
+
+For an unstructured cell grid, the hinge node faces need to be defined explicitly.
+
+This hinge node faces data-object is optional and is only expected to be used if the hinge node faces higher order grid point attachment arises. Hinge node faces are not supported for property attachment. Instead use a subrepresentation or an attachment kind of faces or faces per cell.
+
+BUSINESS RULE: Each cell must have either 0 or 2 hinge node faces, so that the two hinge nodes for the cell may be used to define a cell center line and a cell thickness.</xs:documentation>
+		</xs:annotation>
+		<xs:sequence>
+			<xs:element name="Count" type="eml:PositiveLong" minOccurs="1" maxOccurs="1">
+				<xs:annotation>
+					<xs:documentation>Number of K faces. This count must be positive.</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element name="FaceIndices" type="eml:AbstractIntegerArray" minOccurs="1" maxOccurs="1">
+				<xs:annotation>
+					<xs:documentation>List of faces to be identified as K faces for hinge node geometry attachment.
+
+BUSINESS RULE: Array length equals K face count.</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+		</xs:sequence>
+	</xs:complexType>
+	<xs:element name="UnstructuredGridRepresentation" type="resqml:UnstructuredGridRepresentation" substitutionGroup="eml:AbstractDataObject"/>
+	<xs:complexType name="UnstructuredGridRepresentation">
+		<xs:annotation>
+			<xs:documentation>Unstructured grid representation characterized by a cell count, and potentially nothing else. Both the oldest and newest simulation formats are based on this format.</xs:documentation>
+		</xs:annotation>
+		<xs:complexContent>
+			<xs:extension base="resqml:AbstractGridRepresentation">
+				<xs:sequence>
+					<xs:element name="CellCount" type="eml:PositiveLong" minOccurs="1" maxOccurs="1">
+						<xs:annotation>
+							<xs:documentation>Number of cells in the grid. Must be positive.</xs:documentation>
+						</xs:annotation>
+					</xs:element>
+					<xs:element name="OriginalCellIndex" type="resqml:AlternateCellIndex" minOccurs="0" maxOccurs="1"/>
+					<xs:element name="Geometry" type="resqml:UnstructuredGridGeometry" minOccurs="0" maxOccurs="1"/>
+				</xs:sequence>
+			</xs:extension>
+		</xs:complexContent>
+	</xs:complexType>
+	<xs:complexType name="UnstructuredSubnodeTopology">
+		<xs:annotation>
+			<xs:documentation>If edge subnodes are used, then edges must be defined. If cell subnodes are used, nodes per cell must be defined.</xs:documentation>
+		</xs:annotation>
+		<xs:complexContent>
+			<xs:extension base="resqml:SubnodeTopology">
+				<xs:sequence>
+					<xs:element name="NodesPerCell" type="eml:JaggedArray" minOccurs="0" maxOccurs="1"/>
+					<xs:element name="Edges" type="resqml:Edges" minOccurs="0" maxOccurs="1"/>
+				</xs:sequence>
+			</xs:extension>
+		</xs:complexContent>
+	</xs:complexType>
+	<xs:complexType name="VariableSubnodePatch">
+		<xs:annotation>
+			<xs:documentation>If the number of subnodes per data-object are variable for each data-object, use this subnode construction.</xs:documentation>
+		</xs:annotation>
+		<xs:complexContent>
+			<xs:extension base="resqml:SubnodePatch">
+				<xs:sequence>
+					<xs:element name="ObjectIndices" type="eml:AbstractIntegerArray" minOccurs="1" maxOccurs="1">
+						<xs:annotation>
+							<xs:documentation>Indices of the selected data-objects</xs:documentation>
+						</xs:annotation>
+					</xs:element>
+					<xs:element name="SubnodeCountPerSelectedObject" type="eml:AbstractIntegerArray" minOccurs="1" maxOccurs="1">
+						<xs:annotation>
+							<xs:documentation>Number of subnodes per selected data-object.</xs:documentation>
+						</xs:annotation>
+					</xs:element>
+				</xs:sequence>
+			</xs:extension>
+		</xs:complexContent>
+	</xs:complexType>
+</xs:schema>
