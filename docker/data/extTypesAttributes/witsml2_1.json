@@ -1,0 +1,144 @@
+{
+    "energyml.witsml2_1.Channel": {
+        "LoggingToolClass": "energyml.witsml2_1.LoggingToolClassExt",
+        "MudClass": "energyml.witsml2_1.MudClassExt",
+        "MudSubClass": "energyml.witsml2_1.MudSubClassExt",
+        "NominalHoleSize": "energyml.common2_3.LengthMeasureExt",
+        "SensorOffset": "energyml.common2_3.LengthMeasureExt",
+        "Uom": "energyml.common2_3.UnitOfMeasureExt"
+    },
+    "energyml.witsml2_1.ChannelIndex": {
+        "Uom": "energyml.common2_3.UnitOfMeasureExt"
+    },
+    "energyml.witsml2_1.ChannelSet": {
+        "LoggingToolClass": "energyml.witsml2_1.LoggingToolClassExt",
+        "MudClass": "energyml.witsml2_1.MudClassExt",
+        "MudSubClass": "energyml.witsml2_1.MudSubClassExt",
+        "NominalHoleSize": "energyml.common2_3.LengthMeasureExt"
+    },
+    "energyml.witsml2_1.ContinuousGyro": {
+        "GyroReinitializationDistance": "energyml.common2_3.LengthMeasureExt",
+        "Initialization": "energyml.common2_3.PlaneAngleMeasureExt",
+        "Speed": "energyml.common2_3.LengthPerTimeMeasureExt"
+    },
+    "energyml.witsml2_1.CuttingsIntervalLithology": {
+        "Kind": "energyml.common2_3.LithologyKindExt"
+    },
+    "energyml.witsml2_1.Equipment": {
+        "EquipmentType": "energyml.witsml2_1.EquipmentTypeExt"
+    },
+    "energyml.witsml2_1.Fluid": {
+        "BrineClass": "energyml.witsml2_1.BrineClassExt",
+        "Gel3Sec": "energyml.common2_3.PressureMeasureExt",
+        "Gel6Sec": "energyml.common2_3.PressureMeasureExt",
+        "Mbt": "energyml.common2_3.CationExchangeCapacityMeasureExt",
+        "PptPressure": "energyml.common2_3.PressureMeasureExt",
+        "PptSpurtLoss": "energyml.common2_3.VolumeMeasureExt",
+        "PptTemperature": "energyml.common2_3.ThermodynamicTemperatureMeasureExt"
+    },
+    "energyml.witsml2_1.InterpretedIntervalLithology": {
+        "Kind": "energyml.common2_3.LithologyKindExt"
+    },
+    "energyml.witsml2_1.LithologyQualifier": {
+        "Kind": "energyml.common2_3.LithologyQualifierKindExt"
+    },
+    "energyml.witsml2_1.Log": {
+        "LoggingToolClass": "energyml.witsml2_1.LoggingToolClassExt",
+        "MudClass": "energyml.witsml2_1.MudClassExt",
+        "MudSubClass": "energyml.witsml2_1.MudSubClassExt",
+        "NominalHoleSize": "energyml.common2_3.LengthMeasureExt"
+    },
+    "energyml.witsml2_1.LogChannelAxis": {
+        "AxisUom": "energyml.common2_3.UnitOfMeasureExt"
+    },
+    "energyml.witsml2_1.LoggingToolKind": {
+        "Class": "energyml.witsml2_1.LoggingToolClassExt"
+    },
+    "energyml.witsml2_1.MudLogConcentrationParameter": {
+        "Value": "energyml.common2_3.VolumePerVolumeMeasureExt"
+    },
+    "energyml.witsml2_1.MudLogForceParameter": {
+        "Value": "energyml.common2_3.ForceMeasureExt"
+    },
+    "energyml.witsml2_1.MudLogPressureGradientParameter": {
+        "Value": "energyml.common2_3.ForcePerVolumeMeasureExt"
+    },
+    "energyml.witsml2_1.MudLogPressureParameter": {
+        "Value": "energyml.common2_3.PressureMeasureExt"
+    },
+    "energyml.witsml2_1.OperatingConstraints": {
+        "HorizontalEastWestMaxValue": "energyml.common2_3.PlaneAngleMeasureExt",
+        "PressureLimit": "energyml.common2_3.PressureMeasureExt",
+        "ThermodynamicTemperatureLimit": "energyml.common2_3.ThermodynamicTemperatureMeasureExt"
+    },
+    "energyml.witsml2_1.PPFGChannel": {
+        "PPFGDataProcessingApplied": "energyml.witsml2_1.PPFGDataProcessingExt",
+        "PPFGDerivation": "energyml.witsml2_1.PPFGDataDerivationExt",
+        "PPFGFamily": "energyml.witsml2_1.PPFGFamilyExt",
+        "PPFGFamilyMnemonic": "energyml.witsml2_1.PPFGFamilyMnemonicExt",
+        "PPFGMainFamily": "energyml.witsml2_1.PPFGMainFamilyExt",
+        "PPFGModeledLithology": "energyml.witsml2_1.PPFGModeledLithologyExt",
+        "PPFGTransformModelType": "energyml.witsml2_1.PPFGTransformModelTypeExt",
+        "PPFGUncertaintyClass": "energyml.witsml2_1.PPFGUncertaintyClassExt"
+    },
+    "energyml.witsml2_1.PPFGChannelSet": {
+        "PPFGDerivation": "energyml.witsml2_1.PPFGDataDerivationExt",
+        "PPFGTectonicSetting": "energyml.witsml2_1.PPFGTectonicSettingExt"
+    },
+    "energyml.witsml2_1.PPFGLog": {
+        "PPFGDerivation": "energyml.witsml2_1.PPFGDataDerivationExt",
+        "PPFGTectonicSetting": "energyml.witsml2_1.PPFGTectonicSettingExt"
+    },
+    "energyml.witsml2_1.PassIndexedDepth": {
+        "MeasuredDepth": "energyml.common2_3.LengthMeasureExt"
+    },
+    "energyml.witsml2_1.PlaneAngleOperatingRange": {
+        "Uom": "energyml.common2_3.PlaneAngleUomExt"
+    },
+    "energyml.witsml2_1.PointMetadata": {
+        "Uom": "energyml.common2_3.UnitOfMeasureExt"
+    },
+    "energyml.witsml2_1.StimJobStage": {
+        "InitialShutinPres": "energyml.common2_3.PressureMeasureExt"
+    },
+    "energyml.witsml2_1.StringEquipment": {
+        "EquipmentType": "energyml.witsml2_1.EquipmentTypeExt"
+    },
+    "energyml.witsml2_1.Target": {
+        "CatTarg": "energyml.witsml2_1.TargetCategoryExt",
+        "TargetScope": "energyml.witsml2_1.TargetScopeExt"
+    },
+    "energyml.witsml2_1.ToolErrorModel": {
+        "CorrectionConsidered": "energyml.witsml2_1.CorrectionConsideredExt",
+        "OperatingCondition": "energyml.witsml2_1.OperatingConditionExt",
+        "ToolSubKind": "energyml.witsml2_1.ToolSubKindExt"
+    },
+    "energyml.witsml2_1.TrajectoryStationOSDUIntegration": {
+        "Easting": "energyml.common2_3.LengthMeasureExt",
+        "Northing": "energyml.common2_3.LengthMeasureExt"
+    },
+    "energyml.witsml2_1.TubularComponent": {
+        "NominalWeight": "energyml.common2_3.MassMeasureExt",
+        "TensStrength": "energyml.common2_3.PressureMeasureExt",
+        "TypeTubularComponent": "energyml.witsml2_1.TubularComponentTypeExt"
+    },
+    "energyml.witsml2_1.Well": {
+        "InterestType": "energyml.witsml2_1.WellInterestExt",
+        "LifeCycleState": "energyml.common2_3.FacilityLifecycleStateExt",
+        "OperatingEnvironment": "energyml.witsml2_1.OperatingEnvironmentExt"
+    },
+    "energyml.witsml2_1.Wellbore": {
+        "LifecycleState": "energyml.common2_3.FacilityLifecycleStateExt"
+    },
+    "energyml.witsml2_1.WellboreMarker": {
+        "GeologicAge": "energyml.common2_3.TimeMeasureExt",
+        "MarkerQualifier": "energyml.witsml2_1.MarkerQualifierExt",
+        "PointOfInterest": "energyml.witsml2_1.WellborePointOfInterestExt",
+        "StratigraphyKind": "energyml.witsml2_1.StratigraphyKindExt",
+        "StratigraphyKindQualifier": "energyml.witsml2_1.StratigraphyKindQualifierExt",
+        "WellboreMarkerKind": "energyml.witsml2_1.WellboreMarkerKindExt"
+    },
+    "energyml.witsml2_1.XyAccelerometer": {
+        "CantAngle": "energyml.common2_3.PlaneAngleMeasureExt"
+    }
+}

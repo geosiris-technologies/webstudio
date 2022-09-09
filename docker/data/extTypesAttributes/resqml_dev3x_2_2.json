@@ -1,0 +1,40 @@
+{
+    "energyml.resqml_dev3x_2_2.AbstractLocal3DCrs": {
+        "ProjectedUom": "energyml.common2_2.LengthUomExt",
+        "VerticalUom": "energyml.common2_2.LengthUomExt"
+    },
+    "energyml.resqml_dev3x_2_2.ContinuousProperty": {
+        "Uom": "energyml.common2_2.UnitOfMeasureExt"
+    },
+    "energyml.resqml_dev3x_2_2.DefaultGraphicalInformation": {
+        "ViewerKind": "energyml.resqml_dev3x_2_2.ViewerKindExt"
+    },
+    "energyml.resqml_dev3x_2_2.DeviationSurveyRepresentation": {
+        "AngleUom": "energyml.common2_2.PlaneAngleUomExt",
+        "MdUom": "energyml.common2_2.LengthUomExt"
+    },
+    "energyml.resqml_dev3x_2_2.FaultThrow": {
+        "Throw": "energyml.resqml_dev3x_2_2.ThrowKindExt"
+    },
+    "energyml.resqml_dev3x_2_2.GeologicUnitInterpretation": {
+        "GeologicUnit3dShape": "energyml.resqml_dev3x_2_2.Shape3dExt",
+        "GeologicUnitComposition": "energyml.common2_2.LithologyKindExt"
+    },
+    "energyml.resqml_dev3x_2_2.GraphicalInformationForEdges": {
+        "Pattern": "energyml.resqml_dev3x_2_2.EdgePatternExt",
+        "Thickness": "energyml.common2_2.LengthMeasureExt"
+    },
+    "energyml.resqml_dev3x_2_2.GraphicalInformationForNodes": {
+        "ConstantSize": "energyml.common2_2.LengthMeasureExt",
+        "Symbol": "energyml.resqml_dev3x_2_2.NodeSymbolExt"
+    },
+    "energyml.resqml_dev3x_2_2.LocalTime3DCrs": {
+        "TimeUom": "energyml.common2_2.TimeUomExt"
+    },
+    "energyml.resqml_dev3x_2_2.PropertyKindFacet": {
+        "Facet": "energyml.resqml_dev3x_2_2.FacetExt"
+    },
+    "energyml.resqml_dev3x_2_2.WellboreTrajectoryRepresentation": {
+        "MdUom": "energyml.common2_2.LengthUomExt"
+    }
+}
