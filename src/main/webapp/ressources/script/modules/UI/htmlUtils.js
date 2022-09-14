@@ -243,7 +243,6 @@ export function createSplitter(idFirst, idSecond, fistPercent, secPercent, orien
     }
 
     Split([idFirst, idSecond], {
-        gutterStyle: function (dimension, gutterSize) { return {'flex-basis':  gutterSize + 'px'} },
         gutterStyle: function (dimension, gutterSize) {
 
             if(orientation == "vertical"){

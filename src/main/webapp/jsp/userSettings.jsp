@@ -14,7 +14,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 -->
 <!DOCTYPE html>
-<html>
+<html lang="en-US">
 <head>
 	<meta charset="utf-8">
 
@@ -42,9 +42,9 @@ limitations under the License.
 			<div class="card-header">
 				<h3>Settings</h3>
 				<div class="d-flex justify-content-end social_icon">
-					<!-- <span><i class="fab fa-facebook-square"></i></span>
-					<span><i class="fab fa-google-plus-square"></i></span>
-					<span><i class="fab fa-twitter-square"></i></span> -->
+					<!-- <span><em class="fab fa-facebook-square"></em></span>
+					<span><em class="fab fa-google-plus-square"></em></span>
+					<span><em class="fab fa-twitter-square"></em></span> -->
 				</div>
 			</div>
 			<div class="card-body">
@@ -64,7 +64,7 @@ limitations under the License.
 					<!-- USER LOGIN -->
 					<div class="input-group form-group">
 						<div class="input-group-prepend">
-							<span class="input-group-text" title="login"><i class="fas fa-user"></i></span>
+							<span class="input-group-text" title="login"><em class="fas fa-user"></em></span>
 						</div>
 						<%out.print("<input type='text' class='form-control' name='login' value='"+login+"' readonly='readonly' >"); %>
 					</div>
@@ -72,7 +72,7 @@ limitations under the License.
 					<!-- USER PWD -->
 					<div class="input-group form-group">
 						<div class="input-group-prepend">
-							<span class="input-group-text"><i class="fas fa-key"></i></span>
+							<span class="input-group-text"><em class="fas fa-key"></em></span>
 						</div>
 						<input type="password" encrypt="bcrypt" class="form-control" placeholder="Password*" name="password" required>
 					</div>
@@ -81,13 +81,13 @@ limitations under the License.
 					<span>Update your information</span>
 					<div class="input-group form-group">
 						<div class="input-group-prepend">
-							<span class="input-group-text"><i class="fas fa-key"></i></span>
+							<span class="input-group-text"><em class="fas fa-key"></em></span>
 						</div>
 						<input type="password" encrypt="bcrypt" class="form-control" placeholder="New password" name="newPassword" >
 					</div>
 					<div class="input-group form-group">
 						<div class="input-group-prepend">
-							<span class="input-group-text"><i class="fas fa-key"></i></span>
+							<span class="input-group-text"><em class="fas fa-key"></em></span>
 						</div>
 						<input type="password" encrypt="bcrypt" class="form-control" placeholder="Confirm new password" name="newPassword" >
 					</div>
@@ -97,7 +97,7 @@ limitations under the License.
 					<!-- USER MAIL -->
 					<div class="input-group form-group">
 						<div class="input-group-prepend">
-							<span class="input-group-text"><i class="fas fa-envelope"></i></span>
+							<span class="input-group-text"><em class="fas fa-envelope"></em></span>
 						</div>
 						<%out.print("<input type='text' class='form-control' name='mail' value='"+mail+"' >"); %>
 					</div>

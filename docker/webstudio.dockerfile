@@ -11,13 +11,11 @@ RUN apt-get -y install maven
 # to modify config file
 RUN apt-get install nano 
 
-COPY ./target/WebStudio*.war /usr/local/tomcat/webapps/ROOT.war
-
 #### Tomcat configuration ####
 
 # 2 following lines to have the server at the root path and not at /WebStudio
 RUN rm -rf /usr/local/tomcat/webapps/ROOT
-ADD /target/WebStudio*.war /usr/local/tomcat/webapps/ROOT.war
+ADD /target/webstudio-*.war /usr/local/tomcat/webapps/ROOT.war
 
 # RUN apt-get install libjhdf5-java
 

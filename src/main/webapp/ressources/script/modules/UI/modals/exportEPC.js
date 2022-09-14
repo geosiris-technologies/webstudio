@@ -129,7 +129,6 @@ export function updatePartialExportTableContent(relations){
                         function(checkedValue, uuid){
                             if(checkedValue && relations[uuid] != null){
                                 checkAllRelations(uuid, relations, checkboxesName, checkedValue, 
-                                    "exportParial_progressBar", 
                                     "epcPartialExport_checkUpRelations", 
                                     "epcPartialExport_checkDownRelations");
                             }else{

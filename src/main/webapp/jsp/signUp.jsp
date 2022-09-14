@@ -14,7 +14,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 -->
 <!DOCTYPE html>
-<html>
+<html lang="en-US">
 <head>
 	<meta charset="utf-8">
 
@@ -37,9 +37,9 @@ limitations under the License.
 			<div class="card-header">
 				<h3>Sign Up</h3>
 				<!-- <div class="d-flex justify-content-end social_icon">
-					<span><i class="fab fa-facebook-square"></i></span>
-					<span><i class="fab fa-google-plus-square"></i></span>
-					<span><i class="fab fa-twitter-square"></i></span>
+					<span><em class="fab fa-facebook-square"></em></span>
+					<span><em class="fab fa-google-plus-square"></em></span>
+					<span><em class="fab fa-twitter-square"></em></span>
 				</div> -->
 			</div>
 			<div class="card-body">
@@ -52,20 +52,20 @@ limitations under the License.
 				<form method="post" action="signup" accept-charset="utf-8" id="form_signUp">
 					<div class="input-group form-group">
 						<div class="input-group-prepend">
-							<span class="input-group-text"><i class="fas fa-user"></i></span>
+							<span class="input-group-text"><em class="fas fa-user"></em></span>
 						</div>
 						<input type="text" class="form-control" placeholder="User name" name="login" required>
 						
 					</div>
 					<div class="input-group form-group">
 						<div class="input-group-prepend">
-							<span class="input-group-text"><i class="fas fa-key"></i></span>
+							<span class="input-group-text"><em class="fas fa-key"></em></span>
 						</div>
 						<input type="password" encrypt="bcrypt" class="form-control" placeholder="Password" name="password" required>
 					</div>
 					<div class="input-group form-group">
 						<div class="input-group-prepend">
-							<span class="input-group-text"><i class="fas fa-key"></i></span>
+							<span class="input-group-text"><em class="fas fa-key"></em></span>
 						</div>
 						<input type="password" encrypt="bcrypt" class="form-control" placeholder="Confirm password" name="password" required>
 					</div>
@@ -75,7 +75,7 @@ limitations under the License.
 
 					<div class="input-group form-group">
 						<div class="input-group-prepend">
-							<span class="input-group-text"><i class="fas fa-envelope"></i></span>
+							<span class="input-group-text"><em class="fas fa-envelope"></em></span>
 						</div>
 						<input type="text" id="mail" name="mail" placeholder="Mail adress" class="form-control">
 					</div>

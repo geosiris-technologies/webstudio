@@ -26,11 +26,11 @@ RUN rm -rf /usr/local/tomcat/webapps/ROOT
 
 # # #### Tomcat configuration ####
 
-# RUN cp ws_build/target/WebStudio*.war /usr/local/tomcat/webapps/ROOT.war
+# RUN cp ws_build/target/webstudio-*.war /usr/local/tomcat/webapps/ROOT.war
 
 #################################### (2) LOCAL WAR #############
 # Use after local compiling with : mvn -U -s settings.xml clean package
-COPY ./target/WebStudio*.war /usr/local/tomcat/webapps/ROOT.war
+COPY ./target/webstudio-*.war /usr/local/tomcat/webapps/ROOT.war
 
 ############################################################
 
