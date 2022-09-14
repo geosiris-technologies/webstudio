@@ -49,7 +49,7 @@ import java.util.concurrent.TimeUnit;
 public class EPCEvent extends HttpServlet {
 	private static final long serialVersionUID = 1L;
     public static Logger logger = LogManager.getLogger(EPCEvent.class);
-	private static final long SESSION_DURATION = 1000*60*30; // 30 min in ms
+	private static final long SESSION_DURATION = 1000L*60L*30L; // 30 min in ms
 
 	private final Queue<Pair<HttpSession, AsyncContext>> ongoingRequests = new ConcurrentLinkedQueue<>();
 	private ScheduledExecutorService service;
@@ -209,8 +209,8 @@ public class EPCEvent extends HttpServlet {
 					//logger.error("EPCEvent : closing event handler");
 					break;
 				}
-				try { Thread.sleep(2000); 
-				} catch (InterruptedException e) { logger.error(e.getMessage(), e); }
+				try { Thread.sleep(2000);
+				} catch (Exception e) { logger.error(e.getMessage(), e); }
 			}
 		} catch (IOException ignored) {
 			logger.error("EPCEvent : closing event handler");

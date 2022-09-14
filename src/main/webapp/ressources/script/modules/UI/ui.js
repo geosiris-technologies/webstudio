@@ -157,15 +157,17 @@ export function initSessionTimeOut(spanTimeout_id){
         ////////////////////////////
         // test de SSE
         // var source = new EventSource("EPCEvent?event=sessionDuration");
-        const spanTimeOut = null;
-        const timeoutClass = ""
+        var spanTimeOut = null;
+        var timeoutClass = ""
         if(spanTimeout_id != null){
             spanTimeOut = document.getElementById(spanTimeout_id);
             timeoutClass = spanTimeOut.className;
         }
+        const cst_timeoutClass = timeoutClass;
+        const cst_spanTimeOut = spanTimeOut;
+
         const sessionInfoButClass = document.getElementById("sessionInfoBut").className
         const ws_top_titleClass = document.getElementById("ws_top_title").className
-
 
         /////////////////
         // Event Listener 
@@ -176,11 +178,11 @@ export function initSessionTimeOut(spanTimeout_id){
             var timeSinceSessionClose = parseInt(event.data);
             var minutes = Math.trunc(timeSinceSessionClose/60000);
             var secondes = Math.trunc( (timeSinceSessionClose - minutes*60000) / 1000) ;
-            if(spanTimeOut != null){
+            if(cst_spanTimeOut != null){
                 try{
                     var timeOutText = "Session will close in ";
                     if(minutes < 1){
-                        spanTimeOut.className = "timeoutCritical blink";
+                        cst_spanTimeOut.className = "timeoutCritical blink";
                         if(secondes <=1){
                             timeOutText = "Please reload page (session expired)";
                         }else{
@@ -190,10 +192,10 @@ export function initSessionTimeOut(spanTimeout_id){
                         if(secondes > 30){
                             minutes++;
                         }
-                        spanTimeOut.className = "timeoutNormal";
+                        cst_spanTimeOut.className = "timeoutNormal";
                         timeOutText += minutes + " min";
                     }
-                    spanTimeOut.innerHTML = timeOutText;
+                    cst_spanTimeOut.innerHTML = timeOutText;
 
                 }catch(e){console.log(e)}
             }else{    // On recharge la page si la session est fini pour ne pas laisser l'utilisateur faire des manipulations
@@ -206,9 +208,9 @@ export function initSessionTimeOut(spanTimeout_id){
         };
 
         const evt_list_onErr = function(e) {
-            if(spanTimeOut != null){
-                spanTimeOut.className = timeoutClass + " timeoutCritical blink";
-                spanTimeOut.innerHTML = "Connexion lost with server, please reload the page";
+            if(cst_spanTimeOut != null){
+                cst_spanTimeOut.className = cst_timeoutClass + " timeoutCritical blink";
+                cst_spanTimeOut.innerHTML = "Connexion lost with server, please reload the page";
 
                 document.getElementById("ws_top_title").className = ws_top_titleClass + " timeoutCritical blink";
                 document.getElementById("ws_top_title").title = "Server may be down, please reload the page";

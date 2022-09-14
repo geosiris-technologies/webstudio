@@ -31,7 +31,7 @@ public Boolean restrictedExperiment(String prod_type){
 %>
 
 <!DOCTYPE html>
-<html>
+<html lang="en-US">
 <head>
 
 <meta charset="UTF-8">
