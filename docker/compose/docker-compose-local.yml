@@ -9,7 +9,7 @@ services:
     build: 
       context: "../../"
       dockerfile: docker/webstudio-local.dockerfile
-      target: image-no-ssl
+      target: image-with-ssl
       
     ports:
       - "80:80"

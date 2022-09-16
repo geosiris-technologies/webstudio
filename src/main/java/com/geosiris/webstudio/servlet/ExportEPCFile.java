@@ -33,10 +33,7 @@ import org.apache.logging.log4j.Logger;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.stream.Collectors;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
@@ -83,14 +80,12 @@ public class ExportEPCFile extends HttpServlet {
             }
             logger.info("export version " + versionParam + " -- " + exportVersion);
 
-            // Debut filtrage des fichiers Ã  exporter
+            // Debut filtrage des fichiers a exporter
             String[] partialExportUUIDs = request.getParameterValues("partialExportUUID");
 
             List<String> partialExportUUIDs_list = new ArrayList<>();
             if (partialExportUUIDs != null) {
-                for (String expUUID : partialExportUUIDs) {
-                    partialExportUUIDs_list.add(expUUID);
-                }
+                partialExportUUIDs_list.addAll(Arrays.asList(partialExportUUIDs));
             }
 
             WorkspaceContent workspace = new WorkspaceContent();
@@ -98,22 +93,14 @@ public class ExportEPCFile extends HttpServlet {
 
             Map<String, Object> epcFiles = SessionUtility.getResqmlObjects(session);
             if (partialExportUUIDs_list.size() > 0) {
-                epcFiles = (HashMap<String, Object>) epcFiles.entrySet().stream()
+                epcFiles = epcFiles.entrySet().stream()
                         .filter(x -> partialExportUUIDs_list.contains(x.getKey()))
-                        .collect(Collectors.toMap(x -> (String) x.getKey(), x -> x.getValue()));
+                        .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
                 workspace.setReadObjects(epcFiles);
             }
             // FIN filtrage fichiers a exporter
 
-//            File downloadFile = new File(getServletContext().getRealPath("/") + session.getId() + "_" + filePath);
-            //downloadFile.createNewFile();
-
             try {
-//                exportEPCFile(downloadFile,
-//                        workspace,
-//                        exportVersion,
-//                        filePath);
-
                 ByteArrayOutputStream bos = new ByteArrayOutputStream();
                 exportEPCFile(bos,
                         workspace,
@@ -121,12 +108,6 @@ public class ExportEPCFile extends HttpServlet {
                 byte[] bos_bytes = bos.toByteArray();
 
                 request.setAttribute("response", "File exported");
-
-//                FileInputStream inStream = new FileInputStream(downloadFile);
-
-                // if you want to use a relative path to context root:
-                //			String relativePath = getServletContext().getRealPath("");
-                //			logger.info("relativePath = " + relativePath);
 
                 // obtains ServletContext
                 ServletContext context = getServletContext();
@@ -140,7 +121,7 @@ public class ExportEPCFile extends HttpServlet {
 
                 response.setContentType(mimeType);
 //                response.setContentLength((int) downloadFile.length());
-                response.setContentLength((int) bos_bytes.length);
+                response.setContentLength(bos_bytes.length);
 
                 // forces download
                 String headerKey = "Content-Disposition";
@@ -154,21 +135,10 @@ public class ExportEPCFile extends HttpServlet {
                     outStream.write(bos_bytes, chunk, Math.min(4096, bos_bytes.length-chunk));
                 }
 
-//                byte[] buffer = new byte[4096];
-//                int bytesRead = -1;
-//
-//                while ((bytesRead = inStream.read(buffer)) != -1) {
-//                    outStream.write(buffer, 0, bytesRead);
-//                }
-
-
-//                inStream.close();
                 outStream.close();
-//                downloadFile.delete();
-
             } catch (Exception e) {
                 logger.error(e.getMessage(), e);
-                request.setAttribute("response", "Error occured while exporting file : \n" + e.getMessage() + " \n " + e.getStackTrace());
+                request.setAttribute("response", "Error occured while exporting file : \n" + e.getMessage() + " \n " + Arrays.toString(e.getStackTrace()));
             }
 
             String closeEpc = request.getParameter("close");

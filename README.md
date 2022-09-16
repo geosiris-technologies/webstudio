@@ -43,6 +43,14 @@ mvn -U -s settings.xml clean package
 
 If you do not have a **settings.xml** file, please copy the **ci_settings.xml** file and replace the **${env.CI_JOB_TOKEN}** variable by your own token, and save this new file as **settings.xml**
 
+## Related projects :
+
+ - https://github.com/geosiris-technologies/cloud-storage-api
+ - https://github.com/geosiris-technologies/energyml-java-generator
+ - https://github.com/geosiris-technologies/energyml-utils
+ - https://github.com/geosiris-technologies/etpproto-java
+ - https://github.com/geosiris-technologies/etptypes-java
+
 ## Run the code :
 
 ### For local tests (and local code changes):

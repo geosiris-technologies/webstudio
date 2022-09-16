@@ -24,7 +24,7 @@ import java.io.IOException;
 
 public class ServerFileLogger extends ServerLogger {
     public static Logger logger = LogManager.getLogger(ServerFileLogger.class);
-	private String filePath;
+	private final String filePath;
 
 	public ServerFileLogger(String path) {
 		filePath = path;
@@ -39,9 +39,8 @@ public class ServerFileLogger extends ServerLogger {
 			logger.error(e.getMessage(), e);
 		}
 		
-		FileOutputStream output = null;
 		try {
-			output = new FileOutputStream(f);
+			FileOutputStream output = new FileOutputStream(f);
 			output.write("Debut de fichier".getBytes());
 			output.close();
 		} catch (IOException e) {

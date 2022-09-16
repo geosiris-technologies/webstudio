@@ -66,7 +66,7 @@ public class ETPConnexion extends HttpServlet {
 		if ("isconnected".compareToIgnoreCase(req) == 0) {
 			ETPClient etpClient = (ETPClient) request.getSession(false)
 					.getAttribute(SessionUtility.SESSION_ETP_CLIENT_ID);
-			Boolean isConnected = etpClient != null && etpClient.isConnected();
+			boolean isConnected = etpClient != null && etpClient.isConnected();
 			answer = "" + isConnected;
 		} else {
 			answer = "unkown request";
@@ -90,7 +90,7 @@ public class ETPConnexion extends HttpServlet {
 
 		String userName = null;
 		String password = null;
-		Boolean askConnection = true;
+		boolean askConnection = true;
 		HttpURI host_uri = null;
 
 		if (ServletFileUpload.isMultipartContent(request)) {

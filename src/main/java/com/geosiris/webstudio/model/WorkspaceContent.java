@@ -24,6 +24,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 public class WorkspaceContent {
 
@@ -78,34 +79,35 @@ public class WorkspaceContent {
         this.parsedRels = parsedRels;
     }
 
+
+    public static class ReadObjectVue{
+        String uuid;
+        String title;
+
+        public ReadObjectVue(String uuid, String title) {
+            this.uuid = uuid;
+            this.title = title;
+        }
+
+        public String getUuid() {
+            return uuid;
+        }
+
+        public String getTitle() {
+            return title;
+        }
+    }
+
     public String toJson(){
-        StringBuilder res = new StringBuilder();
-        res.append("{");
+        Map<String, Object> vue = new HashMap<>();
 
-        Gson gson = new Gson();
+        vue.put("Energyml objects", readObjects.entrySet().stream().map((entry) -> new ReadObjectVue(entry.getKey(),
+                                                                                            (String) ObjectController.getObjectAttributeValue(entry.getValue(), "Citation.Title")))
+                .collect(Collectors.toList()));
 
-        res.append("\"Energyml objects\": [");
-        for(String uuid: readObjects.keySet()){
-            res.append("{");
-            res.append("\"uuid\": \"").append(uuid).append("\",");
-            res.append("\"title\": ").append(gson.toJson(ObjectController.getObjectAttributeValue(readObjects.get(uuid), "Citation.Title")));
-            res.append("},");
-        }
-        if(readObjects.size()>0){ // removing last comma
-            res.deleteCharAt(res.length() - 1);
-        }
-        res.append("],");
+        vue.put("Other objects", notReadObjects.stream().map(Pair::l).collect(Collectors.toList()));
 
-        res.append("\"Other objects\": [");
-        for(Pair<String, byte[]> misc: notReadObjects){
-            res.append(gson.toJson(misc.l())).append(",");
-        }
-        if(notReadObjects.size()>0){ // removing last comma
-            res.deleteCharAt(res.length() - 1);
-        }
-        res.append("],");
-
-        res.append("\"Other information\": [");
+        /*res.append("\"Other information\": [");
         for(String name: additionalInformation.keySet()){
             res.append("{");
             res.append("\"name\": ").append(name);
@@ -114,10 +116,8 @@ public class WorkspaceContent {
         }
         if(additionalInformation.size()>0){ // removing last comma
             res.deleteCharAt(res.length() - 1);
-        }
-        res.append("]");
-
-        res.append("}");
-        return res.toString();
+        }*/
+        Gson gson = new Gson();
+        return gson.toJson(vue);
     }
 }

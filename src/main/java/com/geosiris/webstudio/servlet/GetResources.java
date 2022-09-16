@@ -80,9 +80,9 @@ public class GetResources extends HttpServlet {
 			return;
 		}
 
-		Integer depth = 1;
+		int depth = 1;
 		String from = null;
-		HashMap<String, String> where = new HashMap<String, String>();
+		HashMap<String, String> where = new HashMap<>();
 
 
 		if(ServletFileUpload.isMultipartContent(request)) {
@@ -146,29 +146,29 @@ public class GetResources extends HttpServlet {
 
 
 	private static List<Object> processRequest(Map<String, Object> objectList, GetResourceRequest request){
-		List<Object> res = new ArrayList<Object>();
+		List<Object> res = new ArrayList<>();
 
 		// Stack des objects à verifier, <depth, Object>
 		Stack<Pair<Integer, Object>> stack = new Stack<>();
-		HashSet<String> viewedObject = new HashSet<String>();
+		HashSet<String> viewedObject = new HashSet<>();
 
-		List<String> typesToKeep = new ArrayList<String>();
+		/*List<String> typesToKeep = new ArrayList<>();
 		for(String whereKey : request.getWhere().keySet()) {
 			if(whereKey.compareToIgnoreCase("#type")==0) {
 				typesToKeep.add(request.getWhere().get(whereKey));
 			}
-		}
+		}*/
 
 		// Premier filtre sur le from
 		if(request.getFrom()!=null && request.getFrom().length()>0) {
 			for(String uuid : objectList.keySet()) {
 				if(uuid.compareTo(request.getFrom())==0) {
-					stack.push(new Pair<Integer, Object>(request.getDepth(), objectList.get(uuid)));
+					stack.push(new Pair<>(request.getDepth(), objectList.get(uuid)));
 				}
 			}
 		}else {
 			for(final Object o : objectList.values()) {
-				stack.push(new Pair<Integer, Object>(request.getDepth(), o));
+				stack.push(new Pair<>(request.getDepth(), o));
 			}
 		}
 
@@ -184,13 +184,13 @@ public class GetResources extends HttpServlet {
 				if(po.l()>0) {
 					// Si pas au bout du chemin, on continue
 					List<Pair<String, String>> allReferencedObjects = EPCGenericManager.getAllReferencedObjects(uuid, objectList);
-					for(String r_uuid : allReferencedObjects.stream().map(p -> p.r()).collect(Collectors.toList())) {
-						stack.push(new Pair<Integer, Object>(po.l()-1, objectList.get(r_uuid)));
+					for(String r_uuid : allReferencedObjects.stream().map(Pair::r).collect(Collectors.toList())) {
+						stack.push(new Pair<>(po.l() - 1, objectList.get(r_uuid)));
 					}
 					
 					List<Object> referencers = EPCGenericManager.getAllReferencersObjects(uuid, objectList);
 					for(Object r_obj : referencers) {
-						stack.push(new Pair<Integer, Object>(po.l()-1, r_obj));
+						stack.push(new Pair<>(po.l() - 1, r_obj));
 					}
 				}
 			}
@@ -203,14 +203,14 @@ public class GetResources extends HttpServlet {
 		private static final Pattern p_from = Pattern.compile("[fF][rR][oO][mM]\\(([^)]+)\\)");
 
 		private static final Pattern p_where = Pattern.compile("[wW][hH][eE][rR][eE]\\((.+)\\)\\s*[\\&$]");		
-		private static final String p_where_attributes_value = ".*[^\\s]";//"[#\\p{L}\\.\\s\\*\\+]*[#\\p{L}\\.]";
+		private static final String p_where_attributes_value = ".*[\\S]";//"[#\\p{L}\\.\\s\\*\\+]*[#\\p{L}\\.]";
 		private static final Pattern p_where_attributes = Pattern.compile("\\s*([#\\w\\.]+)\\s*=\\s*(" + p_where_attributes_value + ")\\s*");
 
 		private static final Pattern p_depth = Pattern.compile("[dD][eE][pP][tT][hH]\\((\\d+)\\)");
 
 		private String from;
 		private Integer depth;
-		private Map<String, String> where;
+		private final Map<String, String> where;
 
 		public GetResourceRequest(String from, Integer depth, Map<String, String> where) {
 			this.from = from;
@@ -221,7 +221,7 @@ public class GetResources extends HttpServlet {
 		public GetResourceRequest(String request) {
 			from = null;
 			depth = 1;
-			where = new HashMap<String, String>();
+			where = new HashMap<>();
 
 			Matcher m0 = p_from.matcher(request);
 			if(m0.find()) {
@@ -290,13 +290,13 @@ public class GetResources extends HttpServlet {
 
 		@Override
 		public String toString() {
-			String value = "from("+from+")&where(";
+			StringBuilder value = new StringBuilder("from(" + from + ")&where(");
 			for(String k : where.keySet()) {
-				value+=k+"="+where.get(k)+"; ";
+				value.append(k).append("=").append(where.get(k)).append("; ");
 			}
-			value += ")&depth("+ depth +")";
+			value.append(")&depth(").append(depth).append(")");
 
-			return value;
+			return value.toString();
 		}
 	}
 
@@ -314,7 +314,7 @@ public class GetResources extends HttpServlet {
 		}
 
 		String request2 = "from()&where(#type=[iI]nt.*, .kind=project, citation.Title =JeanFrançois Rainaud)&depth(2)";
-		Map<String, Object> objectList = new HashMap<String, Object>();
+		Map<String, Object> objectList = new HashMap<>();
 		objectList.put("UUID-95aze-a555zea-aze", 3);
 		objectList.put("UUID-95aze-a555zeae", 3.2);
 		GetResourceRequest resq = new GetResourceRequest(request2);

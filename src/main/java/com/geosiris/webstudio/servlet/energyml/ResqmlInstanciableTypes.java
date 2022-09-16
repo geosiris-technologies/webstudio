@@ -52,21 +52,21 @@ public class ResqmlInstanciableTypes extends HttpServlet {
 		
 		String rootClassName = request.getParameter("rootClass");
 
-		String jsonInstanciableTypes = "[\n";
+		StringBuilder jsonInstanciableTypes = new StringBuilder("[\n");
 		if(rootClassName!=null && rootClassName.length()>0) {
 			List<Class<?>> subClassList = Editor.pkgManager.getInheritorClasses(rootClassName);
 			for(Class<?> cl : subClassList) {
-				jsonInstanciableTypes += "\""+ cl.getName() + "\",";
+				jsonInstanciableTypes.append("\"").append(cl.getName()).append("\",");
 			}
 			if(subClassList.size()>0) {
-				jsonInstanciableTypes = jsonInstanciableTypes.substring(0, jsonInstanciableTypes.length()-1); // On enlÃ¨ve la derniÃ¨re virgule
+				jsonInstanciableTypes = new StringBuilder(jsonInstanciableTypes.substring(0, jsonInstanciableTypes.length() - 1)); // On enlÃ¨ve la derniÃ¨re virgule
 			}
 		}
-		jsonInstanciableTypes += "\n]";
+		jsonInstanciableTypes.append("\n]");
 		PrintWriter out = response.getWriter();
         response.setContentType("application/json");
         response.setCharacterEncoding("UTF-8");
-        out.write(jsonInstanciableTypes);
+        out.write(jsonInstanciableTypes.toString());
         out.flush();
 	}
 

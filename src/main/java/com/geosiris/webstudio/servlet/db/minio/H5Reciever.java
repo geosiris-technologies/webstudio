@@ -43,7 +43,7 @@ import java.util.zip.ZipInputStream;
 @MultipartConfig
 public class H5Reciever extends HttpServlet {
 	private static final long serialVersionUID = 1L;
-    public static Logger logger = LogManager.getLogger(H5Reciever.class);
+	public static Logger logger = LogManager.getLogger(H5Reciever.class);
 
 	/**
 	 * @see HttpServlet#HttpServlet()
@@ -105,10 +105,10 @@ public class H5Reciever extends HttpServlet {
 
 					} else if (item.getFieldName().compareTo("h5InputFile") == 0) {
 						logger.error("=> " + item + " -- " + item.getName());
-						if (item != null && item.getName() != null && item.getName().length() > 0) {
-							// uploadFile(item);
-							// uploadFile(stream);
-						}
+//						if (item != null && item.getName() != null && item.getName().length() > 0) {
+//							// uploadFile(item);
+//							// uploadFile(stream);
+//						}
 					} else {
 						logger.error("FileReciever : not readable parameter : '" + item.getFieldName() + "'");
 					}
@@ -123,10 +123,10 @@ public class H5Reciever extends HttpServlet {
 		}
 
 		PrintWriter out = response.getWriter();
-        response.setContentType("application/text");
-        response.setCharacterEncoding("UTF-8");
-        out.write(answer);
-        out.flush();
+		response.setContentType("application/text");
+		response.setCharacterEncoding("UTF-8");
+		out.write(answer);
+		out.flush();
 	}
 
 	private static void uploadFile(File input) {

@@ -18,7 +18,7 @@ package com.geosiris.webstudio.property;
 import com.geosiris.storage.cloud.api.property.Properties;
 
 public class UserPreferencesProperties extends Properties {
-    public enum VueOrientation {left, right};
+    public enum VueOrientation {left, right}
 
     private VueOrientation vueOrientation;
 

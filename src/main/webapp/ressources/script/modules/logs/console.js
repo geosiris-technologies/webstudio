@@ -16,7 +16,7 @@ limitations under the License.
 
 import {isUUID, rws__dateNowStr} from "../common/utils.js"
 import {openResqmlObjectContentByUUID} from "../main.js"
-import {UUID_REGEX, UUID_REGEX_raw, UUID_REGEX_str, __CL_CONSOLE_LI__, __CL_CONSOLE_MSG_CONTENT__, __CL_CONSOLE_MSG_DATE__, __CL_CONSOLE_UL__, __ENUM_CONSOLE_MSG_SEVERITY_DEBUG__, __ENUM_CONSOLE_MSG_SEVERITY_ERROR__, __ENUM_CONSOLE_MSG_SEVERITY_LOG__, __ENUM_CONSOLE_MSG_SEVERITY_TOAST__, __RWS_CLIENT_NAME__, __TB_MSG_SEVERITY__, getSeverityClass} from "../common/variables.js"
+import {UUID_REGEX_raw, __CL_CONSOLE_LI__, __CL_CONSOLE_MSG_CONTENT__, __CL_CONSOLE_MSG_DATE__, __CL_CONSOLE_UL__, __ENUM_CONSOLE_MSG_SEVERITY_DEBUG__, __ENUM_CONSOLE_MSG_SEVERITY_ERROR__, __ENUM_CONSOLE_MSG_SEVERITY_LOG__, __ENUM_CONSOLE_MSG_SEVERITY_TOAST__, __RWS_CLIENT_NAME__, __TB_MSG_SEVERITY__, getSeverityClass} from "../common/variables.js"
 import {createCheck, createEltAndSubs} from "../UI/htmlUtils.js"
 import {createSnackBar} from "../UI/snackbar.js"
 

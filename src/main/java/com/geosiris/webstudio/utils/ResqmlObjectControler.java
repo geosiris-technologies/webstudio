@@ -248,14 +248,14 @@ public class ResqmlObjectControler {
                         }
                     } else {
                         Object arg = null;    // On est obliger de declarer dans une variable sinon
-                        // le passage d'argument Ã  'invoke' ne marche pas
+                        // le passage d'argument a 'invoke' ne marche pas
                         ObjectController.getAttributeEditMethod(resqmlObj, simplePath).invoke(resqmlObj, arg);
                         logger.info("setting to null " + ObjectController.getAttributeEditMethod(resqmlObj, simplePath));
                     }
 
                 } else { // On recurse, on est pas a la fin
 
-                    if (paramVal == null) { // si n'existe pas on cree l'objet Ã  la volee et on l'assigne Ã  "resqmlObj"
+                    if (paramVal == null) { // si n'existe pas on cree l'objet a la volee et on l'assigne a "resqmlObj"
                         Class<?> newObjectClass = null;
                         try {
                             if (value == null || value instanceof String) { // si un String en parametre, ce n'est peut etre pas le type

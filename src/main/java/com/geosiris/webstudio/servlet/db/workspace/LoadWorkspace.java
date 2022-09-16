@@ -204,7 +204,7 @@ public class LoadWorkspace extends HttpServlet {
 
             if(resp != null) {
                 List<Pair<String, byte[]>> additionalFiles = new ArrayList<>();
-                if (resp != null && resp.getFileList().length > 0) {
+                if (resp.getFileList().length > 0) {
                     List<Pair<String, String>> workspaceFilesContent = new ArrayList<>();
                     logger.info("File From workspace : ");
                     for (String fileName : resp.getFileList()) {

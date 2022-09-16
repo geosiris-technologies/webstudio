@@ -74,7 +74,7 @@ public class WorkspaceAdditionalData extends HttpServlet {
 
 				OutputStream out = response.getOutputStream();
 				response.setContentType(contentType);
-				response.setContentLength((int) fileContent.length);
+				response.setContentLength(fileContent.length);
 
 				for(int chunk=0; chunk<fileContent.length; chunk += 4096){
 					out.write(fileContent, chunk, Math.min(4096, fileContent.length-chunk));

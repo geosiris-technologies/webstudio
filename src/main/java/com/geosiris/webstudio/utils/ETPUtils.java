@@ -16,8 +16,6 @@ limitations under the License.
 package com.geosiris.webstudio.utils;
 
 import Energistics.Etp.v12.Datatypes.ServerCapabilities;
-import com.geosiris.energyml.utils.EPCGenericManager;
-import com.geosiris.energyml.utils.ObjectController;
 import com.geosiris.etp.communication.ClientInfo;
 import com.geosiris.etp.communication.ConnectionType;
 import com.geosiris.etp.communication.ETPConnection;
@@ -27,7 +25,6 @@ import com.geosiris.etp.protocols.ProtocolHandler;
 import com.geosiris.etp.protocols.handlers.DataspaceHandler;
 import com.geosiris.etp.protocols.handlers.DiscoveryHandler;
 import com.geosiris.etp.protocols.handlers.StoreHandler;
-import com.geosiris.etp.utils.ETPUri;
 import com.geosiris.etp.websocket.ETPClient;
 import com.geosiris.webstudio.etp.CoreHandler_WebStudio;
 import com.geosiris.webstudio.etp.DataspaceHandler_WebStudio;
@@ -43,7 +40,6 @@ import org.eclipse.jetty.http.HttpURI;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.regex.Matcher;
 
 public class ETPUtils {
     public static Logger logger = LogManager.getLogger(ETPUtils.class);
@@ -66,7 +62,7 @@ public class ETPUtils {
         }
 
         logger.info(msgId + ") Waiting for " + msg.getClass().getSimpleName() + " answer");
-        Object dataResp = null;
+        List<Message> dataResp;
         if (timeout <= 0) {
             dataResp = etpClient.getEtpClientSession().waitForResponse(msgId, 10000000);
         } else {
@@ -82,7 +78,7 @@ public class ETPUtils {
                     "No response received for message " + msgId,
                     SessionUtility.EDITOR_NAME));
         }
-        return (List<Message>) dataResp;
+        return dataResp;
     }
 
     public static Boolean establishConnexion(HttpSession session, HttpURI host, String userName, String password,
@@ -140,33 +136,5 @@ public class ETPUtils {
 
     public static ETPClient establishConnexionForClient(HttpSession session, HttpURI host, String userName, String password) {
         return establishConnexionForClient(session, host, userName, password, false);
-    }
-
-    public static ETPUri getUriFromDOR(Object dor, String dataspace){
-        String cq_type = "";
-        try{
-            cq_type = (String) ObjectController.getObjectAttributeValue(dor, "ContentType");
-        }catch (Exception ignore){}
-        if (cq_type == null){
-            try {
-                cq_type = (String) ObjectController.getObjectAttributeValue(dor, "QualifiedType");
-            } catch (Exception ignore){}
-        }
-        Matcher m = EPCGenericManager.PATTERN_CONTENT_TYPE.matcher(cq_type);
-
-        if(m.find()){
-            // found
-        }else{
-            m = EPCGenericManager.PATTERN_QUALIFIED_TYPE.matcher(cq_type);
-            if(m.find()){
-                // found
-            }
-        }
-        return new ETPUri(dataspace,
-                m.group("domain"),
-                m.group("domainVersion").replaceAll("\\.", ""),
-                m.group("type"),
-                (String) ObjectController.getObjectAttributeValue(dor, "uuid"),
-                "");
     }
 }

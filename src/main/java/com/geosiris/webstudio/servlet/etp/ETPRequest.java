@@ -136,7 +136,7 @@ public class ETPRequest extends HttpServlet {
         PrintWriter out = response.getWriter();
         response.setContentType("application/json");
         response.setCharacterEncoding("UTF-8");
-        out.write(jsonContent);
+        out.write(Objects.requireNonNullElse(jsonContent, "{}"));
         out.flush();
     }
 
@@ -152,19 +152,15 @@ public class ETPRequest extends HttpServlet {
                 dataspace = parameterMap.get("dataspace").get(0);
             }
 
-            boolean ask_aknowledge = false;
-            if (parameterMap.containsKey("ask_aknowledge")) {
-                // logger.info("AKNOWLEDGE : " +
-                // parameterMap.get("ask_aknowledge").get(0));
-                ask_aknowledge = true;
-            }
+            boolean ask_aknowledge = parameterMap.containsKey("ask_aknowledge");
+
             logger.info("Asking aknowledge : " + ask_aknowledge);
 
             ETPClient etpClient = (ETPClient) session.getAttribute(SessionUtility.SESSION_ETP_CLIENT_ID);
-            Boolean isConnected = etpClient != null && etpClient.isConnected();
+            boolean isConnected = etpClient != null && etpClient.isConnected();
             if (isConnected) {
                 try {
-                    String req_result = "";
+                    StringBuilder req_result = new StringBuilder();
                     if (request.toLowerCase().startsWith("getresource")) {
 
                         GetResources getRess = ETPDefaultProtocolBuilder.buildGetResources(new ETPUri(dataspace).toString(),
@@ -177,7 +173,7 @@ public class ETPRequest extends HttpServlet {
                             if (ressResp != null) {
                                 GetResourcesResponse objResp = (GetResourcesResponse) ressResp.getBody();
                                 if (objResp.getResources() != null) {
-                                    req_result = objResp.toString();
+                                    req_result = new StringBuilder(objResp.toString());
 ////                                    logger.info("Found objects uri : ");
 //                                    logger.info("Nb ressources found : " + objResp.getResources().size());
 //                                    SessionUtility.log(session, new ServerLogMessage(MessageType.LOG,
@@ -215,24 +211,24 @@ public class ETPRequest extends HttpServlet {
                         List<Message> deleteDO_resp_m_l = ETPUtils.sendETPRequest(session, etpClient, deleteDO, ask_aknowledge,
                                 ETPUtils.waitingForResponseTime);
 
-                        req_result = "[";
+                        req_result = new StringBuilder("[");
                         for(Message deleteDO_resp_m : deleteDO_resp_m_l) {
                             Object deleteDO_resp = deleteDO_resp_m.getBody();
 
                             if (deleteDO_resp instanceof DeleteDataObjectsResponse) {
                                 DeleteDataObjectsResponse del_DO_resp = (DeleteDataObjectsResponse) deleteDO_resp;
-                                List<String> filesContent = new ArrayList<String>();
+                                List<String> filesContent = new ArrayList<>();
                                 for (CharSequence del : del_DO_resp.getDeletedUris().keySet()) {
-                                    req_result += "\"" + del + "\",";
+                                    req_result.append("\"").append(del).append("\",");
 
                                 }
                                 FileReciever.loadFiles_Unnamed(session, filesContent, false, true, true);
                             }
                         }
                         if (req_result.length() > 1) {
-                            req_result = req_result.substring(0, req_result.length() - 1);
+                            req_result = new StringBuilder(req_result.substring(0, req_result.length() - 1));
                         }
-                        req_result += "]";
+                        req_result.append("]");
                     } else if (request.toLowerCase().compareTo("import") == 0) {
                         Map<CharSequence, CharSequence> mapUri = new HashMap<>();
                         for (String uri : parameterMap.get("etp_uri")) {
@@ -276,14 +272,14 @@ public class ETPRequest extends HttpServlet {
                         ETPUtils.sendETPRequest(session, etpClient, putDataO, ask_aknowledge, -1);
 
                     } else if (request.toLowerCase().compareTo("getrelated") == 0) {
-                        String logs = "";
+                        StringBuilder logs = new StringBuilder();
 
                         Map<String, Object> epcFiles = SessionUtility.getResqmlObjects(session);
 
                         Pair<Map<CharSequence, DataObject>, String> mapAndLog = getDataObjectMaptoURI(
                                 parameterMap.get("getrelated_UUID"), epcFiles, dataspace);
 
-                        logs += mapAndLog.r();
+                        logs.append(mapAndLog.r());
 
                         logger.info("#manageETPRequest LOGS : " + logs);
 
@@ -306,7 +302,7 @@ public class ETPRequest extends HttpServlet {
                         for (CharSequence uri : mapAndLog.l().keySet()) {
                             GetResources getResRelated = ETPDefaultProtocolBuilder.buildGetResources(uri + "", scope,
                                     new ArrayList<>(), depth);
-                            msgIds.add(new Pair<String, Long>(uri + "", etpClient.send(getResRelated)));
+                            msgIds.add(new Pair<>(uri + "", etpClient.send(getResRelated)));
                             SessionUtility.log(session, new ServerLogMessage(MessageType.LOG,
                                     "ETP ==> Send ETP message " + getResRelated.getClass().getSimpleName() + " : "
                                             + getResRelated,
@@ -315,7 +311,7 @@ public class ETPRequest extends HttpServlet {
 
                         logger.info("... GetResources related to : Waiting for answers");
 
-                        req_result = "[";
+                        req_result = new StringBuilder("[");
                         int cptAnswer = 0;
                         for (Pair<String, Long> msgid : msgIds) {
                             try {
@@ -326,25 +322,25 @@ public class ETPRequest extends HttpServlet {
                                                 + getResResp,
                                         SessionUtility.EDITOR_NAME));
 
-                                req_result += "{ \"uri\": \"" + msgid.l() + "\",";
-                                req_result += "\"related\" : [";
+                                req_result.append("{ \"uri\": \"").append(msgid.l()).append("\",");
+                                req_result.append("\"related\" : [");
                                 for (Resource r : getResResp.getResources()) {
                                     // logger.info("\t> " + r.getUri());
-                                    req_result += "\"" + r.getUri() + "\",";
+                                    req_result.append("\"").append(r.getUri()).append("\",");
                                 }
                                 if (getResResp.getResources().size() > 0) {
-                                    req_result = req_result.substring(0, req_result.length() - 1);
+                                    req_result = new StringBuilder(req_result.substring(0, req_result.length() - 1));
                                 }
-                                req_result += "]},";
+                                req_result.append("]},");
                                 cptAnswer++;
                             } catch (Exception e) {
-                                logs += e.getMessage();
+                                logs.append(e.getMessage());
                             }
                         }
                         if (cptAnswer > 0) {
-                            req_result = req_result.substring(0, req_result.length() - 1);
+                            req_result = new StringBuilder(req_result.substring(0, req_result.length() - 1));
                         }
-                        req_result += "]";
+                        req_result.append("]");
                         logger.info("<== GetResources related to : answers recieved");
 
                     } else {
@@ -352,8 +348,8 @@ public class ETPRequest extends HttpServlet {
                     }
 
                     logger.info("Final ETP Result : ");
-                    logger.info(req_result);
-                    return req_result;
+                    logger.info(req_result.toString());
+                    return req_result.toString();
                 } catch (Exception e) {
                     logger.error(e.getMessage(), e);
                     if(SessionUtility.wsProperties.getConfigurationType() == ConfigurationType.debug) {
@@ -377,7 +373,7 @@ public class ETPRequest extends HttpServlet {
                                                                               Map<String, Object> epcFiles,
                                                                               String dataspace) {
         Map<CharSequence, DataObject> mapResult = new HashMap<>();
-        String logs = "";
+        StringBuilder logs = new StringBuilder();
 
         for (String uuid : uuidList) {
             logger.info("uuid to export : " + uuid);
@@ -391,7 +387,7 @@ public class ETPRequest extends HttpServlet {
                 String title = ObjectController.getObjectAttributeValue(epc_obj, "citation.title") + "";
                 XMLGregorianCalendar lastUpdate_cal = ((XMLGregorianCalendar) ObjectController
                         .getObjectAttributeValue(epc_obj, "citation.lastUpdate"));
-                Long lastUpdate = 0L;
+                long lastUpdate = 0L;
                 try {
                     lastUpdate = lastUpdate_cal.toGregorianCalendar().getTimeInMillis();
                 } catch (Exception ignore){}
@@ -419,9 +415,9 @@ public class ETPRequest extends HttpServlet {
                 mapResult.put(uri,
                         ETPDefaultProtocolBuilder.buildDataObjectFromResqmlXMl(marshalledObj, uuid, fResource));
             } else {
-                logs += "ETP send request > error for file with uuid '" + uuid + "' ==> file not found\n";
+                logs.append("ETP send request > error for file with uuid '").append(uuid).append("' ==> file not found\n");
             }
         }
-        return new Pair<>(mapResult, logs);
+        return new Pair<>(mapResult, logs.toString());
     }
 }

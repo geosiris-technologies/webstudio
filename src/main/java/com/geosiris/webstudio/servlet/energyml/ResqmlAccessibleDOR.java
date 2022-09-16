@@ -76,16 +76,10 @@ public class ResqmlAccessibleDOR extends HttpServlet {
 			Map<String, Object> map = SessionUtility.getResqmlObjects(session);
 			if(map.containsKey(uuid)) {
 				Object resqmlObj = map.get(uuid);
-				Class<?> subParamClass = null;
 				Object subParam = null;
 				if(subParamPath!=null && subParamPath.length()>0) {
 					subParam = ObjectController.getObjectAttributeValue(resqmlObj, subParamPath);
-					if(subParam!=null) {
-						subParamClass = subParam.getClass();
-					}
 				}
-				//logger.error(" sub param class : " + subParamClass);
-				 
 				List<Object> dorable = EPCGenericManager.getAccessibleDORs(resqmlObj, subParam, subParamName, map.values(), mapAccessibleDORTypes);
 				answer = Utility.getEPCContentAsJSON(dorable);
 			}
@@ -104,15 +98,4 @@ public class ResqmlAccessibleDOR extends HttpServlet {
 	protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
 		doGet(request, response);
 	}
-	
-	
-	public void contextInitialized(ServletContextEvent event) {
-        // Do your thing during webapp's startup.
-		logger.info("Starting " + this.getClass().getName());
-    }
-    public void contextDestroyed(ServletContextEvent event) {
-        // Do your thing during webapp's shutdown.
-		logger.info("Ending " + this.getClass().getName());
-    }
-
 }

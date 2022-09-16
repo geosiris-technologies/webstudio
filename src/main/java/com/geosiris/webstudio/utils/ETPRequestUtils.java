@@ -33,17 +33,17 @@ public class ETPRequestUtils {
 			Class<?> paramClass = Class.forName(param.getParameterizedType().getTypeName());
 			Object[] enumValues = paramClass.getEnumConstants();
 			if(enumValues != null) {
-				String enumValues_str = ", \"values\" : [";
+				StringBuilder enumValues_str = new StringBuilder(", \"values\" : [");
 				for(int ev_idx=0; ev_idx<enumValues.length; ev_idx++) {
-					enumValues_str += "\"" + enumValues[ev_idx] + "\"";
+					enumValues_str.append("\"").append(enumValues[ev_idx]).append("\"");
 					if(ev_idx<enumValues.length-1) {
-						enumValues_str+=", ";
+						enumValues_str.append(", ");
 					}
 				}
-				enumValues_str += "]";
+				enumValues_str.append("]");
 				result += enumValues_str;
 			}
-		} catch (ClassNotFoundException e) { }
+		} catch (ClassNotFoundException ignore) { }
 		result += "}";
 		return result;
 	}
@@ -53,13 +53,10 @@ public class ETPRequestUtils {
 		sb.append("{\n\t\"name\" : \"");
 		sb.append(m.getName());
 		sb.append("\",\n\t\"return\" : \"");
-		sb.append(m.getReturnType().toString());
+		sb.append(m.getReturnType());
 		sb.append("\", \n\t\"parameters\" : [");
 		Parameter[] params = m.getParameters();
 		for(int i=0; i<params.length; i++) {
-//			sb.append("\"");
-//			sb.append(params[i].getParameterizedType().getTypeName());
-//			sb.append("\"");
 			sb.append(jsonifyParameter(params[i]));
 			if(i<params.length - 1) {
 				sb.append(", ");
@@ -85,7 +82,7 @@ public class ETPRequestUtils {
 			}
 		}
 		
-		String res = "[" + sb.toString();
+		String res = "[" + sb;
 		if(nbMethFound>0) {
 			res = res.substring(0, res.length()-1);
 		}

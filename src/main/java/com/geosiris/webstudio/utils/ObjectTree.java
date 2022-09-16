@@ -48,10 +48,10 @@ public class ObjectTree {
         dataClass = null;
         // typeValues= null;
         isMandatory = false;
-        dataClassTemplatedList = new ArrayList<Class<?>>();
+        dataClassTemplatedList = new ArrayList<>();
         this.parent = null;
-        attributes = new ArrayList<ObjectTree>();
-        properties = new ArrayList<ObjectTree>();
+        attributes = new ArrayList<>();
+        properties = new ArrayList<>();
     }
 
     public ObjectTree(String _name, Object _data, Class<?> _dataClass, ObjectTree parent, Boolean isMandatory) {
@@ -64,7 +64,7 @@ public class ObjectTree {
         // Malheureusement on ne peut pas determiner les template directement il faut
         // regarder la declaration
         // dans la classe mere : cf @appendChildren et @appendProperty
-        dataClassTemplatedList = new ArrayList<Class<?>>();
+        dataClassTemplatedList = new ArrayList<>();
         this.parent = parent;
         attributes = new ArrayList<>();
         properties = new ArrayList<>();
@@ -97,39 +97,38 @@ public class ObjectTree {
             List<Pair<Class<?>, String>> attributes = ObjectController.getClassAttributes(objClass);
             if (List.class.isAssignableFrom(objClass)) {
                 // Si c'est une liste on va chercher les elements
-                if (obj != null) {
-                    int cpt = 0;
-                    for (Object elt : (List) obj) {
-                        // logger.error("LIST CONTENT ("+cpt+") " + elt);
-                        // Non on ne test pas si c'est une propriete car c'est le contenu de la liste
-                        // donc peut importe le type,
-                        Class<?> eltClass = Object.class;
-                        if (elt != null) {
-                            eltClass = elt.getClass();
-                            tree.appendChild(createTree(name + "." + cpt, elt, eltClass, tree, bypassNullObj));
-                            cpt++;
-                        } else {
-                            try {
-                                eltClass = (Class<?>) ObjectController.getClassTemplates(parent.getDataClass(),
-                                        name.substring(name.lastIndexOf(".") + 1)).getActualTypeArguments()[0];
+                int cpt = 0;
+                for (Object elt : (List) obj) {
+                    // logger.error("LIST CONTENT ("+cpt+") " + elt);
+                    // Non on ne test pas si c'est une propriete car c'est le contenu de la liste
+                    // donc peut importe le type,
+                    Class<?> eltClass = Object.class;
+                    if (elt != null) {
+                        eltClass = elt.getClass();
+                        tree.appendChild(createTree(name + "." + cpt, elt, eltClass, tree, bypassNullObj));
+                        cpt++;
+                    } else {
+                        try {
+                            assert parent != null;
+                            eltClass = (Class<?>) ObjectController.getClassTemplates(parent.getDataClass(),
+                                    name.substring(name.lastIndexOf(".") + 1)).getActualTypeArguments()[0];
 
-                                logger.error("Trying to create with class : " + eltClass);
-                            } catch (Exception e) {
-                                logger.error(e.getMessage(), e);
-                            }
-                            tree.appendChild(createTree(name + "." + cpt, elt, eltClass, tree, bypassNullObj));
-                            cpt++;
+                            logger.error("Trying to create with class : " + eltClass);
+                        } catch (Exception e) {
+                            logger.error(e.getMessage(), e);
                         }
+                        tree.appendChild(createTree(name + "." + cpt, elt, eltClass, tree, bypassNullObj));
+                        cpt++;
                     }
-                    // On met la valeur a null car on met la valeur comme des enfants de l'arbre
-                    tree.data = null;
                 }
+                // On met la valeur a null car on met la valeur comme des enfants de l'arbre
+                tree.data = null;
             } else {
                 // Si on est sur une propriete on ne cherche pas les sous-elements
                 if (!ObjectController.isPropertyClass(objClass)) {
                     // On parcours les attributs pour savoir si c'est des proprietes terminales
                     // (feuille d'arbre)
-                    // ou des enfant Ã  mettre dans children (branche de l'arbre)
+                    // ou des enfant a mettre dans children (branche de l'arbre)
                     for (Pair<Class<?>, String> attrib : attributes) {
                         String paramName = attrib.r();
                         Class<?> paramClass = attrib.l();
@@ -398,17 +397,11 @@ public class ObjectTree {
                     Method m_enulValue = data.getClass().getMethod("value");
                     dataAsString = (String) m_enulValue.invoke(data);
                 } catch (NoSuchMethodException | SecurityException | IllegalAccessException | IllegalArgumentException
-                        | InvocationTargetException e) {
+                         | InvocationTargetException ignore) {
                 }
             }
             dataAsString = Utility.transformStringForJsonCompatibility(dataAsString);
             jsonValue.append("  \"value\" : ").append(dataAsString).append("\n");
-
-//            JsonObject jsonObject = new JSONObject();
-//            jsonObject.put("value", dataAsString);
-//            String payload = jsonObject.toString();
-//
-//            jsonValue += jsonObject.toString() + "\n";
         } else if (data == null && ObjectController.isPrimitiveClass(dataClass)) {
             jsonValue.append("  \"value\" : \"\"\n");
         } else {
@@ -416,7 +409,6 @@ public class ObjectTree {
         }
         jsonValue.append("}");
         return jsonValue.toString().replaceAll("\t", "    ");
-        // return jsonValue + "]\n}";
     }
 
     public ObjectTree map(Consumer<ObjectTree> c, Boolean consumeAttributes, Boolean consumeProperties) {
@@ -442,13 +434,13 @@ public class ObjectTree {
 
     @Override
     public String toString() {
-        String dataString = data + "";
+        StringBuilder dataString = new StringBuilder(data + "");
         if (data instanceof Object[]) {
-            dataString = "(";
+            dataString = new StringBuilder("(");
             for (Object o : (Object[]) data) {
-                dataString += o + ", ";
+                dataString.append(o).append(", ");
             }
-            dataString += ")";
+            dataString.append(")");
         }
         return "{ [ '" + dataString + "' ] => \n"
                 + attributes.stream().map(e -> "\t" + e.toString().replaceAll("\n", "\n\t")).reduce("", String::concat)

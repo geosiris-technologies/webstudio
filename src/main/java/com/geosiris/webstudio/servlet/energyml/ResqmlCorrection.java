@@ -31,7 +31,6 @@ import org.apache.logging.log4j.Logger;
 
 import java.io.IOException;
 import java.io.PrintWriter;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -66,7 +65,7 @@ public class ResqmlCorrection extends HttpServlet {
         String correctionType = request.getParameter("correctionType");
 
         if (correctionType == null || correctionType.compareToIgnoreCase("dor") == 0) {
-            List<LogResqmlVerification> logs = new ArrayList<>();
+            List<LogResqmlVerification> logs;
             if (uuid != null) {
                 logs = ResqmlVerification.doCorrection(uuid, map);
             } else {
@@ -78,7 +77,7 @@ public class ResqmlCorrection extends HttpServlet {
             }
         } else if (correctionType.compareToIgnoreCase("versionString") == 0) {
             logger.info("Removing versionString request");
-            List<LogResqmlVerification> logs = new ArrayList<>();
+            List<LogResqmlVerification> logs;
             if (uuid != null) {
                 logs = ResqmlVerification.doRemoveVersionString(uuid, map);
             } else {
@@ -90,7 +89,7 @@ public class ResqmlCorrection extends HttpServlet {
             }
         } else if (correctionType.compareToIgnoreCase("SchemaVersion") == 0) {
             logger.info("Correct SchemaVersion request");
-            List<LogResqmlVerification> logs = new ArrayList<>();
+            List<LogResqmlVerification> logs;
             if (uuid != null) {
                 logs = ResqmlVerification.doCorrectSchemaVersion(uuid, map);
             } else {
