@@ -18,7 +18,6 @@ package com.geosiris.webstudio.servlet;
 import com.geosiris.energyml.utils.EPCGenericManager;
 import com.geosiris.energyml.utils.ExportVersion;
 import com.geosiris.energyml.utils.Pair;
-import com.geosiris.energyml.utils.Utils;
 import com.geosiris.webstudio.model.WorkspaceContent;
 import com.geosiris.webstudio.utils.SessionUtility;
 import jakarta.servlet.ServletContext;

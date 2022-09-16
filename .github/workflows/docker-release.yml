@@ -1,0 +1,84 @@
+name: Maven Package and pushing docker
+
+on:
+  release:
+    types: [created]
+
+  pull_request:
+    branches: main
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+    outputs:
+      jar_version: ${{ steps.bump.outputs.jar_version }}
+
+    steps:
+    - uses: actions/checkout@v3
+    - name: Set up JDK 11
+      uses: actions/setup-java@v3
+      with:
+        java-version: '11'
+        distribution: 'temurin'
+#        server-id: ossrh
+#        server-username: MAVEN_USERNAME
+#        server-password: MAVEN_PASSWORD
+#        gpg-private-key: ${{ secrets.OSSRH_GPG_SECRET_KEY }}
+#        gpg-passphrase: MAVEN_GPG_PASSPHRASE
+
+    - name: Bump jar version
+      id: bump
+      run: |
+        PROJECT_VERSION=$(mvn help:evaluate -Dexpression=project.version -q -DforceStdout)
+        echo ::set-output name=jar_version::${PROJECT_VERSION}
+
+    - name: Compile
+      run: mvn -B compile --file pom.xml
+
+    - name: Build a package
+      run: mvn -B package --file pom.xml
+
+    - name: Temporarily save jar artifact
+      uses: actions/upload-artifact@v3
+      with:
+        name: jar-artifact
+        path: ${{ github.workspace }}/target/*.war
+        retention-days: 1
+
+  deploy:
+    runs-on: ubuntu-18.04
+    needs: build
+
+    steps:
+    - uses: actions/checkout@v3
+    - uses: actions/download-artifact@v3
+      with:
+          name: jar-artifact
+          path: /target
+
+    - name: Docker build
+      run: |
+        docker build . --file docker/webstudio.dockerfile \
+          -t geomods/geomods-webstudio:${{needs.build.outputs.jar_version}} \
+          WEBSTUDIO_WAR_PATH=/target/webstudio-${{needs.build.outputs.jar_version}}.war
+
+    - name: Login to DockerHub
+      uses: docker/login-action@v3
+      with:
+        username: ${{ secrets.DOCKER_USERNAME }}
+        password: ${{ secrets.DOCKER_PASSWORD }}
+
+    - name: Docker push
+      run: |
+        docker push geomods/geomods-webstudio:${{needs.build.outputs.jar_version}}
+  run:
+    runs-on: ubuntu-18.04
+    needs: [build, deploy]
+
+    steps:
+    - name: Run container
+      run: |
+        docker run geomods/geomods-webstudio:${{needs.build.outputs.jar_version}}

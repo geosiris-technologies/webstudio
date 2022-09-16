@@ -16,6 +16,7 @@ limitations under the License.
 package com.geosiris.webstudio.utils;
 
 import Energistics.Etp.v12.Datatypes.ServerCapabilities;
+import com.geosiris.energyml.utils.EPCGenericManager;
 import com.geosiris.energyml.utils.ObjectController;
 import com.geosiris.etp.communication.ClientInfo;
 import com.geosiris.etp.communication.ConnectionType;
@@ -43,7 +44,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 public class ETPUtils {
     public static Logger logger = LogManager.getLogger(ETPUtils.class);
@@ -111,9 +111,9 @@ public class ETPUtils {
             etpClient.closeClient();
             session.setAttribute(SessionUtility.SESSION_ETP_CLIENT_ID, null);
         }
-                session.setAttribute(SessionUtility.SESSION_ETP_CLIENT_LAST_URL, "");
-                session.setAttribute(SessionUtility.SESSION_ETP_CLIENT_LAST_USERNAME, "");
-                session.setAttribute(SessionUtility.SESSION_ETP_CLIENT_LAST_PASSWORD, "");
+        session.setAttribute(SessionUtility.SESSION_ETP_CLIENT_LAST_URL, "");
+        session.setAttribute(SessionUtility.SESSION_ETP_CLIENT_LAST_USERNAME, "");
+        session.setAttribute(SessionUtility.SESSION_ETP_CLIENT_LAST_PASSWORD, "");
         return false;
     }
 
@@ -142,9 +142,6 @@ public class ETPUtils {
         return establishConnexionForClient(session, host, userName, password, false);
     }
 
-    private static Pattern pat_contentType = Pattern.compile("application/x-(?<domain>[\\w]+)\\+xml;version=(?<domainVersion>[\\d\\.]+);type=(?<type>[\\w\\d_]+)");
-    private static Pattern pat_qualifiedType = Pattern.compile("(?<domain>[a-zA-Z]+)(?<domainVersion>[\\d]+)\\.(?<type>[\\w_]+)");
-
     public static ETPUri getUriFromDOR(Object dor, String dataspace){
         String cq_type = "";
         try{
@@ -155,12 +152,12 @@ public class ETPUtils {
                 cq_type = (String) ObjectController.getObjectAttributeValue(dor, "QualifiedType");
             } catch (Exception ignore){}
         }
-        Matcher m = pat_contentType.matcher(cq_type);
+        Matcher m = EPCGenericManager.PATTERN_CONTENT_TYPE.matcher(cq_type);
 
         if(m.find()){
             // found
         }else{
-            m = pat_qualifiedType.matcher(cq_type);
+            m = EPCGenericManager.PATTERN_QUALIFIED_TYPE.matcher(cq_type);
             if(m.find()){
                 // found
             }

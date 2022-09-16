@@ -15,7 +15,6 @@ limitations under the License.
 */
 package com.geosiris.webstudio.utils;
 
-import com.geosiris.energyml.pkg.EPCPackage;
 import com.geosiris.energyml.utils.EPCGenericManager;
 import com.geosiris.energyml.utils.ObjectController;
 import com.geosiris.webstudio.logs.LogMessage;
@@ -31,7 +30,6 @@ import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.*;
-import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 public class ResqmlVerification {
@@ -282,11 +280,11 @@ public class ResqmlVerification {
             String rootType,
             Map<String, Object> resqmlObjects) {
 
-        List<LogMessage> messages = new ArrayList<LogMessage>();
 
-        List<ObjectTree> referencedDOR = objTree.filterListByObjectType("DataObjectReference", false, true);
+        final List<ObjectTree> referencedDOR = objTree.filterListByObjectType("DataObjectReference", false, true);
 
-        for (ObjectTree dor : referencedDOR) {
+        return referencedDOR.parallelStream().map( (dor) -> {
+            List<LogMessage> messages = new ArrayList<LogMessage>();
             Object refUuid = dor.getData("uuid");
             if (refUuid != null) {
                 String rootTitle = objTree.getData("Citation.Title") + "";
@@ -344,22 +342,8 @@ public class ResqmlVerification {
                 } else {
                     Object referencedObj = resqmlObjects.get(refUuid);
                     String refObjTitle = (String) ObjectController.getObjectAttributeValue(referencedObj, "Citation.Title");
-                    String refObjContentType = EPCGenericManager.getObjectContentType(referencedObj);
-
-                    EPCPackage refPkg = Editor.pkgManager.getMatchingPackage(referencedObj.getClass());
-                    String refObjQualifiedType = "";
-                    if(refPkg != null){
-                        try {
-                            String schemaVersion = EPCGenericManager.getSchemaVersionFromClassName(referencedObj.getClass().getName()).replaceAll("(\\d+)[\\._-](\\d+).*", "$1$2");
-//                            logger.info("schemaVersion : " + schemaVersion);
-                            refObjQualifiedType = refPkg.getName() + schemaVersion + "." + referencedObj.getClass().getSimpleName();
-                        }catch (Exception e){
-                            logger.error(e.getMessage(), e);
-                            logger.error("refObjQualifiedType : error for class " + referencedObj);
-                        }
-                    }else{
-                        logger.error("refObjQualifiedType : null pkg for class " + referencedObj);
-                    }
+                    String refObjContentType = EPCGenericManager.getObjectContentType(referencedObj, true);
+                    String refObjQualifiedType = EPCGenericManager.getObjectQualifiedType(referencedObj, true);
 
                     String title = (String) dor.getData("title");
                     try {
@@ -406,9 +390,8 @@ public class ResqmlVerification {
                     }
                 }
             }
-        }
-
-        return messages;
+            return messages;
+        }).flatMap(List::stream).collect(Collectors.toList());
     }
 
     private static List<LogMessage> verifySingleCollectionAssociationHomogeneity(
@@ -494,17 +477,18 @@ public class ResqmlVerification {
         return messages;
     }
 
-    private static List<LogResqmlVerification> correctDORInformation(Object resqmlObject, Map<String, Object> resqmlObjects) {
-        List<LogResqmlVerification> messages = new ArrayList<>();
-        String objUuid = (String) ObjectController.getObjectAttributeValue(resqmlObject, "uuid");
-        String objTitle = (String) ObjectController.getObjectAttributeValue(resqmlObject, "Citation.Title");
-        String objType = resqmlObject.getClass().getSimpleName();
+    private static List<LogResqmlVerification> correctDORInformation(final Object resqmlObject, final Map<String, Object> resqmlObjects) {
 
-        List<Object> dors = ObjectController.findSubObjects(resqmlObject, "DataObjectReference");
+        final String objUuid = (String) ObjectController.getObjectAttributeValue(resqmlObject, "uuid");
+        final String objTitle = (String) ObjectController.getObjectAttributeValue(resqmlObject, "Citation.Title");
+        final String objType = resqmlObject.getClass().getSimpleName();
 
-        Map<String, Object> additionalProperties = GetAdditionalObjects.getExternalProperties();
+        final List<Object> dors = ObjectController.findSubObjects(resqmlObject, "DataObjectReference", true);
 
-        for(Object dor : dors){
+        final Map<String, Object> additionalProperties = GetAdditionalObjects.getExternalProperties();
+
+        return dors.parallelStream().map( (dor) -> {
+            List<LogResqmlVerification> messages = new ArrayList<>();
             String dorUuid = (String) ObjectController.getObjectAttributeValue(dor, "uuid");
 
             if(dorUuid != null && (resqmlObjects.containsKey(dorUuid) || additionalProperties.containsKey(dorUuid))){
@@ -531,11 +515,11 @@ public class ResqmlVerification {
 
                 String targetTitle = (String) ObjectController.getObjectAttributeValue(dorTarget, "Citation.Title");
                 String targetVersion = (String) ObjectController.getObjectAttributeValue(dorTarget, "ObjectVersion");
-                String targetType = EPCGenericManager.getObjectContentType(dorTarget);
+                String targetType = EPCGenericManager.getObjectContentType(dorTarget, true);
 
                 if(dorType == null){
                     dorType = (String) ObjectController.getObjectAttributeValue(dor, "QualifiedType");
-                    targetType = EPCGenericManager.getObjectQualifiedType(dorTarget);
+                    targetType = EPCGenericManager.getObjectQualifiedType(dorTarget, true);
                 }
 
                 // tests
@@ -550,14 +534,12 @@ public class ResqmlVerification {
                 if(dorType == null || dorType.compareTo(targetType) != 0){
                     modificationOccured = true;
                     try {
-                        ObjectController.editObjectAttribute(dor, "ContentType", targetType);
+                        ObjectController.editObjectAttribute(dor, "ContentType", EPCGenericManager.getObjectContentType(dorTarget, true));
                     } catch (Exception e0) {
                         try {
-                            EPCPackage refPkg = Editor.pkgManager.getMatchingPackage(dorTarget.getClass());
-                            String refObjQualifiedType = refPkg.getName() + EPCGenericManager.getSchemaVersionFromClassName(dorTarget.getClass().getName()).replaceAll("(\\d+)[\\._-](\\d+).*", "$1$2")
-                                    + "." + EPCGenericManager.getObjectTypeForFilePath(dorTarget);
-                            logger.debug("Setting Qualified type " + targetType + " === " + refObjQualifiedType);
-                            ObjectController.editObjectAttribute(dor, "QualifiedType", refObjQualifiedType);
+                            String newQualifiedType = EPCGenericManager.getObjectQualifiedType(dorTarget, true);
+                            logger.debug("Setting Qualified type " + targetType + " === " + newQualifiedType);
+                            ObjectController.editObjectAttribute(dor, "QualifiedType", newQualifiedType);
                         } catch (Exception e) {logger.debug(e.getMessage(), e);}
                     }
                 }
@@ -581,8 +563,8 @@ public class ResqmlVerification {
                         objUuid, objTitle, objType,
                         ServerLogMessage.MessageType.INFO));
             }
-        }
-        return messages;
+            return messages;
+        }).flatMap(List::stream).collect(Collectors.toList());
     }
 
     public static List<LogMessage> doVerification(final Map<String, Object> in_resqmlObjects) {
@@ -722,7 +704,7 @@ public class ResqmlVerification {
             objUUID = ObjectController.getObjectAttributeValue(resqmlObj, ".Uuid") + "";
         } catch (Exception ignore){}
 
-        String schemaVersion = EPCGenericManager.getSchemaVersion(resqmlObj).replace("_", ".");
+        String schemaVersion = EPCGenericManager.getSchemaVersion(resqmlObj, true);
 
         try {
             String currentSchemaVersion = (String) ObjectController.getObjectAttributeValue(resqmlObj, ".SchemaVersion");

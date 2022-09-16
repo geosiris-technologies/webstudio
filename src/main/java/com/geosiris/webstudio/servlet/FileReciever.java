@@ -15,7 +15,10 @@ limitations under the License.
 */
 package com.geosiris.webstudio.servlet;
 
+import com.geosiris.energyml.pkg.EPCPackage;
+import com.geosiris.energyml.pkg.OPCContentType;
 import com.geosiris.energyml.pkg.OPCRelsPackage;
+import com.geosiris.energyml.utils.EPCGenericManager;
 import com.geosiris.energyml.utils.ObjectController;
 import com.geosiris.energyml.utils.Pair;
 import com.geosiris.webstudio.logs.ServerLogMessage;
@@ -23,6 +26,7 @@ import com.geosiris.webstudio.model.WorkspaceContent;
 import com.geosiris.webstudio.property.ConfigurationType;
 import com.geosiris.webstudio.servlet.db.workspace.LoadWorkspace;
 import com.geosiris.webstudio.utils.SessionUtility;
+import energyml.content_types.Types;
 import energyml.relationships.Relationships;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.MultipartConfig;
@@ -44,6 +48,7 @@ import org.apache.tomcat.util.http.fileupload.util.Streams;
 
 import java.io.*;
 import java.net.URL;
+import java.nio.charset.StandardCharsets;
 import java.util.*;
 import java.util.stream.Collectors;
 import java.util.zip.ZipEntry;
@@ -105,10 +110,7 @@ public class FileReciever extends HttpServlet {
                 logger.info("\tImporting data");
                 SessionUtility.getWorkspaceContent(session).putAll(loadedEPC);
             }
-            List<String> uuidList = new ArrayList<>();
-            for (String uuid : loadedEPC.getReadObjects().keySet()) {
-                uuidList.add(uuid);
-            }
+            List<String> uuidList = new ArrayList<>(loadedEPC.getReadObjects().keySet());
             if (updateStorage) {
                 LoadWorkspace.updateWorkspace(session, uuidList);
                 LoadWorkspace.updateWorkspaceNotEnergymlFiles(session);
@@ -130,6 +132,7 @@ public class FileReciever extends HttpServlet {
         return resultAnswer;
     }
 
+
     public static WorkspaceContent readFile(final HttpSession session, InputStream input, String fileName) {
         WorkspaceContent result = new WorkspaceContent();
 
@@ -139,6 +142,8 @@ public class FileReciever extends HttpServlet {
         input.mark(1000);
 
         Map<String, byte[]> potentialEnergymlFile = new HashMap<>();
+
+        Map<String, String> mapFileNameToContentType = new HashMap<>();
 
         byte[] buffer = new byte[2048];
 
@@ -153,7 +158,7 @@ public class FileReciever extends HttpServlet {
             }
 
             if (entry != null) { // Si on a bien reussi a lire un zip
-
+                energyml.content_types.Types contentTypeFilecontent = null;
                 do {
                     if(!entry.isDirectory()){
                         String entryName = entry.getName();
@@ -167,20 +172,32 @@ public class FileReciever extends HttpServlet {
                         }
 
                         if (entryName_lc.endsWith(".xml")) {
-                            if(!(entryName_lc.contains("content_types")
-                                    || entryName_lc.compareTo("core.xml") == 0
+                            if(entryName_lc.contains("content_types")) {
+                                try {
+                                    contentTypeFilecontent = (Types) OPCContentType.unmarshal(new ByteArrayInputStream(entryBOS.toByteArray()));
+
+                                    for(Object doo: contentTypeFilecontent.getDefaultOrOverride()){
+                                        String refFileName = EPCGenericManager.findUUID((String) ObjectController.getObjectAttributeValue(doo, "PartName"));
+                                        if(refFileName != null)
+                                            mapFileNameToContentType.put(refFileName, (String) ObjectController.getObjectAttributeValue(doo, "ContentType"));
+                                    }
+                                    logger.info("CONTENT_TYPE found, contains " + contentTypeFilecontent.getDefaultOrOverride().size() + " entries");
+                                }catch (Exception e){
+                                    logger.debug(e.getMessage(), e);
+                                }
+                            }else if(!(entryName_lc.compareTo("core.xml") == 0
                                     || entryName_lc.endsWith("/core.xml"))
                             ){ // if not a specific epc file
                                 potentialEnergymlFile.put(entryName, entryBOS.toByteArray());
                             }
                         }else if(entryName_lc.endsWith(".rels")){
                             if (entryName_lc.contains("externalpartreference")) {
-                                logger.info("Reading rels '" + entryNameSimple + "'");
+                                logger.debug("Reading rels '" + entryNameSimple + "'");
                                 try {
                                     Relationships rels = OPCRelsPackage.parseRels(new ByteArrayInputStream(entryBOS.toByteArray()));
                                     result.getParsedRels().put(entryNameSimple, rels);
-                                } catch (JAXBException e) {
-                                    logger.error(e.getMessage(), e);
+                                } catch (Exception e) {
+                                    logger.debug(e.getMessage(), e);
                                 }
                             }
                         }else{ // other files
@@ -213,7 +230,7 @@ public class FileReciever extends HttpServlet {
                     }
                 }else if(fileName_lc.endsWith(".rels")){
                     if (fileName_lc.contains("externalpartreference")) {
-                        logger.info("Reading rels '" + fileName + "'");
+                        logger.debug("Reading rels '" + fileName + "'");
                         try {
                             Relationships rels = OPCRelsPackage.parseRels(new ByteArrayInputStream(entryBOS.toByteArray()));
                             result.getParsedRels().put(fileName, rels);
@@ -229,17 +246,73 @@ public class FileReciever extends HttpServlet {
                     result.getNotReadObjects().add(new Pair<>(fileName, entryBOS.toByteArray()));
                 }
             }
-        } catch (IOException e) {
+        } catch (Exception e) {
             logger.error(e.getMessage(), e);
         }
 
         List<Pair<String, Object>> ingester = potentialEnergymlFile.entrySet().parallelStream()
                 .map((entry) -> {
-                    JAXBElement<?> jxbElt = Editor.pkgManager.unmarshal(entry.getValue());
+                    JAXBElement<?> jxbElt = null;
+
+                    Pair<String, String> pkgIdAndVersion = null;
+                    String uuid = EPCGenericManager.findUUID(entry.getKey());
+                    if(mapFileNameToContentType.containsKey(uuid)){
+                        String contentTypeFound = mapFileNameToContentType.get(uuid);
+                        pkgIdAndVersion = EPCGenericManager.getDomainAndVersionFromContentType(contentTypeFound);
+                    }
+
+                    if(pkgIdAndVersion != null){
+                        for(EPCPackage pkg: Editor.pkgManager.PKG_LIST){
+                            if(pkg.getDomain().compareToIgnoreCase(pkgIdAndVersion.l()) == 0
+                                    && pkg.getDomainVersion().compareTo(pkgIdAndVersion.r()) == 0){
+                                try {
+                                    jxbElt =  pkg.parseXmlContent(new String(entry.getValue(), StandardCharsets.UTF_8), false);
+                                }catch(Exception e){logger.error(e.getMessage(), e);}
+                                if(jxbElt != null && jxbElt.getValue() != null){
+                                    break;
+                                }else{
+                                    jxbElt = null;
+                                }
+                            }
+                        }
+                        // if version was 2.0 but pkg version is 2.0.1
+                        if(jxbElt == null){
+                            for(EPCPackage pkg: Editor.pkgManager.PKG_LIST){
+                                if(pkg.getDomain().compareToIgnoreCase(pkgIdAndVersion.l()) == 0
+                                        && pkg.getDomainVersion().startsWith(pkgIdAndVersion.r())){
+                                    try {
+                                        jxbElt =  pkg.parseXmlContent(new String(entry.getValue(), StandardCharsets.UTF_8), false);
+                                    }catch(Exception e){logger.error(e.getMessage(), e);}
+                                    if(jxbElt != null && jxbElt.getValue() != null){
+                                        break;
+                                    }else{
+                                        jxbElt = null;
+                                    }
+                                }
+                            }
+                        }
+                    }
+                    logger.debug("failed to parse file with contentType info " + entry.getKey() +" -->  " + EPCGenericManager.findUUID(entry.getKey()) + " == " + mapFileNameToContentType.size());
+                    try {
+                        logger.debug(pkgIdAndVersion.l() + " ==> " + pkgIdAndVersion.r());
+                    }catch (Exception e){
+                        logger.debug("Not pkgIdAndVersion for " + mapFileNameToContentType.get(entry.getKey()));
+                    }
+
+                    // Not worked with contentType found package, we try with others
+                    if(jxbElt == null) {
+                        try {
+                            logger.debug("Try to read " + entry.getKey());
+                            jxbElt = Editor.pkgManager.unmarshal(entry.getValue());
+                        } catch (Exception e) {
+                            logger.debug(e.getMessage(), e);
+                        }
+                    }
+
                     if (jxbElt != null && jxbElt.getValue() != null) {
                         Object energymlObj = jxbElt.getValue();
                         if (SessionUtility.configIsMoreVerborseThan(ConfigurationType.verbose))
-                            logger.info(energymlObj);
+                            logger.debug(energymlObj);
                         return new Pair<>((String) ObjectController.getObjectAttributeValue(energymlObj, "uuid"), energymlObj);
                     }else{
                         return new Pair<String, Object>(entry.getKey(), entry.getValue());
@@ -337,7 +410,7 @@ public class FileReciever extends HttpServlet {
                         }
 
                     } else if (item.getFieldName().compareTo("epcInputFile") == 0) {
-                        if (item != null && item.getName() != null && item.getName().length() > 0) {
+                        if (item.getName() != null && item.getName().length() > 0) {
                             logger.info("File input : " + item.getName());
                             if (item.getName().toLowerCase().endsWith(".h5")) {
                                 SessionUtility.log(session, new ServerLogMessage(ServerLogMessage.MessageType.ERROR, "H5 Recieved",

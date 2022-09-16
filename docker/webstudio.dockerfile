@@ -2,6 +2,8 @@ FROM tomcat:10.1.0-M15-jdk11-openjdk-slim-buster
 
 LABEL maintainer="valentin.gauthier@geosiris.com"
 
+ARG WEBSTUDIO_WAR_PATH
+
 RUN apt-get -y update
 RUN apt-get -y install maven
 
@@ -124,7 +126,7 @@ COPY docker/tomcat/server-production.xml /usr/local/tomcat/conf/server.xml
 
 # 2 following lines to have the server at the root path and not at /WebStudio
 RUN rm -rf /usr/local/tomcat/webapps/ROOT
-ADD /target/webstudio-*.war /usr/local/tomcat/webapps/ROOT.war
+ADD $WEBSTUDIO_WAR_PATH /usr/local/tomcat/webapps/ROOT.war
 
 
 #     ______

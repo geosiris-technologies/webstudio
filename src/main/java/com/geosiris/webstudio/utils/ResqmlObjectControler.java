@@ -242,7 +242,7 @@ public class ResqmlObjectControler {
                         } catch (Exception e) {
                             logger.error(e.getMessage(), e);
                             logger.error("ERR > '" + resqmlObj + "' -- '" + simplePath + "' value to assign : '" + valueToAssign
-                                    + "' rootVersion " + EPCGenericManager.getSchemaVersionFromClassName(rootObject.getClass().getName())
+                                    + "' rootVersion " + EPCGenericManager.getSchemaVersionFromClassName(rootObject.getClass().getName(), true)
                                     + " edit method : '" + editMethod + "' "
                                     + " param class : '" + editMethod.getParameters()[0].getType().getName() + "'");
                         }
