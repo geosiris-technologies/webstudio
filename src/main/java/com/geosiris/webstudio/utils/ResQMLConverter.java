@@ -26,11 +26,11 @@ import java.util.Map;
 public class ResQMLConverter {
     public static Logger logger = LogManager.getLogger(ResQMLConverter.class);
 
-	public static Object getCopy(final Object resqmlObject, String schemaVersion, final Map<String, Object> epcObjects) {
+	public static Object getCopy(final Object resqmlObject, final Map<String, Object> epcObjects) {
 		if(resqmlObject!=null) {
 			Object target = null;
 			try {
-				target = Editor.pkgManager.createInstance(resqmlObject.getClass().getName(), epcObjects, schemaVersion, null, "", true);
+				target = Editor.pkgManager.createInstance(resqmlObject.getClass().getName(), epcObjects, null, "", true);
 			}catch (Exception e) {
 				logger.error(e.getMessage(), e);
 			}

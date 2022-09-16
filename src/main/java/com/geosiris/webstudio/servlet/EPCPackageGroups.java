@@ -36,7 +36,7 @@ public class EPCPackageGroups extends HttpServlet {
 	private static final long serialVersionUID = 1L;
     public static Logger logger = LogManager.getLogger(EPCPackageGroups.class);
     
-	public static final String pkgGroup = Utils.readJsonFileOrRessource("/config/data/epcPackagesGroups.json", String.class);
+	public static final String pkgGroup = Utils.readJsonFileOrRessource(SessionUtility.wsProperties.getFpathToEPCPkgGroup(), String.class);
 	
 	
     /**

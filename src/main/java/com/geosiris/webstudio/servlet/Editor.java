@@ -37,8 +37,9 @@ public class Editor extends HttpServlet {
 	private static final long serialVersionUID = 1L;
     public static Logger logger = LogManager.getLogger(Editor.class);
 
-	public static EPCPackageManager pkgManager = new EPCPackageManager(Editor.pkgManager.DEFAULT_XSD_COMMENTS_FOLDER_PATH.replace("config/", "config/data/"),
-																		Editor.pkgManager.DEFAULT_ACCESSIBLE_DOR_FILE_PATH.replace("config/", "config/data/"),
+	public static EPCPackageManager pkgManager = new EPCPackageManager("energyml",
+																		SessionUtility.wsProperties.getDirPathToComments(),
+																		SessionUtility.wsProperties.getFpathToAccessibleDORMapping(),
 																		SessionUtility.wsProperties.getFpathToXSDMapping());
 
 	/**

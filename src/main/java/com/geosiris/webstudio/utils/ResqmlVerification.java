@@ -16,6 +16,7 @@ limitations under the License.
 package com.geosiris.webstudio.utils;
 
 import com.geosiris.energyml.pkg.EPCPackage;
+import com.geosiris.energyml.utils.EPCGenericManager;
 import com.geosiris.energyml.utils.ObjectController;
 import com.geosiris.webstudio.logs.LogMessage;
 import com.geosiris.webstudio.logs.LogResqmlVerification;
@@ -36,8 +37,6 @@ import java.util.stream.Collectors;
 public class ResqmlVerification {
     public static Logger logger = LogManager.getLogger(ResqmlVerification.class);
 
-    private final static Pattern pattern_contentType_type = Pattern.compile("type=([\\w]+)");
-
     public static boolean attributeIsMendatory(Field f) {
         for (Annotation a : f.getAnnotations()) {
             // System.out.prinC3D-Exporttln("#verifyMendatoryAttributes " + a.toString());
@@ -54,8 +53,6 @@ public class ResqmlVerification {
             for (Field f : ObjectController.getAllFields(objClass)) {
                 if (f.getName().compareTo(fieldName) == 0) {
                     return attributeIsMendatory(f);
-                } else {
-                    // logger.error("not equals " + f.getName() + " - " + fieldName);
                 }
             }
         }
@@ -67,7 +64,7 @@ public class ResqmlVerification {
                                                               String rootCitationTitle,
                                                               String rootType) {
         // int coutError = 0;
-        List<LogMessage> messages = new ArrayList<LogMessage>();
+        List<LogMessage> messages = new ArrayList<>();
 
         if (tree.getDataClass() != null
                 // et si on est pas sur des fils null (qui ont soit une valeur soit des
@@ -96,8 +93,6 @@ public class ResqmlVerification {
             for (ObjectTree subTree : tree.getAttributes()) {
                 messages.addAll(verifyMendatoryAttributes(subTree, rootUUID, rootCitationTitle, rootType));
             }
-        } else {
-            // logger.info("#verifyMendatoryAttributes no class found");
         }
 
         // logger.info("Nb error found for " + rootUUID + " : " + coutError);
@@ -109,7 +104,7 @@ public class ResqmlVerification {
                                                              String rootCitationTitle,
                                                              String rootType,
                                                              Map<String, Object> resqmlObjects) {
-        List<LogMessage> messages = new ArrayList<LogMessage>();
+        List<LogMessage> messages = new ArrayList<>();
         String dataClassNameLower = rootType.toLowerCase();
         if (dataClassNameLower.compareTo("activity") == 0
                 || dataClassNameLower.compareTo("objactivity") == 0) {
@@ -121,8 +116,8 @@ public class ResqmlVerification {
             } catch (Exception e) {
                 logger.error(e.getMessage(), e);
                 logger.error(tree.getAttribute("activitydescriptor", false));
-                tree.getAttributes().stream().forEach(ttt -> logger.error("ttt " + ttt.getName()));
-                tree.getAttribute("activitydescriptor", false).getProperties().stream()
+                tree.getAttributes().forEach(ttt -> logger.error("ttt " + ttt.getName()));
+                tree.getAttribute("activitydescriptor", false).getProperties()
                         .forEach(ttt -> logger.error("ppp " + ttt.getName()));
             }
 
@@ -148,14 +143,12 @@ public class ResqmlVerification {
                 for (ObjectTree templParam : templateParams) {
                     try {
                         String templateParamTitle = templParam.getProperty("title", false).getData() + "";
-                        if (templateParamTitle != null) {
-                            templatedParamNames.add(templateParamTitle);
-                        }
+                        templatedParamNames.add(templateParamTitle);
                     } catch (Exception e) {
                         logger.error(e.getMessage(), e);
                     }
                 }
-                String templatedParamNamesString = templatedParamNames.stream().collect(Collectors.joining(","));
+                String templatedParamNamesString = String.join(",", templatedParamNames);
 
                 for (ObjectTree actParam : activityParms) {
                     // Test du title si existe dans les template :
@@ -171,6 +164,7 @@ public class ResqmlVerification {
                         for (String templParamTitle : templatedParamNames) {
                             if (paramTitle.compareTo(templParamTitle) == 0) {
                                 foundTemplatedParameter = true;
+                                break;
                             }
                         }
                         if (!foundTemplatedParameter) {
@@ -300,7 +294,7 @@ public class ResqmlVerification {
                 if (!resqmlObjects.containsKey(refUuid)) {
                     // On a pas trouve dans les objects du workspace, on cherche dans les objets
                     // pre-charges:
-                    Boolean foundInAdditional = false;
+                    boolean foundInAdditional = false;
                     if (GetAdditionalObjects.ADDITIONAL_ENERGYML_OBJECTS != null) {
                         for (String uuid : GetAdditionalObjects.ADDITIONAL_ENERGYML_OBJECTS.keySet()) {
                             if (foundInAdditional || uuid.compareTo(refUuid + "") == 0) {
@@ -319,7 +313,7 @@ public class ResqmlVerification {
                                                 Collection<?> collect = (Collection<?>) method.invoke(additionalObj);
                                                 for (Object c_obj : collect) {
                                                     // .ObjectController.getObjectAttributeValue(c_obj, "Uuid"));
-                                                    if (EPCPackage.isRootClass(c_obj.getClass())) {
+                                                    if (EPCGenericManager.isRootClass(c_obj.getClass())) {
                                                         String c_obj_uuid = (String) ObjectController.getObjectAttributeValue(c_obj, "Uuid");
                                                         if (c_obj_uuid.compareTo(refUuid + "") == 0) {
                                                             foundInAdditional = true;
@@ -350,13 +344,13 @@ public class ResqmlVerification {
                 } else {
                     Object referencedObj = resqmlObjects.get(refUuid);
                     String refObjTitle = (String) ObjectController.getObjectAttributeValue(referencedObj, "Citation.Title");
-                    String refObjContentType = Editor.pkgManager.getObjectContentType(referencedObj);
+                    String refObjContentType = EPCGenericManager.getObjectContentType(referencedObj);
 
                     EPCPackage refPkg = Editor.pkgManager.getMatchingPackage(referencedObj.getClass());
                     String refObjQualifiedType = "";
                     if(refPkg != null){
                         try {
-                            String schemaVersion = refPkg.getSchemaVersionFromClassName(referencedObj.getClass().getName()).replaceAll("(\\d+)[\\._-](\\d+).*", "$1$2");
+                            String schemaVersion = EPCGenericManager.getSchemaVersionFromClassName(referencedObj.getClass().getName()).replaceAll("(\\d+)[\\._-](\\d+).*", "$1$2");
 //                            logger.info("schemaVersion : " + schemaVersion);
                             refObjQualifiedType = refPkg.getName() + schemaVersion + "." + referencedObj.getClass().getSimpleName();
                         }catch (Exception e){
@@ -417,19 +411,18 @@ public class ResqmlVerification {
         return messages;
     }
 
-    @SuppressWarnings("unchecked")
     private static List<LogMessage> verifySingleCollectionAssociationHomogeneity(
             Object resqmlObject,
             ObjectTree objectTree,
             String rootUUID,
             String rootTitle,
             String rootType) {
-        List<LogMessage> messages = new ArrayList<LogMessage>();
+        List<LogMessage> messages = new ArrayList<>();
 
         if (resqmlObject.getClass().getSimpleName()
                 .compareToIgnoreCase("CollectionsToDataobjectsAssociationSet") == 0) {
-            List<Object> singleList = (List<Object>) ObjectController.getObjectAttributeValue(resqmlObject,
-                    ".SingleCollectionAssociation");
+//            List<Object> singleList = (List<Object>) ObjectController.getObjectAttributeValue(resqmlObject,
+//                    ".SingleCollectionAssociation");
 
             logger.error("Reprendre vérification homogeneousDatatype");
             messages.add(new LogResqmlVerification("### CODE ### ",
@@ -497,7 +490,7 @@ public class ResqmlVerification {
 
     private static List<LogResqmlVerification> correctNullEnumValues(Object resqmlObject, Map<String, Object> resqmlObjects) {
         List<LogResqmlVerification> messages = new ArrayList<>();
-
+        // TODO: fill this function
         return messages;
     }
 
@@ -529,7 +522,7 @@ public class ResqmlVerification {
                 String dorVersion = (String) ObjectController.getObjectAttributeValue(dor, "ObjectVersion");
 
                 // Target object infos
-                Object dorTarget = null;
+                Object dorTarget;
                 if(resqmlObjects.containsKey(dorUuid)){
                     dorTarget = resqmlObjects.get(dorUuid);
                 }else{
@@ -538,11 +531,11 @@ public class ResqmlVerification {
 
                 String targetTitle = (String) ObjectController.getObjectAttributeValue(dorTarget, "Citation.Title");
                 String targetVersion = (String) ObjectController.getObjectAttributeValue(dorTarget, "ObjectVersion");
-                String targetType = Editor.pkgManager.getObjectContentType(dorTarget);
+                String targetType = EPCGenericManager.getObjectContentType(dorTarget);
 
                 if(dorType == null){
                     dorType = (String) ObjectController.getObjectAttributeValue(dor, "QualifiedType");
-                    targetType = Editor.pkgManager.getQualifiedType(dorTarget);
+                    targetType = EPCGenericManager.getObjectQualifiedType(dorTarget);
                 }
 
                 // tests
@@ -561,8 +554,8 @@ public class ResqmlVerification {
                     } catch (Exception e0) {
                         try {
                             EPCPackage refPkg = Editor.pkgManager.getMatchingPackage(dorTarget.getClass());
-                            String refObjQualifiedType = refPkg.getName() + refPkg.getSchemaVersionFromClassName(dorTarget.getClass().getName()).replaceAll("(\\d+)[\\._-](\\d+).*", "$1$2")
-                                    + "." + refPkg.getObjectTypeForFilePath(dorTarget);
+                            String refObjQualifiedType = refPkg.getName() + EPCGenericManager.getSchemaVersionFromClassName(dorTarget.getClass().getName()).replaceAll("(\\d+)[\\._-](\\d+).*", "$1$2")
+                                    + "." + EPCGenericManager.getObjectTypeForFilePath(dorTarget);
                             logger.debug("Setting Qualified type " + targetType + " === " + refObjQualifiedType);
                             ObjectController.editObjectAttribute(dor, "QualifiedType", refObjQualifiedType);
                         } catch (Exception e) {logger.debug(e.getMessage(), e);}
@@ -639,7 +632,7 @@ public class ResqmlVerification {
     }
 
     public static List<LogResqmlVerification> doCorrection(Map<String, Object> resqmlObjects) {
-        List<LogResqmlVerification> messages = new ArrayList<LogResqmlVerification>();
+        List<LogResqmlVerification> messages = new ArrayList<>();
 
         for (String rootUUID : resqmlObjects.keySet()) {
             messages.addAll(doCorrection(rootUUID, resqmlObjects));
@@ -648,7 +641,7 @@ public class ResqmlVerification {
     }
 
     public static List<LogResqmlVerification> doCorrection(String objUUID, Map<String, Object> resqmlObjects) {
-        List<LogResqmlVerification> messages = new ArrayList<LogResqmlVerification>();
+        List<LogResqmlVerification> messages = new ArrayList<>();
         if(resqmlObjects.containsKey(objUUID)){
             return correctDORInformation(resqmlObjects.get(objUUID), resqmlObjects);
         }
@@ -656,7 +649,7 @@ public class ResqmlVerification {
     }
 
     public static List<LogResqmlVerification> doRemoveVersionString(Object resqmlObj, Map<String, Object> resqmlObjects) {
-        List<LogResqmlVerification> messages = new ArrayList<LogResqmlVerification>();
+        List<LogResqmlVerification> messages = new ArrayList<>();
 
         String objTitle = "";
         try {
@@ -680,6 +673,7 @@ public class ResqmlVerification {
                 }
             }
         } catch (NullPointerException e) {
+            logger.debug(e.getMessage(), e);
         }
 
         ObjectTree objTree = ObjectTree.createTree(resqmlObj);
@@ -716,7 +710,7 @@ public class ResqmlVerification {
 
 
     public static List<LogResqmlVerification> doCorrectSchemaVersion(Object resqmlObj, Map<String, Object> resqmlObjects) {
-        List<LogResqmlVerification> messages = new ArrayList<LogResqmlVerification>();
+        List<LogResqmlVerification> messages = new ArrayList<>();
 
         String objTitle = "";
         try {
@@ -728,7 +722,7 @@ public class ResqmlVerification {
             objUUID = ObjectController.getObjectAttributeValue(resqmlObj, ".Uuid") + "";
         } catch (Exception ignore){}
 
-        String schemaVersion = Editor.pkgManager.getSchemaVersion(resqmlObj).replace("_", ".");
+        String schemaVersion = EPCGenericManager.getSchemaVersion(resqmlObj).replace("_", ".");
 
         try {
             String currentSchemaVersion = (String) ObjectController.getObjectAttributeValue(resqmlObj, ".SchemaVersion");
@@ -748,7 +742,7 @@ public class ResqmlVerification {
     }
 
     public static List<LogResqmlVerification> doCorrectSchemaVersion(Map<String, Object> resqmlObjects) {
-        List<LogResqmlVerification> messages = new ArrayList<LogResqmlVerification>();
+        List<LogResqmlVerification> messages = new ArrayList<>();
 
         for (String rootUUID : resqmlObjects.keySet()) {
             messages.addAll(doCorrectSchemaVersion(rootUUID, resqmlObjects));

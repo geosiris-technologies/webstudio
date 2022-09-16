@@ -205,7 +205,7 @@ public class ObjectTree {
     }
 
     public ObjectTree getProperty(String name, boolean caseSensitiv) {
-        if (caseSensitiv)
+        if (caseSensitiv) {
             for (ObjectTree prop : properties) {
                 String propName = prop.name;
                 if (propName.contains(".")) {
@@ -214,7 +214,7 @@ public class ObjectTree {
                 if (propName.compareTo(name) == 0)
                     return prop;
             }
-        else
+        }else {
             for (ObjectTree prop : properties) {
                 String propName = prop.name;
                 if (propName.contains(".")) {
@@ -223,6 +223,7 @@ public class ObjectTree {
                 if (propName.compareToIgnoreCase(name) == 0)
                     return prop;
             }
+        }
         return null;
     }
 

@@ -33,9 +33,6 @@ import java.util.regex.Pattern;
 public class Utility {
     public static Logger logger = LogManager.getLogger(Utility.class);
 
-
-
-
     public static String getEPCContentAsJSON(List<Object> resqmlObjectList) {
         StringBuilder json = new StringBuilder();
         json.append("[ ");

@@ -254,7 +254,7 @@ public class FileReciever extends HttpServlet {
             }else{
                 SessionUtility.log(session, new ServerLogMessage(ServerLogMessage.MessageType.ERROR,
                         "File " + p.l() + " not added to the workspace (internal error, you can try UTF-8)",
-                                SessionUtility.EDITOR_NAME));
+                        SessionUtility.EDITOR_NAME));
             }
         }
 
@@ -266,7 +266,7 @@ public class FileReciever extends HttpServlet {
         LoadWorkspace.clearWorkspace(session);
     }
 
-    
+
     /**
      * @see HttpServlet#doGet(HttpServletRequest request, HttpServletResponse
      * response)

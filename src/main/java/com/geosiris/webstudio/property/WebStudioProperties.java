@@ -30,6 +30,11 @@ public class WebStudioProperties extends Properties {
     protected String pathToAdditionalObjectsDir;
     protected String fpathToXSDMapping;
 
+    protected String fpathToEPCPkgGroup;
+    protected String fpathToAccessibleDORMapping;
+    protected String dirPathToComments;
+    protected String dirPathToExtTypes;
+
     protected String pluginsDirPath;
 
     public WebStudioProperties() {
@@ -96,6 +101,42 @@ public class WebStudioProperties extends Properties {
         return fpathToXSDMapping;
     }
 
+    public void setFpathToXSDMapping(String fpathToXSDMapping) {
+        this.fpathToXSDMapping = fpathToXSDMapping;
+    }
+
+    public String getFpathToEPCPkgGroup() {
+        return fpathToEPCPkgGroup;
+    }
+
+    public void setFpathToEPCPkgGroup(String fpathToEPCPkgGroup) {
+        this.fpathToEPCPkgGroup = fpathToEPCPkgGroup;
+    }
+
+    public String getFpathToAccessibleDORMapping() {
+        return fpathToAccessibleDORMapping;
+    }
+
+    public void setFpathToAccessibleDORMapping(String fpathToAccessibleDORMapping) {
+        this.fpathToAccessibleDORMapping = fpathToAccessibleDORMapping;
+    }
+
+    public String getDirPathToComments() {
+        return dirPathToComments;
+    }
+
+    public void setDirPathToComments(String dirPathToComments) {
+        this.dirPathToComments = dirPathToComments;
+    }
+
+    public String getDirPathToExtTypes() {
+        return dirPathToExtTypes;
+    }
+
+    public void setDirPathToExtTypes(String dirPathToExtTypes) {
+        this.dirPathToExtTypes = dirPathToExtTypes;
+    }
+
     public Map<String, String> getXSDFilePaths(){
         Map<String, String> res = new HashMap<>();
         try {
@@ -118,8 +159,10 @@ public class WebStudioProperties extends Properties {
     }
 
     public static void main(String[] arv) {
-        logger.info(new WebStudioProperties());
+//        logger.info(new WebStudioProperties());
+        logger.info(System.getenv("WS_CONFIG_INI_FILE_PATH"));
         WebStudioProperties ws = new WebStudioProperties();
-        logger.info(ws.getXSDFilePathFromPkgName("common2_0"));
+//        logger.info(ws.getXSDFilePathFromPkgName("common2_0"));
+//        System.out.println(ws);
     }
 }

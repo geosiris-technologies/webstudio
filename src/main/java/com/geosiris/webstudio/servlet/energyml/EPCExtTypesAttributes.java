@@ -29,6 +29,7 @@ import org.apache.logging.log4j.Logger;
 
 import java.io.IOException;
 import java.io.PrintWriter;
+import java.util.HashMap;
 import java.util.Map;
 
 /**
@@ -39,8 +40,16 @@ public class EPCExtTypesAttributes extends HttpServlet {
 	private static final long serialVersionUID = 1L;
 	public static Logger logger = LogManager.getLogger(EPCExtTypesAttributes.class);
 
-	public static final Map<String, String> extTypesAttributes = Editor.pkgManager.getExtTypesAsJson(EPCPackageManager.DEFAULT_EXT_TYPES_ATTRIBUTES_FOLDER_PATH.replace("config/", "config/data/"));
+	public static final Map<String, String> extTypesAttributes = getExtTypes();
 
+	public static Map<String, String> getExtTypes() {
+		try {
+			return Editor.pkgManager.getExtTypesAsJson(SessionUtility.wsProperties.getDirPathToExtTypes());
+		} catch (Exception e) {
+			logger.error(e.getMessage(), e);
+		}
+		return new HashMap<>();
+	}
 
 	/**
 	 * @see HttpServlet#HttpServlet()
@@ -49,12 +58,13 @@ public class EPCExtTypesAttributes extends HttpServlet {
 		super();
 	}
 
-
 	/**
-	 * @see HttpServlet#doGet(HttpServletRequest request, HttpServletResponse response)
+	 * @see HttpServlet#doGet(HttpServletRequest request, HttpServletResponse
+	 *      response)
 	 */
-	protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
-		if(!SessionUtility.tryConnectServlet(request, response)) {
+	protected void doGet(HttpServletRequest request, HttpServletResponse response)
+			throws ServletException, IOException {
+		if (!SessionUtility.tryConnectServlet(request, response)) {
 			return;
 		}
 		PrintWriter out = response.getWriter();
@@ -62,7 +72,7 @@ public class EPCExtTypesAttributes extends HttpServlet {
 		response.setCharacterEncoding("UTF-8");
 		try {
 			out.write(new Gson().toJson(extTypesAttributes));
-		}catch (Exception e){
+		} catch (Exception e) {
 			logger.error(extTypesAttributes);
 			logger.error(e.getMessage(), e);
 			out.write("{}");
@@ -71,13 +81,15 @@ public class EPCExtTypesAttributes extends HttpServlet {
 	}
 
 	/**
-	 * @see HttpServlet#doPost(HttpServletRequest request, HttpServletResponse response)
+	 * @see HttpServlet#doPost(HttpServletRequest request, HttpServletResponse
+	 *      response)
 	 */
-	protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
+	protected void doPost(HttpServletRequest request, HttpServletResponse response)
+			throws ServletException, IOException {
 		doGet(request, response);
 	}
 
-	public static void main(String[] argv){
+	public static void main(String[] argv) {
 		logger.info(Editor.pkgManager.getExtTypesAsJson(EPCPackageManager.DEFAULT_EXT_TYPES_ATTRIBUTES_FOLDER_PATH));
 	}
 

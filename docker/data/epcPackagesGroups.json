@@ -1,5 +1,8 @@
 [
 	["common2_0", "resqml2_0_1"], 
+	["common2_2", "resqml_dev3x_2_2"],
+	["common2_3", "resqml2_2"],
 	["common2_1", "witsml2_0"], 
-	["common2_3", "resqml2_2"]
+	["common2_3", "witsml2_1"],
+	["common2_3", "prodml2_2"]
 ]
