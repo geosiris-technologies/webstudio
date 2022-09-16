@@ -19,6 +19,7 @@ import com.geosiris.energyml.exception.NoSuchAccessibleParameterFound;
 import com.geosiris.energyml.exception.NoSuchEditableParameterFound;
 import com.geosiris.energyml.pkg.EPCPackage;
 import com.geosiris.energyml.pkg.EPCPackageManager;
+import com.geosiris.energyml.utils.EPCGenericManager;
 import com.geosiris.energyml.utils.ObjectController;
 import com.geosiris.energyml.utils.Utils;
 import com.geosiris.webstudio.property.ConfigurationType;
@@ -216,8 +217,8 @@ public class ObjectEdit extends HttpServlet {
                     try {
                         Class<?> objClass = Class.forName(type);
                         logger.debug("creating object '" + objClass + "'");
-                        if (pkg.isRootClass(objClass)) {
-                            Object newObj = Editor.pkgManager.createInstance(type, map, null, null, userName, false);
+                        if (EPCGenericManager.isRootClass(objClass)) {
+                            Object newObj = Editor.pkgManager.createInstance(type, map, null, userName, false);
                             String objUuid = ObjectController.getObjectAttributeValue(newObj, "Uuid") + "";
                             map.put(objUuid, newObj);
                             SessionUtility.getWorkspaceContent(session).setReadObjects(map);
@@ -258,7 +259,7 @@ public class ObjectEdit extends HttpServlet {
             logger.debug("trying copy with schemaVersion '" + copyVersion + "'");
             if (resqmlObj != null) {
                 try {
-                    Object copyObj = ResQMLConverter.getCopy(resqmlObj, copyVersion, map);
+                    Object copyObj = ResQMLConverter.getCopy(resqmlObj, map);
                     String copyUuid = ObjectController.getObjectAttributeValue(copyObj, "Uuid") + "";
                     if (copyObj != null) {
                         map.put(copyUuid, copyObj);

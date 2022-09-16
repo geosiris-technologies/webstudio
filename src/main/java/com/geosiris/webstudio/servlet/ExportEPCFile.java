@@ -15,6 +15,7 @@ limitations under the License.
 */
 package com.geosiris.webstudio.servlet;
 
+import com.geosiris.energyml.utils.EPCGenericManager;
 import com.geosiris.energyml.utils.ExportVersion;
 import com.geosiris.energyml.utils.Pair;
 import com.geosiris.energyml.utils.Utils;
@@ -195,12 +196,12 @@ public class ExportEPCFile extends HttpServlet {
         try {
             try(ZipOutputStream epc = new ZipOutputStream(out)) {
                 for (Map.Entry<String, Object> kv : workspace.getReadObjects().entrySet()) {
-                    ZipEntry ze_resqml = new ZipEntry(Utils.genPathInEPC(kv.getValue(), exportVersion));
+                    ZipEntry ze_resqml = new ZipEntry(EPCGenericManager.genPathInEPC(kv.getValue(), exportVersion));
                     epc.putNextEntry(ze_resqml);
                     Editor.pkgManager.marshal(kv.getValue(), epc);
                     epc.closeEntry();
                 }
-                Utils.exportRels(workspace.getReadObjects(), workspace.getParsedRels(), exportVersion, epc, "Geosiris Resqml WebStudio");
+                EPCGenericManager.exportRels(workspace.getReadObjects(), workspace.getParsedRels(), exportVersion, epc, "Geosiris Resqml WebStudio");
 
                 if (workspace.getNotReadObjects() != null) {
                     /// non resqml obj

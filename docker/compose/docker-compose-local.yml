@@ -12,8 +12,10 @@ services:
     ports:
       - "80:80"
       - "443:443"
+      - "8080:8080"
+      - "8443:8443"
     environment:
-      webstudio_enableUserDB: true
+      webstudio_enableUserDB: false
       webstudio_enableWorkspace: true
       workspace_databaseType: s3
       s3_localstackEndpoint: http://my-workspace:9000 
@@ -50,7 +52,6 @@ services:
     build: userDB/.
     ports:
       - "5432:5432"
-      - "8053:8080"
     environment:
       POSTGRES_PASSWORD: psql_password_Demo
     networks:

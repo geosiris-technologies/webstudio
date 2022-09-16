@@ -22,8 +22,8 @@ import Energistics.Etp.v12.Datatypes.Object.Resource;
 import Energistics.Etp.v12.Protocol.Discovery.GetResources;
 import Energistics.Etp.v12.Protocol.Discovery.GetResourcesResponse;
 import Energistics.Etp.v12.Protocol.Store.*;
+import com.geosiris.energyml.utils.EPCGenericManager;
 import com.geosiris.energyml.utils.ObjectController;
-import com.geosiris.energyml.utils.Utils;
 import com.geosiris.etp.communication.Message;
 import com.geosiris.etp.utils.ETPDefaultProtocolBuilder;
 import com.geosiris.etp.utils.ETPUri;
@@ -396,9 +396,9 @@ public class ETPRequest extends HttpServlet {
                     lastUpdate = lastUpdate_cal.toGregorianCalendar().getTimeInMillis();
                 } catch (Exception ignore){}
 
-                String dataObjectType = Editor.pkgManager.getEnerygmlNamespaceETP(epc_obj)
-                        + "." + Utils.getResqmlObjectType(epc_obj);
-                String uri = new ETPUri(dataspace, Editor.pkgManager.getEnerygmlNamespace(epc_obj), Editor.pkgManager.getSchemaVersion(epc_obj), dataObjectType, uuid, null ).toString();
+                String dataObjectType = EPCGenericManager.getPackageIdentifier_withVersionForETP(epc_obj, 2, 2) + "." + EPCGenericManager.getObjectTypeForFilePath(epc_obj);
+                String uri = new ETPUri(dataspace, EPCGenericManager.getPackageIdentifierFromClassName(epc_obj.getClass().getName()),
+                                        EPCGenericManager.getSchemaVersion(epc_obj).replace(".", ""), dataObjectType, uuid, null ).toString();
 
                 logger.error("lastUpdate : " + lastUpdate);
                 logger.error("uri : " + uri);

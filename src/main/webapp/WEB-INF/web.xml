@@ -5,7 +5,7 @@
 
 	<servlet>
 		<servlet-name>Editor</servlet-name>
-		<servlet-class>com.geosiris.webstudio.servlet.global.Editor</servlet-class>
+		<servlet-class>com.geosiris.webstudio.servlet.Editor</servlet-class>
 		<load-on-startup>0</load-on-startup>
 	</servlet>
 	<servlet>

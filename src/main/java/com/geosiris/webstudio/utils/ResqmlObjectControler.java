@@ -15,16 +15,14 @@ limitations under the License.
 */
 package com.geosiris.webstudio.utils;
 
-import com.geosiris.energyml.pkg.EPCPackage;
+import com.geosiris.energyml.utils.EPCGenericManager;
 import com.geosiris.energyml.utils.ObjectController;
-import com.geosiris.energyml.utils.Utils;
 import com.geosiris.webstudio.servlet.Editor;
 import com.geosiris.webstudio.servlet.global.ResqmlAccessibleTypes;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 import java.lang.reflect.Method;
-import java.lang.reflect.Modifier;
 import java.lang.reflect.ParameterizedType;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -58,17 +56,16 @@ public class ResqmlObjectControler {
             //logger.info("Path : '" + paramPath  + "' value " + value);
 
             String simplePath = paramPath;
-            if (simplePath.indexOf(".") != -1)
+            if (simplePath.contains("."))
                 simplePath = simplePath.substring(0, simplePath.indexOf("."));
 
             if (simplePath.replaceAll("[0-9]+", "").length() == 0) {    // Si on est sur un chiffre (dans l'acces d'une liste)
                 int simplePathVal = Integer.parseInt(simplePath);
-                if (paramPath.indexOf(".") == -1) {
+                if (!paramPath.contains(".")) {
                     // On est au bout du chemin
                     if (value != null) {
                         // Si la valeur n'est pas nulle, on essaie de remplacer l'element de la liste par un nouveau du mÃªme type
                         Class<?> listObjectClass = null;
-                        String schemaVersion = "";
                         if (value instanceof String) { // si un String en parametre, ce n'est peut etre pas le type
                             // qu'il convient de mettre dans la liste, on cherche donc le type d'objet que la liste contient
 
@@ -105,8 +102,7 @@ public class ResqmlObjectControler {
                                 //								logger.error("Type found : " + listContentType + " -- " + listContentType.getActualTypeArguments()[0]);
                                 Class<?> listContentClass = (Class<?>) listContentType.getActualTypeArguments()[0];
                                 listObjectClass = Editor.pkgManager.getClassFromSuperAndName(listContentClass, value.getClass());
-                                schemaVersion = Utils.getSchemaVersion(listContentClass);
-                                //schemaVersion = Utils.getSchemaVersionFromClassName(listContentClass.getName());
+                                //schemaVersion = EPCGenericManager.getSchemaVersionFromClassName(listContentClass.getName());
                             } catch (Exception e) {
                                 logger.error(e.getMessage(), e);
                             }
@@ -114,12 +110,8 @@ public class ResqmlObjectControler {
                                 listObjectClass = value.getClass();
                         }
 
-                        if (schemaVersion == "") {    // Si on est pas tombe sur une liste template on
-                            // donne la version de l'objet root, sinon on a deja assigne la version
-                            schemaVersion = Utils.getSchemaVersion(rootObject);
-                            //schemaVersion = EPCGenericManager.getSchemaVersion(rootObject);
-                        }
-                        Object newObject = Editor.pkgManager.createInstance(listObjectClass.getName(), epcObjects, schemaVersion, value);
+                        assert listObjectClass != null;
+                        Object newObject = Editor.pkgManager.createInstance(listObjectClass.getName(), epcObjects, value);
                         if (newObject != null) {
                             Method setMethod = null;
                             Class<?> objClassForSet = newObject.getClass();
@@ -127,8 +119,7 @@ public class ResqmlObjectControler {
                                 try {
                                     setMethod = objClass.getMethod("set", int.class, objClassForSet);
                                 } catch (Exception exceptSetMethod) {
-                                    //									exceptSetMethod.printStackTrace();
-                                    //									logger.error(">>> method not found : object was " + objClass );
+                                    logger.debug(exceptSetMethod.getMessage(), exceptSetMethod);
                                 }
                                 List<Class<?>> superClassList = ObjectController.getSuperClasses(objClassForSet);
                                 if (superClassList.size() > 0) {
@@ -186,14 +177,10 @@ public class ResqmlObjectControler {
                 //logger.info("param Val : " + paramVal + " for simple path " + simplePath);
 
                 Class<?> paramClass = paramAccessMethod.getReturnType();
-                Object valueToAssign = value;
+                Object valueToAssign;
 
-
-                if (paramPath.indexOf(".") == -1) {// Si c'est un attribut final on fait le "set"
-                    if (valueToAssign instanceof String) {
-                        valueToAssign = valueToAssign + "";
-                    }
-                    // Si c'est une liste : on ajoute Ã  la fin
+                if (!paramPath.contains(".")) {// Si c'est un attribut final on fait le "set"
+                    // Si c'est une liste : on ajoute a la fin
                     if (List.class.isAssignableFrom(paramClass)) {
                         if (ObjectController.getObjectAttributeValue(resqmlObj, simplePath) == null) {
                             ObjectController.getAttributeEditMethod(resqmlObj, simplePath).invoke(resqmlObj, new ArrayList<>());
@@ -204,7 +191,7 @@ public class ResqmlObjectControler {
 
                             // TODO :  Attention ! j'ai enleve le calcul du schemaVersion ici pour le laisse en deporte dans l'appel de createInstance, a voir si ca ne fait pas de bug!
 
-                            Object newObject = Editor.pkgManager.createInstance(templateClass.get(0).getName(), epcObjects, null, value);
+                            Object newObject = Editor.pkgManager.createInstance(templateClass.get(0).getName(), epcObjects, value);
                             //Object newObject = Editor.pkgManager.createInstance(templateClass.get(0).getName(), epcObjects, EPCGenericManager.getSchemaVersion(rootObject), (String) value);
 
                             List.class.getMethod("add", Object.class).invoke(ObjectController.getObjectAttributeValue(resqmlObj, simplePath), newObject);
@@ -232,29 +219,30 @@ public class ResqmlObjectControler {
                         } else { // la value n'est pas nulle (teste avant)
                             if (value.getClass() != String.class) {    // Si on tombe sur une valeur non string
                                 try {
-                                    valueToAssign = Editor.pkgManager.createInstance(value.getClass().getName(), epcObjects, Utils.getSchemaVersionFromClassName(editMethod.getParameters()[0].getClass().getName()), value);
+                                    valueToAssign = Editor.pkgManager.createInstance(value.getClass().getName(), epcObjects, value);
                                 } catch (Exception exceptEditMethodParamFail) {
                                     logger.error("Err in @modifyResqmlObjectFromParameter could not get edit method parameter class for object " + objClass
                                             + " and method is " + editMethod);
-                                    valueToAssign = Editor.pkgManager.createInstance(value.getClass().getName(), epcObjects, Utils.getSchemaVersionFromClassName(objClass.getClass().getName()), value);
+                                    valueToAssign = Editor.pkgManager.createInstance(value.getClass().getName(), epcObjects, value);
                                 }
                             } else {    // si on tombe sur un String alors que ce n'est pas ce qui est attendu par 'paramClass' c'est que
                                 // l'objet final va etre cree en parsant le string (e.g. DataObjectReference)
                                 try {
-                                    valueToAssign = Editor.pkgManager.createInstance(paramClass.getName(), epcObjects, Utils.getSchemaVersionFromClassName(editMethod.getParameters()[0].getClass().getName()), value);
+                                    valueToAssign = Editor.pkgManager.createInstance(paramClass.getName(), epcObjects, value);
                                 } catch (Exception exceptEditMethodParamFail) {
                                     logger.error("Err in @modifyResqmlObjectFromParameter could not get edit method parameter class for object " + objClass
                                             + " and method is " + editMethod);
-                                    valueToAssign = Editor.pkgManager.createInstance(paramClass.getName(), epcObjects, Utils.getSchemaVersionFromClassName(rootObject.getClass().getName()), value);
+                                    valueToAssign = Editor.pkgManager.createInstance(paramClass.getName(), epcObjects, value);
                                 }
                             }
                         }
                         try {
+                            assert editMethod != null;
                             editMethod.invoke(resqmlObj, valueToAssign);
                         } catch (Exception e) {
                             logger.error(e.getMessage(), e);
                             logger.error("ERR > '" + resqmlObj + "' -- '" + simplePath + "' value to assign : '" + valueToAssign
-                                    + "' rootVersion " + Utils.getSchemaVersionFromClassName(rootObject.getClass().getName())
+                                    + "' rootVersion " + EPCGenericManager.getSchemaVersionFromClassName(rootObject.getClass().getName())
                                     + " edit method : '" + editMethod + "' "
                                     + " param class : '" + editMethod.getParameters()[0].getType().getName() + "'");
                         }
@@ -277,15 +265,7 @@ public class ResqmlObjectControler {
                             } else {    // Si on a autre chose qu'un String en paramÃ¨tre on essaie de creer un objet de meme classe
                                 newObjectClass = value.getClass();
                             }
-                            EPCPackage newObjectPkg = Editor.pkgManager.getMatchingPackage(newObjectClass);
-                            String version = null;
-                            if (newObjectPkg != null && !Modifier.isAbstract(newObjectClass.getModifiers())) {
-                                version = newObjectPkg.getSchemaVersionFromClassName(newObjectClass.getName());
-                            }
-                            if (version == null) {
-                                version = Utils.getSchemaVersionFromClassName(rootObject.getClass().getName());
-                            }
-                            paramVal = Editor.pkgManager.createInstance(newObjectClass.getName(), epcObjects, version, null);
+                            paramVal = Editor.pkgManager.createInstance(newObjectClass.getName(), epcObjects, null);
                             ObjectController.getAttributeEditMethod(resqmlObj, simplePath).invoke(resqmlObj, paramVal);
                         } catch (Exception e) {
                             logger.error("Error creating Instance of '" + newObjectClass + "'");
@@ -333,13 +313,11 @@ public class ResqmlObjectControler {
 
 
                 // For each parameterTemplate, we create all real parameter in the activity
-                for (int paramTempIdx = 0; paramTempIdx < paramListTempl.size(); paramTempIdx++) {
-                    Object paramTempl = paramListTempl.get(paramTempIdx);
-
-                    Boolean isInput = Boolean.parseBoolean("" + ObjectController.getObjectAttributeValue(paramTempl, "isInput"));
+                for (Object paramTempl : paramListTempl) {
+                    boolean isInput = Boolean.parseBoolean("" + ObjectController.getObjectAttributeValue(paramTempl, "isInput"));
 
                     if (isInput) {
-                        Long minOccurs = Long.parseLong("" + ObjectController.getObjectAttributeValue(paramTempl, "MinOccurs"));
+                        long minOccurs = Long.parseLong("" + ObjectController.getObjectAttributeValue(paramTempl, "MinOccurs"));
                         String title = (String) ObjectController.getObjectAttributeValue(paramTempl, "Title");
                         List<String> paramKind = ((List<?>) ObjectController.getObjectAttributeValue(paramTempl, "AllowedKind"))
                                 .stream().map(x -> "" + x).collect(Collectors.toList());
@@ -355,6 +333,7 @@ public class ResqmlObjectControler {
 
                             Object defaultValue = null;
                             for (Object defVal : defaultValues) {
+                                assert activityParamClass != null;
                                 logger.info("Compare default value class '" + activityParamClass.getName()
                                         + "' with def val class : '" + defVal.getClass().getName() + "'");
                                 if (defVal.getClass().getName().compareTo(activityParamClass.getName()) == 0) {
@@ -365,17 +344,18 @@ public class ResqmlObjectControler {
 
                             // If there are no default value
                             if (defaultValue == null) {
-                                defaultValue = Editor.pkgManager.createInstance(activityParamClass.getName(), new HashMap<>(), null, null);
+                                assert activityParamClass != null;
+                                defaultValue = Editor.pkgManager.createInstance(activityParamClass.getName(), new HashMap<>(), null);
                             } else {
                                 logger.info("taking default value " + defaultValue);
                                 // If there is a default value, we copy it and add it to the activity parameter list
-                                defaultValue = ResQMLConverter.getCopy(defaultValue, null, new HashMap<>());
+                                defaultValue = ResQMLConverter.getCopy(defaultValue, new HashMap<>());
                             }
                             ResqmlObjectControler.modifyResqmlObjectFromParameter(defaultValue, "Title",
-                                    ResqmlObjectControler.ModficationType.EDITION,
+                                    ModficationType.EDITION,
                                     title, new HashMap<>());
                             ResqmlObjectControler.modifyResqmlObjectFromParameter(defaultValue, "Index",
-                                    ResqmlObjectControler.ModficationType.EDITION,
+                                    ModficationType.EDITION,
                                     "" + cpt, new HashMap<>());
 
                             ((List<Object>) ObjectController.getObjectAttributeValue(activity, ".Parameter")).add(defaultValue);

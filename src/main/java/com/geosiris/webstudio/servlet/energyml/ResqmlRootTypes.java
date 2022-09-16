@@ -38,7 +38,7 @@ import java.util.stream.Collectors;
 public class ResqmlRootTypes extends HttpServlet {
 	private static final long serialVersionUID = 1L;
     public static Logger logger = LogManager.getLogger(ResqmlRootTypes.class);
-    private static List<Class<?>> rootClasses = Editor.pkgManager.getRootClasses()
+    private static final List<Class<?>> rootClasses = Editor.pkgManager.getRootClasses()
 				.stream().filter(cl -> cl != null && !Modifier.isAbstract(cl.getModifiers())).collect(Collectors.toList());
     /**
      * @see HttpServlet#HttpServlet()
