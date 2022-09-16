@@ -396,9 +396,9 @@ public class ETPRequest extends HttpServlet {
                     lastUpdate = lastUpdate_cal.toGregorianCalendar().getTimeInMillis();
                 } catch (Exception ignore){}
 
-                String dataObjectType = EPCGenericManager.getPackageIdentifier_withVersionForETP(epc_obj, 2, 2) + "." + EPCGenericManager.getObjectTypeForFilePath(epc_obj);
-                String uri = new ETPUri(dataspace, EPCGenericManager.getPackageIdentifierFromClassName(epc_obj.getClass().getName()),
-                                        EPCGenericManager.getSchemaVersion(epc_obj).replace(".", ""), dataObjectType, uuid, null ).toString();
+                String dataObjectType = EPCGenericManager.getPackageDomain_withVersionForETP(epc_obj, 2, 2, true) + "." + EPCGenericManager.getObjectTypeForFilePath(epc_obj);
+                String uri = new ETPUri(dataspace, EPCGenericManager.getPackageDomain_fromClassName(epc_obj.getClass().getName()),
+                                        EPCGenericManager.getSchemaVersion(epc_obj, true).replace(".", ""), dataObjectType, uuid, null ).toString();
 
                 logger.error("lastUpdate : " + lastUpdate);
                 logger.error("uri : " + uri);
