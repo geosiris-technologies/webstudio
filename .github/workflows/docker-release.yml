@@ -63,7 +63,7 @@ jobs:
       run: |
         docker build . --file docker/webstudio.dockerfile \
           -t geomods/geomods-webstudio:${{needs.build.outputs.jar_version}} \
-          WEBSTUDIO_WAR_PATH=target/webstudio-${{needs.build.outputs.jar_version}}.war
+          --build-arg WEBSTUDIO_WAR_PATH=target/webstudio-${{needs.build.outputs.jar_version}}.war
 
     - name: Login to DockerHub
       uses: docker/login-action@v2
