@@ -46,15 +46,6 @@
         <sonar.organization>geosiris-technologies</sonar.organization>
         <sonar.host.url>https://sonarcloud.io</sonar.host.url>
     </properties>
-    <build>
-        <plugins>
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-compiler-plugin</artifactId>
-                <version>3.8.0</version>
-            </plugin>
-        </plugins>
-    </build>
     <dependencies>
         <!--
          _       _______    ____
@@ -111,7 +102,7 @@
           / /_/ / / / / __ \/ / / ___/  / /_/ / _ \/ __ \/ __ \/ ___/
          / ____/ /_/ / /_/ / / / /__   / _, _/  __/ /_/ / /_/ (__  )
         /_/    \__,_/_.___/_/_/\___/  /_/ |_|\___/ .___/\____/____/
-                                                /_/ 
+                                                /_/
         -->
         <dependency>
             <groupId>org.apache.tomcat</groupId>
@@ -129,6 +120,9 @@
             <version>42.2.13</version>
         </dependency>
     </dependencies>
+    <build>
+
+    </build>
     <profiles>
         <profile>
             <id>release</id>

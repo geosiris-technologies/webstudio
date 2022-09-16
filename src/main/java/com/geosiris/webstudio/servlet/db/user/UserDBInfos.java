@@ -268,32 +268,4 @@ public class UserDBInfos {
 		// System.out.printf("hash: %s%n", enc.encodeToString(hash));
 		return enc.encodeToString(hash);
 	}
-
-	public static void main(String[] argv) {
-		logger.info(listUsersInfos());
-
-		logger.info("Begining");
-		logger.error(searchUser("vgauthier", "vgauthier_password"));
-
-		logger.info("# User list : " + listUsers());
-		logger.info("C0) " + createUser("testUser", "myPassword", "test.user@geosiris.com"));
-		logger.info("C1) " + createUser("testUser", "myPassword", "test.user@geosiris.com"));
-		logger.info("$ User list : " + listUsers());
-		logger.info("Groupe : " + getUserAttribute("vgauthier", DB_GRP));
-		logger.info("delete :" + deleteUser("testUser"));
-		logger.info("delete :" + deleteUser("testUser"));
-
-		logger.info("D1) " + deleteUser("UserTest"));
-		logger.info("C2) " + createUser("UserTest", "myPassword", "test.user@geosiris.com"));
-		logger.info(updateUser("UserTest", "myPassword", "test", "refined@bidon.com", "geosiris"));
-		logger.info("- User list : " + listUsers());
-		logger.info("End");
-
-		// logger.error("hashed : [" + hashPassword("vgauthier_password") +"]");
-		// logger.error(hashPassword("vgauthier_password"));
-		// logger.error(hashPassword("luntereiner_password"));
-		// logger.error(hashPassword("jfrainaud_password"));
-
-	}
-
 }
