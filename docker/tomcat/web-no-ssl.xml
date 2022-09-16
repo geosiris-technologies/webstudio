@@ -1,0 +1,53 @@
+<web-app version="4.0" xmlns="http://xmlns.jcp.org/xml/ns/javaee" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://xmlns.jcp.org/xml/ns/javaee          http://xmlns.jcp.org/xml/ns/javaee/web-app_4_0.xsd">
+	<session-config>
+		<session-timeout>30</session-timeout>
+	</session-config>
+
+	<servlet>
+		<servlet-name>Editor</servlet-name>
+		<servlet-class>com.geosiris.webstudio.servlet.Editor</servlet-class>
+		<load-on-startup>0</load-on-startup>
+	</servlet>
+	<servlet>
+		<servlet-name>ResqmlInstanciableTypes</servlet-name>
+		<servlet-class>com.geosiris.webstudio.servlet.global.ResqmlAccessibleTypes</servlet-class>
+		<load-on-startup>3</load-on-startup>
+	</servlet>
+	<servlet>
+		<servlet-name>ResqmlAccessibleDOR</servlet-name>
+		<servlet-class>com.geosiris.webstudio.servlet.energyml.ResqmlAccessibleDOR</servlet-class>
+		<load-on-startup>4</load-on-startup>
+	</servlet>
+	<servlet>
+		<servlet-name>ResqmlTypesComments</servlet-name>
+		<servlet-class>com.geosiris.webstudio.servlet.energyml.ResqmlTypesComments</servlet-class>
+		<load-on-startup>5</load-on-startup>
+	</servlet>
+	<servlet>
+		<servlet-name>GetAdditionalObjects</servlet-name>
+		<servlet-class>com.geosiris.webstudio.servlet.global.GetAdditionalObjects</servlet-class>
+		<load-on-startup>6</load-on-startup>
+	</servlet>
+	<servlet>
+		<servlet-name>EPCExtTypesAttributes</servlet-name>
+		<servlet-class>com.geosiris.webstudio.servlet.energyml.EPCExtTypesAttributes</servlet-class>
+		<load-on-startup>7</load-on-startup>
+	</servlet>
+	<servlet>
+		<servlet-name>ResqmlRootTypes</servlet-name>
+		<servlet-class>com.geosiris.webstudio.servlet.energyml.ResqmlRootTypes</servlet-class>
+		<load-on-startup>7</load-on-startup>
+	</servlet>
+
+	<security-constraint>
+		<web-resource-collection>
+			<web-resource-name>WebStudio</web-resource-name>
+			<url-pattern>/*</url-pattern>
+		</web-resource-collection>
+	</security-constraint>
+
+	<listener>
+		<listener-class>com.geosiris.webstudio.servlet.global.SessionCounter</listener-class>
+	</listener>
+
+</web-app>

@@ -63,9 +63,9 @@ docker-compose -f docker-compose-local.yml -p webstudio-public-local up -d
 
 Run the following commands in the **docker/compose** folder.
 ```bash
-docker-compose -f docker-compose.yml -p webstudio-public pull
-docker-compose -f docker-compose.yml -p webstudio-public build
-docker-compose -f docker-compose.yml -p webstudio-public up -d
+docker-compose -f docker-compose.yml -p webstudio-official pull
+docker-compose -f docker-compose.yml -p webstudio-official build
+docker-compose -f docker-compose.yml -p webstudio-official up -d
 ```
 
 **Note :** Remove the *-d* option for *up* command if you want to follow directly the main logs (not debug logs).
@@ -76,7 +76,18 @@ If you have trouble with your local docker volumes (user database or workspace s
 
 ```bash
 docker-compose -f docker-compose-local.yml -p webstudio-public-local down --volumes
-docker-compose -f docker-compose.yml -p webstudio-public down --volumes
+docker-compose -f docker-compose.yml -p webstudio-official down --volumes
+```
+
+
+### Run standalone instance :
+
+```console
+docker run -d \
+  -p 80:80 -p 443:443 \
+  --env webstudio_enableUserDB=false \
+  --env webstudio_enableWorkspace=false \
+  geomods/geomods-webstudio:1.0.0 
 ```
 
 
