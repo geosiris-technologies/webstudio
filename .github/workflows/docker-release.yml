@@ -36,10 +36,10 @@ jobs:
         echo ::set-output name=jar_version::${PROJECT_VERSION}
 
     - name: Compile
-      run: mvn -B compile --file pom.xml
+      run: mvn -B -U clean compile --file pom.xml -P release
 
     - name: Build a package
-      run: mvn -B package --file pom.xml
+      run: mvn -B -U package --file pom.xml -P release
 
     - name: Temporarily save jar artifact
       uses: actions/upload-artifact@v3
