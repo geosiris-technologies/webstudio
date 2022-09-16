@@ -1,4 +1,4 @@
-FROM tomcat:10.1.0-M15-jdk11-openjdk-slim-buster
+FROM tomcat:10.1.0-M15-jdk11-openjdk-slim-buster as base
 
 LABEL maintainer="valentin.gauthier@geosiris.com"
 
@@ -118,12 +118,6 @@ ENV webstudio_dirPathToExtTypes /config/data/extTypesAttributes/
 #  / / / /_/ / / / / / / /__/ /_/ / /_
 # /_/  \____/_/ /_/ /_/\___/\__,_/\__/
 
-
-COPY docker/tomcat/ssl/sample-key.crt /usr/certificates/sample-key.crt
-RUN chmod 644 /usr/certificates/sample-key.crt
-
-COPY docker/tomcat/server-production.xml /usr/local/tomcat/conf/server.xml
-
 # 2 following lines to have the server at the root path and not at /WebStudio
 RUN rm -rf /usr/local/tomcat/webapps/ROOT
 ADD $WEBSTUDIO_WAR_PATH /usr/local/tomcat/webapps/ROOT.war
@@ -138,3 +132,34 @@ ADD $WEBSTUDIO_WAR_PATH /usr/local/tomcat/webapps/ROOT.war
 
 EXPOSE 80
 EXPOSE 443
+
+
+
+#  _       ___ __  __       __________ __
+# | |     / (_) /_/ /_     / ___/ ___// /
+# | | /| / / / __/ __ \    \__ \\__ \/ /
+# | |/ |/ / / /_/ / / /   ___/ /__/ / /___
+# |__/|__/_/\__/_/ /_/   /____/____/_____/
+
+
+FROM base AS image-with-ssl
+
+COPY docker/tomcat/ssl/sample-key.crt /usr/certificates/sample-key.crt
+RUN chmod 644 /usr/certificates/sample-key.crt
+
+COPY docker/tomcat/server-production.xml /usr/local/tomcat/conf/server.xml
+
+
+#  _       ___ __  __                __     __________ __
+# | |     / (_) /_/ /_  ____  __  __/ /_   / ___/ ___// /
+# | | /| / / / __/ __ \/ __ \/ / / / __/   \__ \\__ \/ /
+# | |/ |/ / / /_/ / / / /_/ / /_/ / /_    ___/ /__/ / /___
+# |__/|__/_/\__/_/ /_/\____/\__,_/\__/   /____/____/_____/
+
+FROM base AS image-no-ssl
+
+# WARNING : to use this no-ssl image, use docker/tomcat/web-no-ssl.xml instead of 
+#           src/main/webapp/WEB-INF/web.xml during maven build
+
+COPY docker/tomcat/server-production-no-ssl.xml /usr/local/tomcat/conf/server.xml
+

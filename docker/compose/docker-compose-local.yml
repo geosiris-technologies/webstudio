@@ -9,6 +9,8 @@ services:
     build: 
       context: "../../"
       dockerfile: docker/webstudio-local.dockerfile
+      target: image-no-ssl
+      
     ports:
       - "80:80"
       - "443:443"

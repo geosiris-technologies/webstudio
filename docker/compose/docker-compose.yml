@@ -6,7 +6,7 @@ services:
 
   ws_webstudio:
     container_name: ws-public-webstudio
-    image: 'registry.gitlab.com/geosiris/services/webstudio/webstudio-public/webstudio:latest'
+    image: 'geomods/geomods-webstudio:1.0.0'
     hostname: 'gitlab.com'
     environment:
       GITLAB_OMNIBUS_CONFIG: |

@@ -26,11 +26,12 @@ jobs:
       with:
         java-version: '11'
         distribution: 'temurin'
-#        server-id: ossrh
-#        server-username: MAVEN_USERNAME
-#        server-password: MAVEN_PASSWORD
-#        gpg-private-key: ${{ secrets.OSSRH_GPG_SECRET_KEY }}
-#        gpg-passphrase: MAVEN_GPG_PASSPHRASE
+    
+    - name: change Web.xml to avoid use of ssl
+      id: webxml
+      run: |
+        rm ${{ github.workspace }}/src/main/webapp/WEB-INF/web.xml
+        mv ${{ github.workspace }}/docker/tomcat/web-no-ssl.xml ${{ github.workspace }}/src/main/webapp/WEB-INF/web.xml
 
     - name: Bump jar version
       id: bump
@@ -61,9 +62,9 @@ jobs:
 
     - name: Docker build
       run: |
-        docker build . --file docker/webstudio.dockerfile --target image-with-ssl \
-          -t geomods/geomods-webstudio:${{needs.build.outputs.jar_version}} \
-          -t geomods/geomods-webstudio:latest \
+        docker build . --file docker/webstudio.dockerfile --target image-no-ssl \
+          -t geomods/geomods-webstudio-no-ssl:${{needs.build.outputs.jar_version}} \
+          -t geomods/geomods-webstudio-no-ssl:latest \
           --build-arg WEBSTUDIO_WAR_PATH=target/webstudio-${{needs.build.outputs.jar_version}}.war
 
     - name: Login to DockerHub
@@ -74,7 +75,8 @@ jobs:
 
     - name: Docker push
       run: |
-        docker push geomods/geomods-webstudio:${{needs.build.outputs.jar_version}}
+        docker push geomods/geomods-webstudio-no-ssl:${{needs.build.outputs.jar_version}}
+
   # run:
   #   runs-on: ubuntu-18.04
   #   needs: [build, deploy]
@@ -82,4 +84,4 @@ jobs:
   #   steps:
   #   - name: Run container
   #     run: |
-  #       docker run geomods/geomods-webstudio:${{needs.build.outputs.jar_version}}
+  #       docker run geomods/geomods-webstudio-no-ssl:${{needs.build.outputs.jar_version}}
