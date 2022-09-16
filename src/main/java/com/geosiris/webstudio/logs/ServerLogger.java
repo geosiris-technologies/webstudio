@@ -22,7 +22,7 @@ public class ServerLogger {
 	protected List<Object> logs;
 	
 	public ServerLogger() {
-		logs = new ArrayList<Object>();
+		logs = new ArrayList<>();
 	}
 	
 	public void print(Object log) {
@@ -38,7 +38,7 @@ public class ServerLogger {
 		StringBuilder str = new StringBuilder();
 		
 		for(Object log : logs) {
-			str.append(log + "");
+			str.append(log);
 		}
 		
 		return str.toString();

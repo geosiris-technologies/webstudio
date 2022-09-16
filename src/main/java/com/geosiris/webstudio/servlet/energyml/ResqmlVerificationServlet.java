@@ -56,7 +56,7 @@ public class ResqmlVerificationServlet extends HttpServlet {
         }
         HttpSession session = request.getSession(false);
 
-        String answer = "";
+        StringBuilder answer = new StringBuilder();
         Map<String, Object> map = SessionUtility.getResqmlObjects(session);
         String uuid = request.getParameter("uuid");
 
@@ -68,20 +68,20 @@ public class ResqmlVerificationServlet extends HttpServlet {
             logs = ResqmlVerification.doVerification(map);
         }
 
-        answer += "[";
+        answer.append("[");
 
         for (LogMessage lm : logs) {
-            answer += (ServerLogMessage.parseLogMessage(lm)).toJSON() + ",";
+            answer.append((ServerLogMessage.parseLogMessage(lm)).toJSON()).append(",");
         }
-        if (answer.endsWith(",")) {
-            answer = answer.substring(0, answer.length() - 1);
+        if (answer.toString().endsWith(",")) {
+            answer = new StringBuilder(answer.substring(0, answer.length() - 1));
         }
-        answer += "]";
+        answer.append("]");
 
         PrintWriter out = response.getWriter();
         response.setContentType("application/json");
         response.setCharacterEncoding("UTF-8");
-        out.write(answer);
+        out.write(answer.toString());
         out.flush();
     }
 

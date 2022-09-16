@@ -105,8 +105,6 @@ public class EPCOperation extends HttpServlet {
 								logger.error("error changing '" + dor.getName() + ".uuid' on " + referObj);
 								logger.error(e.getMessage(), e);
 							}
-						}else {
-//							logger.error("dorr UUID '" + dorUUID + "'");
 						}
 					}
 				}

@@ -54,19 +54,19 @@ public class ResqmlRootTypes extends HttpServlet {
 		if(!SessionUtility.tryConnectServlet(request, response)) {
 			return;
 		}
-		String jsonList = "[\n";
+		StringBuilder jsonList = new StringBuilder("[\n");
 		for(Class<?> rc : rootClasses) {
-			jsonList += "\t\"" + rc.getName() + "\",\n";
+			jsonList.append("\t\"").append(rc.getName()).append("\",\n");
 		}
-		if(jsonList.contains(",")) {
-			jsonList = jsonList.substring(0, jsonList.lastIndexOf(","));
+		if(jsonList.toString().contains(",")) {
+			jsonList = new StringBuilder(jsonList.substring(0, jsonList.lastIndexOf(",")));
 		}
-		jsonList += "]";
+		jsonList.append("]");
 		
 		PrintWriter out = response.getWriter();
         response.setContentType("application/json");
         response.setCharacterEncoding("UTF-8");
-        out.write(jsonList);
+        out.write(jsonList.toString());
         out.flush();
 	}
 
@@ -82,15 +82,15 @@ public class ResqmlRootTypes extends HttpServlet {
 		List<Class<?>> rootClasses = Editor.pkgManager.getRootClasses()
 				.stream().filter(cl -> cl != null && !Modifier.isAbstract(cl.getModifiers())).collect(Collectors.toList());
 		
-		String jsonList = "[\n";
+		StringBuilder jsonList = new StringBuilder("[\n");
 		for(Class<?> rc : rootClasses) {
-			jsonList += "\t\"" + rc.getName() + "\",\n";
+			jsonList.append("\t\"").append(rc.getName()).append("\",\n");
 		}
-		if(jsonList.contains(",")) {
-			jsonList = jsonList.substring(0, jsonList.lastIndexOf(","));
+		if(jsonList.toString().contains(",")) {
+			jsonList = new StringBuilder(jsonList.substring(0, jsonList.lastIndexOf(",")));
 		}
-		jsonList += "]";
-		logger.info(jsonList);
+		jsonList.append("]");
+		logger.info(jsonList.toString());
 	}
 
 }

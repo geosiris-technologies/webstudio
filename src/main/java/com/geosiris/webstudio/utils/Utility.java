@@ -54,7 +54,7 @@ public class Utility {
             String type = obj.getClass().getSimpleName();
             String schemaVersion = ObjectController.getObjectAttributeValue(obj, "schemaVersion") + "";
 
-            Pattern patDevPkg = Pattern.compile(".*(dev[0-9_]+)x_[.-9_]+");
+            Pattern patDevPkg = Pattern.compile(".*(dev[\\d_]+)x_[.-9_]+");
             try {
                 Matcher matcher = patDevPkg.matcher(Editor.pkgManager.getMatchingPackage(obj.getClass()).getClass().getName());
 

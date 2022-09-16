@@ -19,7 +19,9 @@ import com.geosiris.energyml.utils.EPCGenericManager;
 import com.geosiris.energyml.utils.ObjectController;
 import com.geosiris.energyml.utils.Pair;
 import com.geosiris.energyml.utils.Utils;
+import com.geosiris.webstudio.model.WorkspaceRelationship;
 import com.geosiris.webstudio.utils.SessionUtility;
+import com.google.gson.Gson;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.HttpServlet;
@@ -34,6 +36,7 @@ import java.io.PrintWriter;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 /**
  * Servlet implementation class FirstServlet
@@ -53,72 +56,32 @@ public class ResqmlEPCRelationships extends HttpServlet {
 
     public static String relationToJSON_withParamName(HashMap<String, Pair<List<Pair<String, String>>, List<Pair<String, String>>>> relations,
                                                       Map<String, Object> epcObjects) {
-        StringBuilder jsonRelations = new StringBuilder();
-        jsonRelations.append("{");
+        Map<String, WorkspaceRelationship> relationships = new HashMap<>();
+
         int cpt = 0;
         for (String uuid : relations.keySet()) {
             try {
                 Object resqmlObj = epcObjects.get(uuid);
-
-                jsonRelations.append("\"" + uuid + "\" : ");
-                jsonRelations.append("{");
-                jsonRelations.append("\"uuid\" : \"" + uuid + "\", ");
-                jsonRelations.append("\"num\" : \"" + cpt + "\", ");
-                jsonRelations.append("\"firp\" : \"" + Utils.getFIRPObjectType(resqmlObj.getClass()) + "\", ");
-                jsonRelations.append("\"title\" : \"" + ObjectController.getObjectAttributeValue(resqmlObj, ".Citation.Title") + "\", ");
-                jsonRelations.append("\"type\" : \"" + resqmlObj.getClass().getSimpleName() + "\", ");
-                jsonRelations.append("\"schemaVersion\" : \"" + ObjectController.getObjectAttributeValue(resqmlObj, ".SchemaVersion") + "\", ");
-
-
-                // ========= Les relations descendantes :
-                jsonRelations.append("\"relationUp\" : [");
-                for (Pair<String, String> relUp : relations.get(uuid).l()) {
-//					jsonRelations.append("\"" + r + "\",");
-                    jsonRelations.append("{ \"uuid\" : \"" + relUp.r() + "\", \"name\" : \"" + transformParamName(relUp.l()) + "\"},");
-                }
-                // On enleve la virgule de fin
-                if (jsonRelations.toString().endsWith(",")) {
-                    jsonRelations.replace(jsonRelations.length() - 1, jsonRelations.length(), "");
-                }
-                jsonRelations.append("],\n");
-
-
-                // ========= Les relations montantes
-                jsonRelations.append("\"relationDown\" : [");
-                for (Pair<String, String> relDown : relations.get(uuid).r()) {
-                    jsonRelations.append("{ \"uuid\" : \"" + relDown.r() + "\", \"name\" : \"" + transformParamName(relDown.l()) + "\"},");
-                }
-                // On enleve la virgule de fin
-                if (jsonRelations.toString().endsWith(",")) {
-                    jsonRelations.replace(jsonRelations.length() - 1, jsonRelations.length(), "");
-                }
-                jsonRelations.append("]");
-
-
-                // FIN Objet courrant
-                jsonRelations.append("},");
-
+                relationships.put(uuid,
+                        new WorkspaceRelationship(
+                                uuid,
+                                cpt + "",
+                                (String) ObjectController.getObjectAttributeValue(resqmlObj, ".Citation.Title"),
+                                resqmlObj.getClass().getSimpleName(),
+                                (String)  ObjectController.getObjectAttributeValue(resqmlObj, ".SchemaVersion"),
+                                Utils.getFIRPObjectType(resqmlObj.getClass()),
+                                relations.get(uuid).l().stream().map( (aPair) -> new WorkspaceRelationship.SimpleRelationship(aPair.r(), transformParamName(aPair.l()))).collect(Collectors.toList()),
+                                relations.get(uuid).r().stream().map( (aPair) -> new WorkspaceRelationship.SimpleRelationship(aPair.r(), transformParamName(aPair.l()))).collect(Collectors.toList())
+                        )
+                );
             } catch (Exception e) {
                 // exception si la clef n'existe pas, ce qui ne devrait pas arriver
                 logger.error(e.getMessage(), e);
             }
             cpt++;
         }
-
-        // On enleve la virgule de fin
-        if (jsonRelations.toString().endsWith(",")) {
-            jsonRelations.replace(jsonRelations.length() - 1, jsonRelations.length(), "");
-        } else {
-            if (jsonRelations.length() > 2) {
-                logger.error(">> '" + jsonRelations.toString().substring(jsonRelations.toString().length() - 2) + "'");
-            } else {
-                logger.error(">> Empty relationships");
-            }
-        }
-
-        jsonRelations.append("}");
-
-        return jsonRelations.toString();
+        Gson gson = new Gson();
+        return gson.toJson(relationships);
     }
 
     public static String transformParamName(String paramName) {

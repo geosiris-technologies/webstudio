@@ -60,19 +60,13 @@ public class GetObjectAsOSDUJson extends HttpServlet {
     private static String toOSDUJson(Object obj, Map<String, Object> objMap) {
         Map<String, BiFunction<Object, Map<String, Object>, Object>> attribMapper = new HashMap<>();
 
-        String result = "{";
+        StringBuilder result = new StringBuilder("{");
 
         // AbstractInterpretation
         if (ObjectController.inherits(obj.getClass(), "AbstractFeatureInterpretation", false, true)) {
-            attribMapper.put("OlderPossibleAge", (_obj, _ws_obj_map) -> {
-                return ObjectController.getObjectAttributeValue(_obj, ".OlderPossibleAge");
-            });
-            attribMapper.put("YoungerPossibleAge", (_obj, _ws_obj_map) -> {
-                return ObjectController.getObjectAttributeValue(_obj, ".YoungerPossibleAge");
-            });
-            attribMapper.put("DomainTypeID", (_obj, _ws_obj_map) -> {
-                return "namespace:reference-data--DomainType:" + strValue(ObjectController.getObjectAttributeValue(_obj, ".Domain"));
-            });
+            attribMapper.put("OlderPossibleAge", (_obj, _ws_obj_map) -> ObjectController.getObjectAttributeValue(_obj, ".OlderPossibleAge"));
+            attribMapper.put("YoungerPossibleAge", (_obj, _ws_obj_map) -> ObjectController.getObjectAttributeValue(_obj, ".YoungerPossibleAge"));
+            attribMapper.put("DomainTypeID", (_obj, _ws_obj_map) -> "namespace:reference-data--DomainType:" + strValue(ObjectController.getObjectAttributeValue(_obj, ".Domain")));
             attribMapper.put("FeatureID", (_obj, _ws_obj_map) -> {
                 Object feature = _ws_obj_map.get("" + ObjectController.getObjectAttributeValue(_obj, ".InterpretedFeature.Uuid"));
                 String featTypeOSDU = "Local" + feature.getClass().getSimpleName();
@@ -80,19 +74,13 @@ public class GetObjectAsOSDUJson extends HttpServlet {
                         + ObjectController.getObjectAttributeValue(_obj, ".InterpretedFeature.Uuid")
                         + ":";
             });
-            attribMapper.put("FeatureName", (_obj, _ws_obj_map) -> {
-                return ObjectController.getObjectAttributeValue(_obj, ".InterpretedFeature.Title");
-            });
+            attribMapper.put("FeatureName", (_obj, _ws_obj_map) -> ObjectController.getObjectAttributeValue(_obj, ".InterpretedFeature.Title"));
         }
 
         // HorizonInterpretation
         if (ObjectController.inherits(obj.getClass(), "HorizonInterpretation", false, true)) {
-            attribMapper.put("isConformableAbove", (_obj, _ws_obj_map) -> {
-                return ObjectController.getObjectAttributeValue(_obj, ".isConformableAbove");
-            });
-            attribMapper.put("isConformableBelow", (_obj, _ws_obj_map) -> {
-                return ObjectController.getObjectAttributeValue(_obj, ".isConformableBelow");
-            });
+            attribMapper.put("isConformableAbove", (_obj, _ws_obj_map) -> ObjectController.getObjectAttributeValue(_obj, ".isConformableAbove"));
+            attribMapper.put("isConformableBelow", (_obj, _ws_obj_map) -> ObjectController.getObjectAttributeValue(_obj, ".isConformableBelow"));
             /*attribMapper.put("ChronoTop", (_obj, _ws_obj_map) -> {
                 return (Boolean) ObjectController.getObjectAttributeValue(_obj, ".isConformableAbove")
                         && (Boolean) ObjectController.getObjectAttributeValue(_obj, ".isConformableBelow");
@@ -106,12 +94,10 @@ public class GetObjectAsOSDUJson extends HttpServlet {
                 Object objValue = ObjectController.getObjectAttributeValue(_obj, ".SequenceStratigraphySurface");
                 return "namespace:reference-data--" + objValue.getClass().getSimpleName() + ":" + strValue(objValue) + ":";
             });
-            attribMapper.put("HorizonStratigraphicRoleTypeID", (_obj, _ws_obj_map) -> {
-                return ((Collection<?>) ObjectController.getObjectAttributeValue(_obj, ".HorizonStratigraphicRole"))
-                        .stream()
-                        .map((v) -> "namespace:reference-data--SequenceStratigraphySurfaceType:" + strValue(v) + ":")
-                        .collect(Collectors.toList());
-            });
+            attribMapper.put("HorizonStratigraphicRoleTypeID", (_obj, _ws_obj_map) -> ((Collection<?>) ObjectController.getObjectAttributeValue(_obj, ".HorizonStratigraphicRole"))
+                    .stream()
+                    .map((v) -> "namespace:reference-data--SequenceStratigraphySurfaceType:" + strValue(v) + ":")
+                    .collect(Collectors.toList()));
         }
 
         if (ObjectController.inherits(obj.getClass(), "HorizonInterpretation", false, true)
@@ -146,25 +132,17 @@ public class GetObjectAsOSDUJson extends HttpServlet {
             });
         }
         if (ObjectController.inherits(obj.getClass(), "FaultInterpretation", false, true)) {
-            attribMapper.put("MaximumFaultThrowValue", (_obj, _ws_obj_map) -> {
-                return ObjectController.getObjectAttributeValue(_obj, ".MaximumThrow.value");
-            });
-            attribMapper.put("RepresentativeDipDirection", (_obj, _ws_obj_map) -> {
-                return ObjectController.getObjectAttributeValue(_obj, ".MeanAzimuth.value");
-            });
-            attribMapper.put("RepresentativeDipAngle", (_obj, _ws_obj_map) -> {
-                return ObjectController.getObjectAttributeValue(_obj, ".MeanDip.value");
-            });
-            attribMapper.put("IsSealed", (_obj, _ws_obj_map) -> {
-                return ObjectController.getObjectAttributeValue(_obj, ".isSealed");
-            });
+            attribMapper.put("MaximumFaultThrowValue", (_obj, _ws_obj_map) -> ObjectController.getObjectAttributeValue(_obj, ".MaximumThrow.value"));
+            attribMapper.put("RepresentativeDipDirection", (_obj, _ws_obj_map) -> ObjectController.getObjectAttributeValue(_obj, ".MeanAzimuth.value"));
+            attribMapper.put("RepresentativeDipAngle", (_obj, _ws_obj_map) -> ObjectController.getObjectAttributeValue(_obj, ".MeanDip.value"));
+            attribMapper.put("IsSealed", (_obj, _ws_obj_map) -> ObjectController.getObjectAttributeValue(_obj, ".isSealed"));
         }
         /////////
 
         List<String> keys = new ArrayList<>(attribMapper.keySet());
         Collections.sort(keys);
         for (String attName : keys) {
-            result += "\n\t\"" + attName + "\": ";
+            result.append("\n\t\"").append(attName).append("\": ");
             try {
                 Object value = attribMapper.get(attName).apply(obj, objMap);
                 if (value == null) {
@@ -176,29 +154,29 @@ public class GetObjectAsOSDUJson extends HttpServlet {
 
                     // TODO : tester les listes!
                     if (value instanceof Collection) {
-                        result += "[";
+                        result.append("[");
                         for (Object itx : ((Collection<?>) value)) {
-                            result += "\n\t\t\"" + itx + "\",";
+                            result.append("\n\t\t\"").append(itx).append("\",");
                         }
-                        if (result.endsWith(",")) {
-                            result = result.substring(0, result.length() - 1);
+                        if (result.toString().endsWith(",")) {
+                            result = new StringBuilder(result.substring(0, result.length() - 1));
                         }
-                        result += "\n\t],";
+                        result.append("\n\t],");
                     } else {
-                        result += valueStr + ",";
+                        result.append(valueStr).append(",");
                     }
                 }
             } catch (Exception e) {
-                result += "\"\",";
+                result.append("\"\",");
             }
 
         }
-        if (result.endsWith(",")) {
-            result = result.substring(0, result.length() - 1);
+        if (result.toString().endsWith(",")) {
+            result = new StringBuilder(result.substring(0, result.length() - 1));
         }
 
-        result += "\n}";
-        return result;
+        result.append("\n}");
+        return result.toString();
     }
 
     public static void main(String[] argv) {

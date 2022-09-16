@@ -71,8 +71,8 @@ public class Preferences extends HttpServlet {
         if (!SessionUtility.tryConnectServlet(request, response)) {
             return;
         }
-        StringBuffer jb = new StringBuffer();
-        String line = null;
+        StringBuilder jb = new StringBuilder();
+        String line;
         try {
             BufferedReader reader = request.getReader();
             while ((line = reader.readLine()) != null)
@@ -81,11 +81,11 @@ public class Preferences extends HttpServlet {
 
         logger.info("Preferences post input " + jb);
 
-        String jsonResponse = "{}";
+        String jsonResponse;
         HttpSession session = request.getSession(false);
         String userName = (String) session.getAttribute(SessionUtility.SESSION_USER_NAME);
         try {
-            UserPreferencesProperties properties = (UserPreferencesProperties) UserPreferencesProperties.parseJson(jb.toString(), UserPreferencesProperties.class);
+            UserPreferencesProperties properties = UserPreferencesProperties.parseJson(jb.toString(), UserPreferencesProperties.class);
             LoadWorkspace.storageService.uploadFile(new UploadFileRequest(new ByteArrayInputStream(properties.toString().getBytes()),
                     "", getUserBucketName(userName)+".ini", "text/xml", SessionUtility.PREFERENCE_FOLDER_NAME));
             jsonResponse = "true";

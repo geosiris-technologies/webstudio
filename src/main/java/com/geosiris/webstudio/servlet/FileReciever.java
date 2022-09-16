@@ -122,7 +122,7 @@ public class FileReciever extends HttpServlet {
             SessionUtility.log(session,
                     new ServerLogMessage(ServerLogMessage.MessageType.ERROR,
                             "Not read files : "
-                                    + loadedEPC.getNotReadObjects().stream().map(p -> p.l()).collect(Collectors.joining(", ")),
+                                    + loadedEPC.getNotReadObjects().stream().map(Pair::l).collect(Collectors.joining(", ")),
                             SessionUtility.EDITOR_NAME));
         }
 
@@ -202,7 +202,7 @@ public class FileReciever extends HttpServlet {
                             }
                         }else{ // other files
                             logger.error("not resqml readable objet '" + entry + "' named : '" + entryName + "' ");
-                            result.getNotReadObjects().add(new Pair<String, byte[]>(entryName, entryBOS.toByteArray()));
+                            result.getNotReadObjects().add(new Pair<>(entryName, entryBOS.toByteArray()));
                         }
                     }
                 } while ((entry = zipStream.getNextEntry()) != null);
@@ -294,6 +294,7 @@ public class FileReciever extends HttpServlet {
                     }
                     logger.debug("failed to parse file with contentType info " + entry.getKey() +" -->  " + EPCGenericManager.findUUID(entry.getKey()) + " == " + mapFileNameToContentType.size());
                     try {
+                        assert pkgIdAndVersion != null;
                         logger.debug(pkgIdAndVersion.l() + " ==> " + pkgIdAndVersion.r());
                     }catch (Exception e){
                         logger.debug("Not pkgIdAndVersion for " + mapFileNameToContentType.get(entry.getKey()));

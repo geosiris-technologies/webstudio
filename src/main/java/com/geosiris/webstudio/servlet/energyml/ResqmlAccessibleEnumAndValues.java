@@ -37,11 +37,11 @@ import java.util.stream.Collectors;
 public class ResqmlAccessibleEnumAndValues extends HttpServlet {
 	private static final long serialVersionUID = 1L;
 
-	private static final Method getClassName = (Arrays.asList(Class.class.getMethods())).stream()
+	private static final Method getClassName = Arrays.stream(Class.class.getMethods())
 											.filter(method -> method.getName().compareTo("getName") == 0)
 											.collect(Collectors.toList()).get(0);
 	
-	private final static String jsonContent = Utility.<Class<?>,Object>toJson(Editor.pkgManager.getResqmlEnumValues(),
+	private final static String jsonContent = Utility.toJson(Editor.pkgManager.getResqmlEnumValues(),
 												getClassName, 
 												null);
 	

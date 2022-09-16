@@ -284,7 +284,7 @@ public class ResqmlVerification {
         final List<ObjectTree> referencedDOR = objTree.filterListByObjectType("DataObjectReference", false, true);
 
         return referencedDOR.parallelStream().map( (dor) -> {
-            List<LogMessage> messages = new ArrayList<LogMessage>();
+            List<LogMessage> messages = new ArrayList<>();
             Object refUuid = dor.getData("uuid");
             if (refUuid != null) {
                 String rootTitle = objTree.getData("Citation.Title") + "";
@@ -669,8 +669,6 @@ public class ResqmlVerification {
                 } catch (Exception e) {
                     logger.error(e.getMessage(), e);
                 }
-            } else {
-//				logger.info("null versionString for " + dor.getName());
             }
         }
 
@@ -682,7 +680,7 @@ public class ResqmlVerification {
     }
 
     public static List<LogResqmlVerification> doRemoveVersionString(Map<String, Object> resqmlObjects) {
-        List<LogResqmlVerification> messages = new ArrayList<LogResqmlVerification>();
+        List<LogResqmlVerification> messages = new ArrayList<>();
 
         for (String rootUUID : resqmlObjects.keySet()) {
             messages.addAll(doRemoveVersionString(rootUUID, resqmlObjects));

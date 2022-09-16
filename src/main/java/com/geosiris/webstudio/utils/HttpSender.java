@@ -46,12 +46,10 @@ public class HttpSender {
 		//    	OutputStream outputStream = con.getOutputStream();
 		//PrintWriter writer = new PrintWriter(new OutputStreamWriter(outputStream, StandardCharsets.UTF_8),
 		//                true);
-		writer.append("--" + boundary).append(LINE_FEED);
-		writer.append(
-				"Content-Disposition: form-data; name=\"" + fieldName + "\"; filename=\"" + fileName + "\"")
+		writer.append("--").append(boundary).append(LINE_FEED);
+		writer.append("Content-Disposition: form-data; name=\"").append(fieldName).append("\"; filename=\"").append(fileName).append("\"")
 		.append(LINE_FEED);
-		writer.append(
-				"Content-Type: " + URLConnection.guessContentTypeFromName(fileName))
+		writer.append("Content-Type: ").append(URLConnection.guessContentTypeFromName(fileName))
 		.append(LINE_FEED);
 		writer.append("Content-Transfer-Encoding: text/plain").append(LINE_FEED);
 		writer.append(LINE_FEED);
@@ -64,10 +62,10 @@ public class HttpSender {
 	}
 
 	private static void addFormField(String name, String value, String boundary, PrintWriter writer) {
-		writer.append("--" + boundary).append(LINE_FEED);
-		writer.append("Content-Disposition: form-data; name=\"" + name + "\"")
+		writer.append("--").append(boundary).append(LINE_FEED);
+		writer.append("Content-Disposition: form-data; name=\"").append(name).append("\"")
 		.append(LINE_FEED);
-		writer.append("Content-Type: text/plain; charset=" + StandardCharsets.UTF_8).append(
+		writer.append("Content-Type: text/plain; charset=").append(String.valueOf(StandardCharsets.UTF_8)).append(
 				LINE_FEED);
 		writer.append(LINE_FEED);
 		writer.append(value).append(LINE_FEED);
@@ -75,10 +73,10 @@ public class HttpSender {
 	}
 
 	private static List<String> finish(HttpURLConnection con, String boundary, PrintWriter writer) throws IOException {
-		List<String> response = new ArrayList<String>();
+		List<String> response = new ArrayList<>();
 
 		writer.flush();
-		writer.append("--" + boundary + "--").append(LINE_FEED);
+		writer.append("--").append(boundary).append("--").append(LINE_FEED);
 		writer.close();
 
 
@@ -87,7 +85,7 @@ public class HttpSender {
 		if (status == HttpURLConnection.HTTP_OK) {
 			BufferedReader reader = new BufferedReader(new InputStreamReader(
 					con.getInputStream()));
-			String line = null;
+			String line;
 			while ((line = reader.readLine()) != null) {
 				response.add(line);
 			}
@@ -150,7 +148,7 @@ public class HttpSender {
 			List<String> filesContent, 
 			String _url, String login, String pwd,
 			String fileParamName, HashMap<String, String> otherParams) {
-		sendfileWithPostRequest(session, filesContent.stream().map(x -> new Pair<String, String>("fileName", x)).collect(Collectors.toList()), 
+		sendfileWithPostRequest(session, filesContent.stream().map(x -> new Pair<>("fileName", x)).collect(Collectors.toList()),
 				_url, login, pwd,
 				fileParamName, otherParams);	
 	}
@@ -158,16 +156,16 @@ public class HttpSender {
 
 	public static InputStream sendGet(HttpSession session, String get_url, String login, String pwd, Map<String, String> parameters) {
 		try {
-			String urlWithParameters = get_url;
+			StringBuilder urlWithParameters = new StringBuilder(get_url);
 
 			if(parameters.size()>0) {
-				urlWithParameters += "?";
+				urlWithParameters.append("?");
 			}
 			for(String key: parameters.keySet()) {
-				urlWithParameters+=key+"="+parameters.get(key) + "&";
+				urlWithParameters.append(key).append("=").append(parameters.get(key)).append("&");
 			}
 
-			URL url = new URL(urlWithParameters);
+			URL url = new URL(urlWithParameters.toString());
 			HttpURLConnection con = (HttpURLConnection) url.openConnection();
 
 			if(login!=null && login.length()>0) {

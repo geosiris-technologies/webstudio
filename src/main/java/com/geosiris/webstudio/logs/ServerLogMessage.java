@@ -22,7 +22,7 @@ import com.geosiris.webstudio.utils.Utility;
 public class ServerLogMessage extends JsonifyableMessage{
 	public enum MessageType {
 		INFO, ERROR, DEBUG, LOG, WARNING, TOAST, ACTION
-	};
+	}
 
 	private MessageType severity;
 	private String content;
@@ -88,22 +88,6 @@ public class ServerLogMessage extends JsonifyableMessage{
 				+ "\"message\": ";
 
 		result += Utility.transformStringForJsonCompatibility(content) + "\n";
-
-		/*try {
-			JSONParser parser = new JSONParser(content);
-			if(SessionUtility.configIsMoreVerborseThan(ConfigurationType.debug)){
-				logger.info("Trying to parse json log message : ");
-				logger.info(content);
-			}
-			Object jsonObj = parser.parse();
-			if (jsonObj != null) {
-				result += content + "\"\n";
-			} else {
-				result += "\"" + content.replace("\"", "\\\"") + "\"\n";
-			}
-		} catch (Exception e) {
-			result += "\"" + content.replace("\"", "\\\"") + "\"\n";
-		}*/
 		result += "}";
 		return result;
 	}

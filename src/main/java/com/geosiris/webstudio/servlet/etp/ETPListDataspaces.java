@@ -59,7 +59,7 @@ public class ETPListDataspaces extends HttpServlet {
 		List<String> dataspacesNames = new ArrayList<>();
 
 		ETPClient etpClient = (ETPClient) request.getSession(false).getAttribute(SessionUtility.SESSION_ETP_CLIENT_ID);
-		Boolean isConnected = etpClient != null && etpClient.isConnected();
+		boolean isConnected = etpClient != null && etpClient.isConnected();
 		if(isConnected){
 			GetDataspaces getRess = GetDataspaces.newBuilder().setStoreLastWriteFilter(0L).build();
 			long id = etpClient.send(getRess);

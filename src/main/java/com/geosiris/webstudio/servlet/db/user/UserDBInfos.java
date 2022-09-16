@@ -77,7 +77,6 @@ public class UserDBInfos {
 				conn.close();
 				return rs.getInt(1) > 0;
 			}
-			conn.close();
 		} catch (SQLException e) {
 			logger.info(e.getMessage());
 		}
@@ -85,7 +84,7 @@ public class UserDBInfos {
 	}
 
 	public static Pair<String, String> logUser(String login, String pwd) {
-		try (Connection conn = connect();) {
+		try (Connection conn = connect()) {
 			PreparedStatement userQuery = conn.prepareStatement(
 					"Select * " + "from account " + "where " + DB_LOGIN + "= ? and " + DB_PWD + " = ?" + ";");
 			userQuery.setString(1, login);
@@ -94,9 +93,8 @@ public class UserDBInfos {
 
 			while (rs.next()) {
 				conn.close();
-				return new Pair<String, String>(rs.getString(DB_LOGIN), rs.getString(DB_GRP));
+				return new Pair<>(rs.getString(DB_LOGIN), rs.getString(DB_GRP));
 			}
-			conn.close();
 		} catch (SQLException e) {
 			logger.info(e.getMessage());
 		} catch (Exception e) {
@@ -116,7 +114,6 @@ public class UserDBInfos {
 				conn.close();
 				return rs.getString(db_attribute);
 			}
-			conn.close();
 		} catch (SQLException e) {
 			logger.info(e.getMessage());
 		}
@@ -153,7 +150,6 @@ public class UserDBInfos {
 			while (rs.next()) {
 				userList.add(rs.getString(DB_LOGIN));
 			}
-			conn.close();
 		} catch (SQLException e) {
 			logger.info(e.getMessage());
 		}
@@ -161,27 +157,26 @@ public class UserDBInfos {
 	}
 
 	public static String listUsersInfos() {
-		String userList = "[ ";
+		StringBuilder userList = new StringBuilder("[ ");
 		try (Connection conn = connect();
 				PreparedStatement userQuery = conn.prepareStatement("Select * from account;")) {
 			ResultSet rs = userQuery.executeQuery();
 			while (rs.next()) {
-				userList += "{ ";
-				userList += "\"" + DB_LOGIN + "\" : ";
-				userList += "\"" + rs.getString(DB_LOGIN) + "\", ";
-				userList += "\"" + DB_GRP + "\" : ";
-				userList += "\"" + rs.getString(DB_GRP) + "\", ";
-				userList += "\"" + DB_MAIL + "\" : ";
-				userList += "\"" + rs.getString(DB_MAIL) + "\"";
-				userList += " },";
+				userList.append("{ ");
+				userList.append("\"" + DB_LOGIN + "\" : ");
+				userList.append("\"").append(rs.getString(DB_LOGIN)).append("\", ");
+				userList.append("\"" + DB_GRP + "\" : ");
+				userList.append("\"").append(rs.getString(DB_GRP)).append("\", ");
+				userList.append("\"" + DB_MAIL + "\" : ");
+				userList.append("\"").append(rs.getString(DB_MAIL)).append("\"");
+				userList.append(" },");
 			}
-			userList = userList.substring(0, userList.length() - 1); // supprime la derniere virgule
-			conn.close();
+			userList = new StringBuilder(userList.substring(0, userList.length() - 1)); // supprime la derniere virgule
 		} catch (SQLException e) {
 			logger.info(e.getMessage());
 		}
-		userList += "]";
-		return userList;
+		userList.append("]");
+		return userList.toString();
 	}
 
 	public static boolean updateUser(String login, String pwd, String newPwd, String mail, String grp) {
@@ -231,7 +226,6 @@ public class UserDBInfos {
 				conn.close();
 				return false;
 			}
-			conn.close();
 		} catch (Exception e) {
 			logger.error(e.getMessage(), e);
 		}
@@ -243,8 +237,6 @@ public class UserDBInfos {
 			q_addUser.setString(2, hashPassword(pwd));
 			q_addUser.setString(3, mail);
 			q_addUser.execute();
-			conn.close();
-			// } catch (SQLException e) {
 		} catch (SQLException e) {
 			logger.info("ERR : " + e.getClass() + " --> " + e.getMessage());
 			return false;

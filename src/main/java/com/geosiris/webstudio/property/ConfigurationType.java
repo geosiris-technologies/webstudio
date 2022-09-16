@@ -20,8 +20,7 @@ public enum ConfigurationType {
 
     public final int value;
 
-    private ConfigurationType(int value){
+    ConfigurationType(int value){
         this.value = value;
     }
-
 }

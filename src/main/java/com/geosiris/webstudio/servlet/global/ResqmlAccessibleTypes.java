@@ -42,11 +42,11 @@ public class ResqmlAccessibleTypes extends HttpServlet {
 	private static final long serialVersionUID = 1L;
     public static Logger logger = LogManager.getLogger(ResqmlAccessibleTypes.class);
 
-	private static final Method getClassName = (Arrays.asList(Class.class.getMethods())).stream()
+	private static final Method getClassName = Arrays.stream(Class.class.getMethods())
 											.filter(method -> method.getName().compareTo("getName") == 0)
 											.collect(Collectors.toList()).get(0);
 	public final static HashMap<Class<?>, List<Class<?>>> CLASS_INSTANCIABLE_BY = Editor.pkgManager.getResqmlTypesInstanciableBy();
-	public final static String jsonContent = Utility.<Class<?>,Class<?>>toJson(Editor.pkgManager.getResqmlTypesInstanciableBy(),
+	public final static String jsonContent = Utility.toJson(Editor.pkgManager.getResqmlTypesInstanciableBy(),
 												getClassName,
 												getClassName);
 	

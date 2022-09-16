@@ -24,46 +24,42 @@ import java.util.List;
 
 public abstract class JsonifyableMessage {
     public String toJSON() {
-		String json = "{\n";
+		StringBuilder json = new StringBuilder("{\n");
 		List<Field> fieldList = ObjectController.getAllFields(this.getClass());
 		for(int fi=0; fi<fieldList.size()-1; fi++){
 			Field f = fieldList.get(fi);
-			Method m = null;
 			try {
-				m = ObjectController.getAttributeAccessMethod(this, f.getName());
-
+				Method m = ObjectController.getAttributeAccessMethod(this, f.getName());
 				if(m!=null) {
-					json += "\"" + f.getName() + "\" :" + Utility.transformStringForJsonCompatibility(m.invoke(this) + "" ) + ",";
+					json.append("\"").append(f.getName()).append("\" :").append(Utility.transformStringForJsonCompatibility(m.invoke(this) + "")).append(",");
 				}
 			} catch (Exception ignore){}
 		}
 		if(fieldList.size()>0) {
 			Field f = fieldList.get(fieldList.size()-1);
-			Method m = null;
 			try {
-				m = ObjectController.getAttributeAccessMethod(this, f.getName());
-
+				Method m = ObjectController.getAttributeAccessMethod(this, f.getName());
 				if(m!=null) {
-					json += "\"" + f.getName() + "\" :" + Utility.transformStringForJsonCompatibility(m.invoke(this) + "");
+					json.append("\"").append(f.getName()).append("\" :").append(Utility.transformStringForJsonCompatibility(m.invoke(this) + ""));
 				}
 			} catch (Exception ignore){}
 		}
 
-		json +=  "}";
-		return json;
+		json.append("}");
+		return json.toString();
 	}
 
 	public static String toJSON(List<? extends JsonifyableMessage> msgList) {
-		String jsonContent = "[";
+		StringBuilder jsonContent = new StringBuilder("[");
 		if(msgList!=null) {
 			for(int i=0; i<msgList.size()-1; i++) {
-				jsonContent += msgList.get(i).toJSON() + ",\n";
+				jsonContent.append(msgList.get(i).toJSON()).append(",\n");
 			}
 			if(msgList.size()>0) {
-				jsonContent += msgList.get(msgList.size()-1).toJSON() + "\n";
+				jsonContent.append(msgList.get(msgList.size() - 1).toJSON()).append("\n");
 			}
 		}
-		jsonContent += "]";
-		return jsonContent;
+		jsonContent.append("]");
+		return jsonContent.toString();
 	}
 }
