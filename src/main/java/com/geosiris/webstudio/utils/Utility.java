@@ -22,6 +22,8 @@ import com.geosiris.webstudio.servlet.Editor;
 import com.google.gson.Gson;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.openjdk.jol.info.GraphLayout;
+import org.openjdk.jol.vm.VM;
 
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
@@ -34,6 +36,20 @@ public class Utility {
     public static Logger logger = LogManager.getLogger(Utility.class);
 
     private static final Pattern PATTERN_FILE_PATH = Pattern.compile("(?<dirPath>(.+)[\\/\\\\])?(?<fileName>[\\w\\.\\-\\s]+[\\w\\.\\-]+)\\s*$");
+
+    public static String getObjectSize(Object obj){
+        long size = GraphLayout.parseInstance(obj).totalSize();
+
+        if(size < 1000){
+            return size + "b";
+        } else if (size <Math.pow(10,6)) {
+            return Math.round(size/1000.) + "KB";
+        } else if (size <Math.pow(10,9)) {
+            return Math.round(size/Math.pow(10,6)) + "MB";
+        } else {
+            return Math.round(size/Math.pow(10,9)) + "GB";
+        }
+    }
 
     public static String getFileNameFromPath(String filePath){
         Matcher m = PATTERN_FILE_PATH.matcher(filePath);

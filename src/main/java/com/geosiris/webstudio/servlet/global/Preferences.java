@@ -81,18 +81,20 @@ public class Preferences extends HttpServlet {
 
         logger.info("Preferences post input " + jb);
 
-        String jsonResponse;
+        String jsonResponse = "false";
         HttpSession session = request.getSession(false);
         String userName = (String) session.getAttribute(SessionUtility.SESSION_USER_NAME);
-        try {
-            UserPreferencesProperties properties = UserPreferencesProperties.parseJson(jb.toString(), UserPreferencesProperties.class);
-            LoadWorkspace.storageService.uploadFile(new UploadFileRequest(new ByteArrayInputStream(properties.toString().getBytes()),
-                    "", getUserBucketName(userName)+".ini", "text/xml", SessionUtility.PREFERENCE_FOLDER_NAME));
-            jsonResponse = "true";
-        }catch (Exception e){
-            logger.error(e.getMessage(), e);
-            jsonResponse = "false";
+        if (SessionUtility.wsProperties.getEnableWorkspace() && SessionUtility.wsProperties.getEnableUserDB()) {
+            try {
+                UserPreferencesProperties properties = UserPreferencesProperties.parseJson(jb.toString(), UserPreferencesProperties.class);
+                LoadWorkspace.storageService.uploadFile(new UploadFileRequest(new ByteArrayInputStream(properties.toString().getBytes()),
+                        "", getUserBucketName(userName) + ".ini", "text/xml", SessionUtility.PREFERENCE_FOLDER_NAME));
+                jsonResponse = "true";
+            } catch (Exception e) {
+                logger.error(e.getMessage(), e);
+            }
         }
+
         PrintWriter out = response.getWriter();
         response.setContentType("application/json");
         response.setCharacterEncoding("UTF-8");

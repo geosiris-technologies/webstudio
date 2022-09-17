@@ -91,6 +91,25 @@ export function initSessionLogEventHandler(console_id){
     rws_addEventListeners('logs', evt_list_onMessage, evt_list_onMessage);
 }
 
+
+export function initSessionMetrics(spanSessionMetrics_id){
+    let spanSessionCounter = document.getElementById(spanSessionMetrics_id);
+    spanSessionCounter.title = "Your session weight";
+
+    const evt_list_onMessage = function(event) {
+        let span = document.getElementById(spanSessionMetrics_id);
+        var decodedMsg = window.atob(event.data);
+        span.textContent = decodedMsg;
+    };
+
+    const evt_list_onErr = function(e) {
+        let span = document.getElementById(spanSessionMetrics_id);
+        span.textContent = "T_T";
+    };
+
+    rws_addEventListeners('sessionMetrics', evt_list_onMessage, evt_list_onErr);
+}
+
 /*  ____       ____               __
    / __ \___  / __/_______  _____/ /_
   / /_/ / _ \/ /_/ ___/ _ \/ ___/ __ \

@@ -42,9 +42,8 @@ import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.net.URLConnection;
 import java.nio.charset.StandardCharsets;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
+import java.util.stream.Collectors;
 
 /**
  * Servlet implementation class Connection
@@ -70,7 +69,7 @@ public class LoadWorkspace extends HttpServlet {
             if (userName != null && userName.length() > 0) {
                 WorkspaceContent workspace = SessionUtility.getWorkspaceContent(session);
                 Map<String, Object> map = workspace.getReadObjects();
-                for (String uuid : uuidList) {
+                /*for (String uuid : uuidList) {
                     if (map.containsKey(uuid)) {
                         String fileContent = Editor.pkgManager.marshal(map.get(uuid));
                         try {
@@ -83,7 +82,17 @@ public class LoadWorkspace extends HttpServlet {
                         // DELETE FILE
                         logger.error("File doesn't exist '" + uuid + "'");
                     }
-                }
+                }*/
+
+                uuidList.stream().filter(map::containsKey).parallel().forEach((uuid) ->{
+                    String fileContent = Editor.pkgManager.marshal(map.get(uuid));
+                    try {
+                        storageService.uploadFileAsync(new UploadFileRequest(new ByteArrayInputStream(fileContent.getBytes()),
+                                userName, uuid + ".xml", "text/xml", null));
+                    } catch (Exception e) {
+                        logger.error(e.getMessage(), e);
+                    }
+                });
 
                 logger.info("Rels nb " + workspace.getParsedRels().size());
                 for (String relsName : workspace.getParsedRels().keySet()) {
@@ -168,18 +177,29 @@ public class LoadWorkspace extends HttpServlet {
     public static void reloadWorkspaceAdditionalFiles(HttpSession session){
         if(SessionUtility.wsProperties.getEnableWorkspace() && SessionUtility.wsProperties.getEnableUserDB()){
             try {
-                List<Pair<String, byte[]>> additionalFiles = new ArrayList<>();
+//                List<Pair<String, byte[]>> additionalFiles = new ArrayList<>();
                 if (storageService != null) {
                     String userName = (String) session.getAttribute(SessionUtility.SESSION_USER_NAME);
-                    ListFilesResponse resp = storageService.listFiles(new ListFilesRequest(userName, null));
+//                    ListFilesResponse resp = storageService.listFiles(new ListFilesRequest(userName, null));
                     SessionUtility.getNotResqmlObjects(session).clear();
-                    for (String fileName : resp.getFileList()) {
+                    /*for (String fileName : resp.getFileList()) {
                         String realFileName = fileName.substring(fileName.indexOf("/") + 1); // removing user folder name
                         realFileName = realFileName.substring(realFileName.indexOf("/") + 1);// removing "folderName_additionalData" name
                         if (fileName.substring(fileName.indexOf("/") + 1).startsWith(folderName_additionalData + "/")) {
                             additionalFiles.add(new Pair<>(realFileName, storageService.getFile(new GetFileRequest(fileName, null)).getContent()));
                         }
-                    }
+                    }*/
+
+                    List<Pair<String, byte[]>> additionalFiles = additionalFiles = Arrays.stream(storageService.listFiles(new ListFilesRequest(userName, null)).getFileList()).parallel()
+                            .map((fileName)-> {
+                                String realFileName = fileName.substring(fileName.indexOf("/") + 1); // removing user folder name
+                                realFileName = realFileName.substring(realFileName.indexOf("/") + 1);// removing "folderName_additionalData" name
+                                if (fileName.substring(fileName.indexOf("/") + 1).startsWith(folderName_additionalData + "/")) {
+                                    return new Pair<>(realFileName, storageService.getFile(new GetFileRequest(fileName, null)).getContent());
+                                }
+                                return null;
+                            }).filter(Objects::nonNull).collect(Collectors.toList());
+
                     SessionUtility.getNotResqmlObjects(session).addAll(additionalFiles);
                 }
             }catch (Exception e){

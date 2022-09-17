@@ -119,6 +119,12 @@
             <artifactId>postgresql</artifactId>
             <version>42.2.13</version>
         </dependency>
+        <!-- For memory use computation-->
+        <dependency>
+            <groupId>org.openjdk.jol</groupId>
+            <artifactId>jol-core</artifactId>
+            <version>0.10</version>
+        </dependency>
     </dependencies>
     <build>
     </build>

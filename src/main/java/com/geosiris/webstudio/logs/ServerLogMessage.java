@@ -18,6 +18,7 @@ package com.geosiris.webstudio.logs;
 import com.geosiris.energyml.utils.ObjectController;
 import com.geosiris.webstudio.utils.SessionUtility;
 import com.geosiris.webstudio.utils.Utility;
+import com.google.gson.Gson;
 
 public class ServerLogMessage extends JsonifyableMessage{
 	public enum MessageType {
@@ -25,13 +26,13 @@ public class ServerLogMessage extends JsonifyableMessage{
 	}
 
 	private MessageType severity;
-	private String content;
+	private String message;
 
 	private String originator;
 
-	public ServerLogMessage(MessageType severity, String content, String originator) {
+	public ServerLogMessage(MessageType severity, String message, String originator) {
 		this.severity = severity;
-		this.content = content;
+		this.message = message;
 		this.originator = originator;
 	}
 
@@ -51,7 +52,7 @@ public class ServerLogMessage extends JsonifyableMessage{
 
 	public ServerLogMessage(LogResqmlVerification msg) {
 		this.severity = MessageType.WARNING;
-		this.content = "[" + msg.rootUUID + "]" + msg.rootType + " '" + msg.rootTitle + "'" + msg.getTitle() + ": "
+		this.message = "[" + msg.rootUUID + "]" + msg.rootType + " '" + msg.rootTitle + "'" + msg.getTitle() + ": "
 				+ msg.getMsg();
 		this.originator = SessionUtility.EDITOR_NAME;
 	}
@@ -64,12 +65,12 @@ public class ServerLogMessage extends JsonifyableMessage{
 		this.severity = severity;
 	}
 
-	public String getContent() {
-		return content;
+	public String getMessage() {
+		return message;
 	}
 
-	public void setContent(String content) {
-		this.content = content;
+	public void setMessage(String message) {
+		this.message = message;
 	}
 
 	public String getOriginator() {
@@ -82,14 +83,8 @@ public class ServerLogMessage extends JsonifyableMessage{
 
 	@Override
 	public String toJSON() {
-		String result = "{\n"
-				+ "\"severity\": \"" + severity + "\", \n"
-				+ "\"originator\": \"" + originator + "\", \n"
-				+ "\"message\": ";
-
-		result += Utility.transformStringForJsonCompatibility(content) + "\n";
-		result += "}";
-		return result;
+		Gson gson = new Gson();
+		return gson.toJson(this);
 	}
 
 	@Override
