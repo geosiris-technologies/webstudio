@@ -263,8 +263,6 @@ export function initSessionCounter(spanSessionCounter_id){
 }
 
 
-
-
 /* ________      __          __   __  ______
   / ____/ /___  / /_  ____ _/ /  / / / /  _/
  / / __/ / __ \/ __ \/ __ `/ /  / / / // /

@@ -17,6 +17,9 @@ package com.geosiris.webstudio.model;
 
 import com.geosiris.energyml.utils.ResqmlAbstractType;
 import com.google.gson.Gson;
+import org.openjdk.jol.info.ClassLayout;
+import org.openjdk.jol.info.GraphLayout;
+import org.openjdk.jol.vm.VM;
 
 import java.util.List;
 
@@ -136,5 +139,34 @@ public class WorkspaceRelationship {
     public String toString(){
         Gson gson = new Gson();
         return gson.toJson(this);
+    }
+
+    public static void main(String[] argv){
+        Gson gson = new Gson();
+        WorkspaceRelationship wr = gson.fromJson("{"
+        + "\"firp\": \"Property\","
+        + "\"num\": \"706\","
+        + "\"relationDown\": [],"
+        + "\"relationUp\": ["
+        + "    {"
+        + "        \"name\": \"PropertyKind\","
+        + "        \"uuid\": \"b471afef-0310-43cd-8c7f-03fc08e240eb\""
+        + "    },"
+        + "    {"
+        + "        \"name\": \"SupportingRepresentation\","
+        + "        \"uuid\": \"774bf941-f3c1-4d1f-94f8-7a3b68474eda\""
+        + "    }"
+        + "],"
+        + "\"schemaVersion\": \"Resqml V2.2\","
+        + "\"title\": \"BH-SD27 [Teneurs] sample_length\","
+        + "\"type\": \"ContinuousProperty\","
+        + "\"uuid\": \"00093361-8ef8-4e5f-816c-17bc1b0b1c56\""
+        + "}", WorkspaceRelationship.class);
+        System.out.println(wr.toString());
+
+//        System.out.println(ClassLayout.parseInstance(wr));
+//        System.out.println(ClassLayout.parseInstance(wr).instanceSize());
+//        System.out.println(VM.current().sizeOf(wr));
+        System.out.println(GraphLayout.parseInstance(wr).totalSize());
     }
 }

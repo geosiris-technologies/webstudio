@@ -142,6 +142,10 @@ limitations under the License.
         	<li class="nav-item">
         		<a class="nav-link" href="https://xlim-sic.labo.univ-poitiers.fr/jerboa" target="_blank">Jerboa</a>
         	</li>
+
+        	<li class="nav-item">
+				<span class="navbar-text" id="ws_sessionMetrics"></span>
+			</li>
 	<!-- </ul>
 		<ul class="navbar-nav ml-auto"> -->
 			<li class="nav-item dropdown" id="sessionInfo">
@@ -150,7 +154,7 @@ limitations under the License.
 				aria-expanded="false"
 				id="sessionInfoBut"></a>
 				<div class="dropdown-menu dropdown-menu-right" aria-labelledby="navbarDropdown" id="sessionInfoMenu">
-					<div><br>WebStudio v${GEOSIRIS_ENV_WEBSTUDIO_VERSION}-${GEOSIRIS_ENV_PRODUCTION_TYPE}-${GEOSIRIS_ENV_CONFIG_TYPE}</br><div>
+					<div>WebStudio v${GEOSIRIS_ENV_WEBSTUDIO_VERSION}-${GEOSIRIS_ENV_PRODUCTION_TYPE}-${GEOSIRIS_ENV_CONFIG_TYPE}</br><div>
 					<div class="dropdown-divider"></div>
 					<div><a id="but_reverse_vue" class="dropdown-item">Reverse vue</a><div>
 					<div class="dropdown-divider"></div>

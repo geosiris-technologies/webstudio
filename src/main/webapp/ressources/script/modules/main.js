@@ -15,7 +15,7 @@ limitations under the License.
 */
 
 import {enableWaitingUi, initEditorContent, setVueOrientation} from "./UI/ui.js"
-import {initSessionLogEventHandler} from "./UI/eventHandler.js"
+import {initSessionLogEventHandler, initSessionMetrics} from "./UI/eventHandler.js"
 import {updateTypesMap, updateVueFromPreferences} from "./energyml/epcContentManager.js"
 import {refreshPropertyDictVue, refreshWorkspaceDictVue} from "./UI/modals/propertiesVue.js"
 import {__initOrganizationType__, updateFIRPView} from "./UI/modals/firpVue.js"
@@ -104,6 +104,9 @@ export function initWebStudioView(){
                 $(this).next('div').removeClass('show');
             }
         });
+
+
+        initSessionMetrics("ws_sessionMetrics");
     });
 
     $("#modal_ETP").on('show.bs.modal', function(){

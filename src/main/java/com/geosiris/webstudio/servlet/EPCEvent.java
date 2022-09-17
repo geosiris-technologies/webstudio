@@ -18,6 +18,8 @@ package com.geosiris.webstudio.servlet;
 import com.geosiris.webstudio.logs.ServerLogMessage;
 import com.geosiris.webstudio.servlet.global.SessionCounter;
 import com.geosiris.webstudio.utils.SessionUtility;
+import com.geosiris.webstudio.utils.Utility;
+import com.google.gson.Gson;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.HttpServlet;
@@ -29,6 +31,7 @@ import org.apache.logging.log4j.Logger;
 
 import java.io.IOException;
 import java.io.PrintWriter;
+import java.nio.charset.StandardCharsets;
 import java.util.Base64;
 import java.util.Date;
 import java.util.concurrent.ConcurrentLinkedQueue;
@@ -39,83 +42,8 @@ import java.util.concurrent.ConcurrentLinkedQueue;
 @WebServlet(urlPatterns = {"/EPCEvent"}, asyncSupported = true)
 public class EPCEvent extends HttpServlet {
 	private static final long serialVersionUID = 1L;
-    public static Logger logger = LogManager.getLogger(EPCEvent.class);
+	public static Logger logger = LogManager.getLogger(EPCEvent.class);
 	private static final long SESSION_DURATION = 1000L*60L*30L; // 30 min in ms
-
-	/*private final Queue<Pair<HttpSession, AsyncContext>> ongoingRequests = new ConcurrentLinkedQueue<>();
-	private ScheduledExecutorService service;
-
-	@Override
-	public void init(ServletConfig config) throws ServletException {
-		final Runnable notifier = () -> {
-			final Iterator<Pair<HttpSession, AsyncContext>> iterator = ongoingRequests.iterator();
-			//not using for : in to allow removing items while iterating
-
-			if(iterator.hasNext()) {
-				Pair<HttpSession, AsyncContext> ac = iterator.next();
-				final ServletResponse res = ac.r().getResponse();
-				final HttpSession session = ac.l();
-
-				String eventName = ac.r().getRequest().getParameter("event");
-				//logger.info("RUNNABLE <== " + eventName);
-				PrintWriter writer;
-				try {
-					writer = res.getWriter();
-
-					if(eventName.compareToIgnoreCase("sessionDuration") == 0
-							|| eventName.compareToIgnoreCase("all") == 0) {
-						writer.write("event: sessionDuration\n\n");
-						Date date = new Date();
-						writer.write("data: "
-								+ ( SESSION_DURATION - (date.getTime() - session.getLastAccessedTime()))
-								+ "\n\n");
-						//logger.info("EPCEvent : printing session duration ");
-					}
-
-
-					if(eventName.compareToIgnoreCase("sessionCount") == 0
-							|| eventName.compareToIgnoreCase("all") == 0) {
-						//if("geosiris".compareTo(usergrp) == 0) {	// On ne donne l'info qu'au geosiris users
-						writer.write("event: sessionCount\n\n");
-						writer.write("data: "
-								+ SessionCounter.getActiveSessions()
-								+ "\n\n");
-//							logger.info("EPCEvent : printing session count ");
-						//}
-					}
-
-					if(eventName.compareToIgnoreCase("logs") == 0
-							|| eventName.compareToIgnoreCase("all") == 0) {
-						ConcurrentLinkedQueue<ServerLogMessage> logs = SessionUtility.getLogs(session);
-						if(logs != null && logs.size() > 0) {
-							ServerLogMessage msg = logs.poll();
-							String msg_str = msg.toJSON().replaceAll("[\n\r]", "");
-							writer.write("event: logs\n\n");
-							writer.write("data: ");
-//										writer.write(msg.toJson().replace("\n", ""));
-							writer.write(Base64.getEncoder().encodeToString(msg_str.getBytes()));
-							writer.write("\n\n");
-							writer.flush();
-//								logger.info("EPCEvent : printing msg " + msg_str);
-						}
-					}
-					writer.write("\n\n");
-					writer.flush();
-
-					if (writer.checkError()) { //checkError calls flush, and flush() does not throw IOException
-						iterator.remove();
-						logger.error("EPCEvent : closing event handler");
-					}
-				} catch (IOException ignored) {
-					iterator.remove();
-					logger.error("EPCEvent : closing event handler");
-				}
-
-			}
-		};
-		service = Executors.newScheduledThreadPool(10);
-		service.scheduleAtFixedRate(notifier, 1, 2, TimeUnit.SECONDS);
-	}*/
 
 	/**
 	 * @see HttpServlet#HttpServlet()
@@ -123,10 +51,6 @@ public class EPCEvent extends HttpServlet {
 	public EPCEvent() {
 		super();
 	}
-
-	// TODO : faire des evÃ¨nements pour demander Ã la vue de se remettre Ã jour pour la lecture des donnees
-	// 			--> cela implique de faire attention aux onglets
-
 
 	/**
 	 * @see HttpServlet#doGet(HttpServletRequest request, HttpServletResponse response)
@@ -144,20 +68,23 @@ public class EPCEvent extends HttpServlet {
 		logger.info("EPCEvent : adding async on event '" + request.getParameter("event") +"'");
 
 		String eventName = request.getParameter("event");
-//		logger.info("RUNNABLE <== " + eventName);
-		// TODO : Le code suivant semble inutile car il semble que c'est la fonction init qui est utilisee par la vue
+
 		PrintWriter writer;
+
+		Gson gson = new Gson();
+
 		try {
 			writer = response.getWriter();
 
 			while(session != null && request.isRequestedSessionIdValid()) {
-				if(eventName.compareToIgnoreCase("sessionDuration") == 0 
+				if(eventName.compareToIgnoreCase("sessionDuration") == 0
 						|| eventName.compareToIgnoreCase("all") == 0) {
-					writer.write("event: sessionDuration\n");
+					writer.write("event: sessionDuration\n\n");
 					Date date = new Date();
-					writer.write("data: " 
+					writer.write("data: "
 							+ ( SESSION_DURATION - (date.getTime() - session.getLastAccessedTime()))
 							+ "\n\n");
+					writer.flush();
 //					logger.info("EPCEvent : printing session duration ");
 				}
 
@@ -165,12 +92,20 @@ public class EPCEvent extends HttpServlet {
 				if(eventName.compareToIgnoreCase("sessionCount") == 0
 						|| eventName.compareToIgnoreCase("all") == 0) {
 					//if("geosiris".compareTo(usergrp) == 0) {	// On ne donne l'info qu'au geosiris users
-					writer.write("event: sessionCount\n");
+					writer.write("event: sessionCount\n\n");
 					writer.write("data: "
 							+ SessionCounter.getActiveSessions()
 							+ "\n\n");
+					writer.flush();
 //					logger.info("EPCEvent : printing session count ");
 					//}
+				}
+
+				if(eventName.compareToIgnoreCase("sessionMetrics") == 0
+						|| eventName.compareToIgnoreCase("all") == 0) {
+					writer.write("event: sessionMetrics\n\n");
+					writer.write("data: " + Base64.getEncoder().encodeToString((Utility.getObjectSize(SessionUtility.getWorkspaceContent(session))).getBytes(StandardCharsets.UTF_8)) + "\n\n");
+					writer.flush();
 				}
 
 				if(eventName.compareToIgnoreCase("logs") == 0
@@ -179,9 +114,7 @@ public class EPCEvent extends HttpServlet {
 					while(logs != null && logs.size() > 0) {
 						ServerLogMessage msg = logs.poll();
 
-						String msg_str = msg.toJSON().replaceAll("[\n\r]", "");
-//						String msg_str = msg.toJSON();
-
+						String msg_str = msg.toJSON();
 						writer.write("event: logs\n\n");
 						writer.write("data: ");
 						writer.write(Base64.getEncoder().encodeToString(msg_str.getBytes()));
@@ -190,8 +123,6 @@ public class EPCEvent extends HttpServlet {
 						writer.flush();
 					}
 				}
-				writer.write("\n\n");
-				writer.flush();
 
 				if (writer.checkError()) { //checkError calls flush, and flush() does not throw IOException
 					//logger.error("EPCEvent : closing event handler");

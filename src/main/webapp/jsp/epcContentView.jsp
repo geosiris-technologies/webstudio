@@ -75,35 +75,33 @@ public Boolean restrictedExperiment(String prod_type){
 		document.getElementById(__ID_EPC_TABS_HEADER__).scrollLeft += 30;
 	}
 
-	<% 
-	if(userName==null || userName.length() <= 0){
-	%>
+
+	$(document).ready(function() {
 		// Initialisation du timeout
 		var spanTimeout = document.createElement("span");
 		spanTimeout.id = "spanTimeout";
 		spanTimeout.className = "dropdown-item ";
 		document.getElementById("sessionInfoMenu").appendChild(spanTimeout);
+		initSessionTimeOut(spanTimeout.id);
+
 
 		// Initialisation du compteur de session
-		/*var spanSessionCounter = document.createElement("span");
+		var spanSessionCounter = document.createElement("span");
 		spanSessionCounter.id = "sessionCounter";
 		spanSessionCounter.className = "dropdown-item ";
-		document.getElementById("sessionInfoMenu").appendChild(spanSessionCounter);*/
+		document.getElementById("sessionInfoMenu").appendChild(spanSessionCounter);
+		
+		<% if(userName==null || userName.length() <= 0){ %>
 
-		// Connexion Button
-		var disconnectBut = document.createElement("a");
-		disconnectBut.href = "connexion";
-		disconnectBut.className = "loginBut fa fa-power-off";
-		disconnectBut.title = "Log in";
-		sessionInfoMenu.appendChild(disconnectBut);
-		initSessionTimeOut(spanTimeout.id);//spanSessionCounter.id);
-	<%
-	}else{
-		// Initialisation du timeout
-		out.print("setUserName('"+userName+"', '"+userGrp+"', 'sessionCounter');");
-		out.print("initSessionTimeOut(null);");
-	}
-	%>
+		<%
+		}else{
+			// Initialisation du timeout
+			out.print("setUserName('"+userName+"', '"+userGrp+"', 'sessionCounter');");
+			//out.print("initSessionTimeOut(null);");
+		}
+		%>
+
+	});
 </script>
 
 </head>

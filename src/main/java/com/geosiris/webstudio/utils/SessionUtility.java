@@ -28,6 +28,7 @@ import jakarta.servlet.http.HttpServletResponse;
 import jakarta.servlet.http.HttpSession;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.openjdk.jol.info.ClassLayout;
 
 import java.io.IOException;
 import java.util.List;
@@ -57,6 +58,11 @@ public class SessionUtility {
 
     public static boolean tryConnectServlet(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
+
+        request.setAttribute("GEOSIRIS_ENV_PRODUCTION_TYPE", wsProperties.getDeploymentVersion() + "");
+        request.setAttribute("GEOSIRIS_ENV_CONFIG_TYPE", wsProperties.getConfigurationType() + "");
+        request.setAttribute("GEOSIRIS_ENV_WEBSTUDIO_VERSION", SessionUtility.class.getPackage().getImplementationVersion() + "");
+
         if (!SessionUtility.isConnectedUser(request)) {
             response.sendRedirect("connexion");
             return false;
@@ -71,9 +77,6 @@ public class SessionUtility {
         // User is connected, now let's give the response some variables
         request.setAttribute("login", userName);
         request.setAttribute("user_grp", session.getAttribute(SESSION_USER_GRP) + "");
-        request.setAttribute("GEOSIRIS_ENV_PRODUCTION_TYPE", wsProperties.getDeploymentVersion() + "");
-        request.setAttribute("GEOSIRIS_ENV_CONFIG_TYPE", wsProperties.getConfigurationType() + "");
-        request.setAttribute("GEOSIRIS_ENV_WEBSTUDIO_VERSION", SessionUtility.class.getPackage().getImplementationVersion() + "");
 
         return true;
     }
@@ -149,5 +152,4 @@ public class SessionUtility {
     public static boolean configIsMoreVerborseThan(ConfigurationType config){
         return wsProperties.getConfigurationType().value >= config.value;
     }
-
 }

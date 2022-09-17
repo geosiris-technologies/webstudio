@@ -39,6 +39,12 @@ body{
 
 }
 
+#ws_sessionMetrics{
+	border-left: 4px solid red;
+	border-right: 4px solid red;
+	padding-left: 10px;
+	padding-right: 10px;
+}
 #main {
 	padding-top: 80px;
 	padding-right: 10px;
