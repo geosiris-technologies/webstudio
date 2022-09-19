@@ -2,7 +2,7 @@ name: Maven Package and pushing docker
 
 on:
   release:
-    types: [created]
+    types: [published]
 
   # pull_request:
   #   branches: main
