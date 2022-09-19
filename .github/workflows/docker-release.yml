@@ -34,8 +34,9 @@ jobs:
         echo ::set-output name=jar_version::${PROJECT_VERSION}
 
     - name: Build a package
-      run: mvn versions:set -DnewVersion="${{ github.event.release.tag_name }}"
-      run: mvn -B -U --file pom.xml clean package -P release 
+      run: |
+        mvn versions:set -DnewVersion="${{ github.event.release.tag_name }}"
+        mvn -B -U --file pom.xml clean package -P release 
 
     - name: Temporarily save jar artifact
       uses: actions/upload-artifact@v3
