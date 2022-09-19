@@ -27,16 +27,16 @@ jobs:
         java-version: '11'
         distribution: 'temurin'
 
+    - name: Build a package
+      run: |
+        mvn versions:set -DnewVersion="${{ github.event.release.tag_name }}"
+        mvn -B -U --file pom.xml clean package -P release 
+
     - name: Bump jar version
       id: bump
       run: |
         PROJECT_VERSION=$(mvn help:evaluate -Dexpression=project.version -q -DforceStdout)
         echo ::set-output name=jar_version::${PROJECT_VERSION}
-
-    - name: Build a package
-      run: |
-        mvn versions:set -DnewVersion="${{ github.event.release.tag_name }}"
-        mvn -B -U --file pom.xml clean package -P release 
 
     - name: Temporarily save jar artifact
       uses: actions/upload-artifact@v3
