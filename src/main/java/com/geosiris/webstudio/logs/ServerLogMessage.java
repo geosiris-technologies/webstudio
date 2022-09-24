@@ -17,7 +17,6 @@ package com.geosiris.webstudio.logs;
 
 import com.geosiris.energyml.utils.ObjectController;
 import com.geosiris.webstudio.utils.SessionUtility;
-import com.geosiris.webstudio.utils.Utility;
 import com.google.gson.Gson;
 
 public class ServerLogMessage extends JsonifyableMessage{

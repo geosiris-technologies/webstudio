@@ -17,7 +17,7 @@ services:
       - "8080:8080"
       - "8443:8443"
     environment:
-      webstudio_enableUserDB: true
+      webstudio_enableUserDB: false
       webstudio_enableWorkspace: true
       workspace_databaseType: s3
       s3_localstackEndpoint: http://my-workspace:9000 

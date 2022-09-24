@@ -72,7 +72,7 @@ limitations under the License.
 										<em class="fas fa-key"></em>
 									</span>
 								</div>
-								<input type="password" encrypt="bcrypt" class="form-control" placeholder="password" name="password">
+								<input type="password" encrypt="bcrypt" class="form-control" placeholder="password" name="password" autocomplete="on">
 							</div>
 							<div class="form-group">
 								<input type="submit" value="Login" id="connexionSubmit" class="btn float-right login_btn">

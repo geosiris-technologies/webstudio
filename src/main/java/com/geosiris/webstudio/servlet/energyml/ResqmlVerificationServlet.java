@@ -69,7 +69,6 @@ public class ResqmlVerificationServlet extends HttpServlet {
         }
 
         answer.append("[");
-
         for (LogMessage lm : logs) {
             answer.append((ServerLogMessage.parseLogMessage(lm)).toJSON()).append(",");
         }

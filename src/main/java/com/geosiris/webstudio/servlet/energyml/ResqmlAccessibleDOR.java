@@ -20,7 +20,6 @@ import com.geosiris.energyml.utils.ObjectController;
 import com.geosiris.webstudio.servlet.Editor;
 import com.geosiris.webstudio.utils.SessionUtility;
 import com.geosiris.webstudio.utils.Utility;
-import jakarta.servlet.ServletContextEvent;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.HttpServlet;

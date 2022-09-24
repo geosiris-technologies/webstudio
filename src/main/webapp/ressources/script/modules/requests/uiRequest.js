@@ -148,7 +148,8 @@ export function openResqmlObjectContent(    uuid,
                     };
 
                     var butPrintOSDU_Json = document.createElement("button");
-                    butPrintOSDU_Json.appendChild(document.createTextNode("Jsonify"));
+                    butPrintOSDU_Json.appendChild(document.createTextNode("OSDU WKE"));
+                    butPrintOSDU_Json.title = "OSDU Well Known Entities";
                     butPrintOSDU_Json.className += " btn btn-outline-success objButtonAction";
                     butPrintOSDU_Json.id = "but_PrintOSDU_Json_" + uuid;
                     divBtnGrp.appendChild(butPrintOSDU_Json);
@@ -157,10 +158,21 @@ export function openResqmlObjectContent(    uuid,
                         window.open("/GetObjectAsJson?uuid=" + uuid, '_blank').focus()
                     };
 
+                    var butPrint_Json = document.createElement("button");
+                    butPrint_Json.appendChild(document.createTextNode("Json"));
+                    butPrint_Json.title = "Google Gson translation";
+                    butPrint_Json.className += " btn btn-outline-success objButtonAction";
+                    butPrint_Json.id = "but_Print_Json_" + uuid;
+                    divBtnGrp.appendChild(butPrint_Json);
+
+                    butPrint_Json.onclick = function(){
+                        window.open("/GetObjectAsJson?uuid=" + uuid, '_blank').focus()
+                    };
+
                     var butPrintXml = document.createElement("button");
                     butPrintXml.appendChild(document.createTextNode("Xml"));
                     butPrintXml.className += " btn btn-outline-success objButtonAction";
-                    butPrintXml.id = "but_PrintOSDU_Json_" + uuid;
+                    butPrintXml.id = "but_Print_xml_" + uuid;
                     divBtnGrp.appendChild(butPrintXml);
 
                     butPrintXml.onclick = function(){
