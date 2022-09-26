@@ -66,7 +66,7 @@ export function closeActionYes(){
 export function createNewElt(idForm, modalId, rollingId){
     var selectedType = document.getElementById("selectorCreateRootElt").value
     // console.log("selected type : ");
-    sendForm('createRootEltForm', 'modal_createRootElt', 'rolling_createRootElt');
+    sendForm('createRootEltForm', 'modal_createRootElt', 'rolling_createRootElt', false, false, false, true);
     // console.log(selectedType);
 }
 

@@ -374,16 +374,15 @@ public class ResqmlVerification {
                                         rootType,
                                         ServerLogMessage.MessageType.WARNING));
                             }
-                            if (refObjTitle.compareTo(title) != 0) {
-                                messages.add(new LogResqmlVerification("DOR reference has wrong information",
-                                        "Referenced object title is '" + refObjTitle + "' and not '" + title
-                                                + "' at path : " + dor.getName(),
-                                        rootUUID,
-                                        rootTitle,
-                                        rootType,
-                                        ServerLogMessage.MessageType.WARNING));
-                            }
-
+                        }
+                        if (refObjTitle.compareTo(title) != 0) {
+                            messages.add(new LogResqmlVerification("DOR reference has wrong information",
+                                    "Referenced object title is '" + refObjTitle + "' and not '" + title
+                                            + "' at path : " + dor.getName(),
+                                    rootUUID,
+                                    rootTitle,
+                                    rootType,
+                                    ServerLogMessage.MessageType.WARNING));
                         }
                     } catch (Exception e) {
                         logger.error(e.getMessage(), e);

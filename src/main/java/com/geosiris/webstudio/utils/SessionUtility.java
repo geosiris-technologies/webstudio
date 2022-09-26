@@ -40,7 +40,6 @@ public class SessionUtility {
     public static final String EDITOR_NAME = "ResqmlEditor";
 
     public static final String PREFERENCE_FOLDER_NAME = "preference";
-    public static final String WORKSPACE_NAME = "ExistDB";
     public static final String SESSION_WORKSPACE_DATA_ID = "workspaceData";
 
     public static final String SESSION_ETP_CLIENT_ID = "etpClient";

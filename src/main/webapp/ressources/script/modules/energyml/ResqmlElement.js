@@ -519,20 +519,20 @@ export class ResqmlElement{
 					divCollapseInput.style.display = 'inline-block';
 
 					{// Bouton d'oeil pour ouvrir l'objet represente par l'uuid 
-						var but = document.createElement("span");
-						but.className = "openElementBut fas fa-eye";
-						but.title = "Open";
-						but.addEventListener("mouseover", function() {
-							but.className = "openElementBut far fa-eye";
+						const but_open_from_uuid = document.createElement("span");
+						but_open_from_uuid.className = "openElementBut fas fa-eye";
+						but_open_from_uuid.title = "Open";
+						but_open_from_uuid.addEventListener("mouseover", function() {
+							but_open_from_uuid.className = "openElementBut far fa-eye";
 						});
 
-						but.addEventListener("mouseout", function() {
-							but.className = "openElementBut fas fa-eye";
+						but_open_from_uuid.addEventListener("mouseout", function() {
+							but_open_from_uuid.className = "openElementBut fas fa-eye";
 						})
-						but.onclick = function(){
+						but_open_from_uuid.onclick = function(){
 							openResqmlObjectContentByUUID(constThis.value);
 						}
-						col1.appendChild(but);
+						col1.appendChild(but_open_from_uuid);
 						/*// On catch le clic droit
 						divCollapseInput.oncontextmenu = function (event) {
 							if(constThis.value!=null){
@@ -546,18 +546,18 @@ export class ResqmlElement{
 						}*/
 					}
 					{ // uuid generator<i class="fa-solid fa-wand-magic-sparkles"></i>
-						var but = document.createElement("span");
-						but.className = "genElementBut far fa-edit";
-						but.title = "Generate uuid (field MUST be empty!)";
+						const but_generate_uuid = document.createElement("span");
+						but_generate_uuid.className = "genElementBut far fa-edit";
+						but_generate_uuid.title = "Generate uuid (field MUST be empty!)";
 
-						but.addEventListener("mouseover", function() {
-							but.className = "genElementBut fas fa-edit";
+						but_generate_uuid.addEventListener("mouseover", function() {
+							but_generate_uuid.className = "genElementBut fas fa-edit";
 						});
 
-						but.addEventListener("mouseout", function() {
-							but.className = "genElementBut fas fa-edit";
+						but_generate_uuid.addEventListener("mouseout", function() {
+							but_generate_uuid.className = "genElementBut fas fa-edit";
 						})
-						but.onclick = function(){
+						but_generate_uuid.onclick = function(){
 							if(isUUID(divCollapseInput.value)){
 								// On ne remplace pas si deja qqch d'ecrit
 								createSnackBar("UUID field must be empty before generation", 1000);
@@ -566,7 +566,7 @@ export class ResqmlElement{
 								divCollapseInput.value = constThis.value;
 							}
 						}
-						col1.appendChild(but);
+						col1.appendChild(but_generate_uuid);
 					}
 					divCollapseInput.pattern = UUID_REGEX_str;
 				}else if (this.type.toLowerCase().includes('calendar')){

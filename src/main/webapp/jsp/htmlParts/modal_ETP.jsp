@@ -25,13 +25,13 @@ limitations under the License.
                                                 'ETPRequest_import_Form');
         }
         document.getElementById("submit_PutDataObject").onclick = function(){
-            sendForm('ETPRequest_send_Form', 'modal_ETP', 'rolling_ETP', false, false, false);
+            sendForm('ETPRequest_send_Form', 'modal_ETP', 'rolling_ETP', false, false, false, false);
         }
         document.getElementById("submit_getRelated").onclick = function(){
-            populate_getRelated('ETPRequest_getRelated_Form', 'ETPRequest_getRelated_objList');
+            populate_getRelated('ETPRequest_getRelated_Form', 'ETPRequest_getRelated_objList', 'ETPRequest_ImportRelated_Form');
         }
         document.getElementById("submit_getDataArray").onclick = function(){
-            sendForm('ETPRequest_getDataArray_Form', 'modal_ETP', 'rolling_ETP', false, false);
+            sendForm('ETPRequest_getDataArray_Form', 'modal_ETP', 'rolling_ETP', false, false, false);
         }
     </script>
 
@@ -167,15 +167,15 @@ limitations under the License.
                                             <input class="form-control" type="number" name="depth" id="ETPRequest_getRelated_depth" value="1" min="1">
                                         </div>
                                     </div>
-
-
                                     <div class="modal_tab_table" id="ETPRequest_getRelated_workspace_objList"></div>
                                 </form>
-                            </div>
 
-                            <div>
                                 <h3>Related Objects</h3>
-                                <div id="ETPRequest_getRelated_objList"></div>
+                                <form id="ETPRequest_ImportRelated_Form" name="ETPForm" method="post" action="ETPRequest" accept-charset="utf-8" style="display: none"> 
+                                    <input class="form-control" type="text" required name="request"value="import" hidden="hidden" />
+                                    <div id="ETPRequest_getRelated_objList"></div>
+
+                                </form>
                             </div>
                         </div>
                     </div>

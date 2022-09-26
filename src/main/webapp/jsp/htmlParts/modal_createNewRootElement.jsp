@@ -41,8 +41,6 @@ limitations under the License.
 					<label>Package version</label>
 					<div id="modal_createRootElt_versionChooserDiv"></div>
 				</div>
-				<div>
-				</div>
 				<form id="createRootEltForm" name="createRootEltForm" method="post" action="ObjectEdit">
 					<label>Top level Object</label>
 					<input type="text" name="command" value="create" hidden="hidden">

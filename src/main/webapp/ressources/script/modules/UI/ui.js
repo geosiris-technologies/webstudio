@@ -359,6 +359,8 @@ export function createTable(jsonList,
             endTask();
             refreshHighlightedOpenedObjects();
         });
+    }else{
+        console.log("skiping reload, semaphore allready taken")
     }
 }
 

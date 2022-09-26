@@ -18,6 +18,7 @@ import {refreshHighlightedOpenedObjects} from "../ui.js"
 import {call_after_DOM_updated} from "../htmlUtils.js"
 import {closeAllResqmlObjectContent} from "../tabulation.js"
 import {sendPostFormAndReload} from "../eventHandler.js"
+import {sendPostForm_Promise} from "../../requests/requests.js"
 
 
 export function createModal(idModal, title, content, onCloseFunction){
@@ -142,7 +143,7 @@ export function closeModal(idModal){
     refreshHighlightedOpenedObjects();
 }
 
-export function sendForm(formToSend, modalEntityId, rollingId, closeAllTabs, showResult, closeModal){
+export function sendForm(formToSend, modalEntityId, rollingId, closeAllTabs, showResult, closeModal, reloadWorkspace){
     var form = formToSend;
     if(typeof(form) === "string"){
         // Si c'est un identifiant on cherche l'element sinon c'est qu'on a deja l'objet form
@@ -170,26 +171,49 @@ export function sendForm(formToSend, modalEntityId, rollingId, closeAllTabs, sho
         closeAllResqmlObjectContent();
     }
 
-    return sendPostFormAndReload(form, form.action, showResult).then(
-        function(){
-            roller.style.display='none';
+    if(reloadWorkspace != null && reloadWorkspace){
+        return sendPostFormAndReload(form, form.action, showResult).then(
+            function(){
+                roller.style.display='none';
 
-            submitters.each(function(index){$(this).disable=false;});
+                submitters.each(function(index){$(this).disable=false;});
 
-            if(modalDiv!=null && (closeModal==null || closeModal == true) ){
-                try{
-                    // On cherche le bouton de fermeture du modal
-                    var listModalCloseBut = modalDiv.getElementsByTagName("button");
-                    for(var eltClose=0; eltClose<listModalCloseBut.length; eltClose++ ){
-                        if(listModalCloseBut[eltClose].className=="close"){
-                            try{
-                                listModalCloseBut[eltClose].click();
-                            }catch(e){console.log(e);}
-                        }
-                    } 
-                }catch(Except){console.log(Except);}
-            }
-        });
+                if(modalDiv!=null && (closeModal==null || closeModal == true) ){
+                    try{
+                        // On cherche le bouton de fermeture du modal
+                        var listModalCloseBut = modalDiv.getElementsByTagName("button");
+                        for(var eltClose=0; eltClose<listModalCloseBut.length; eltClose++ ){
+                            if(listModalCloseBut[eltClose].className=="close"){
+                                try{
+                                    listModalCloseBut[eltClose].click();
+                                }catch(e){console.log(e);}
+                            }
+                        } 
+                    }catch(Except){console.log(Except);}
+                }
+            });
+    }else{
+        return sendPostForm_Promise(form, form.action, showResult).then(
+            function(){
+                roller.style.display='none';
+
+                submitters.each(function(index){$(this).disable=false;});
+
+                if(modalDiv!=null && (closeModal==null || closeModal == true) ){
+                    try{
+                        // On cherche le bouton de fermeture du modal
+                        var listModalCloseBut = modalDiv.getElementsByTagName("button");
+                        for(var eltClose=0; eltClose<listModalCloseBut.length; eltClose++ ){
+                            if(listModalCloseBut[eltClose].className=="close"){
+                                try{
+                                    listModalCloseBut[eltClose].click();
+                                }catch(e){console.log(e);}
+                            }
+                        } 
+                    }catch(Except){console.log(Except);}
+                }
+            });
+    }
 }
 
 export function modal_waitDomUpdate(testFunc) {

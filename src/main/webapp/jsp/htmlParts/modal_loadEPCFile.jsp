@@ -19,11 +19,11 @@ limitations under the License.
 	import {resquestValidation} from "/ressources/script/modules/energyml/epcContentManager.js";
 	
 	document.getElementById("submit_load_epc_distant").onclick = function(){
-		sendForm('loadEpcForm_URL', 'modal_loadEPC', 'rolling_load', true).then(
+		sendForm('loadEpcForm_URL', 'modal_loadEPC', 'rolling_load', true, false, true, true).then(
 									function(){resquestValidation(__ID_CONSOLE__, null);});
 	}
 	document.getElementById("submit_load_epc_local").onclick = function(){
-		sendForm('loadEpcForm_DISK', 'modal_loadEPC', 'rolling_load', true).then(
+		sendForm('loadEpcForm_DISK', 'modal_loadEPC', 'rolling_load', true, false, true, true).then(
 									function(){resquestValidation(__ID_CONSOLE__, null);});
 	}
 </script>

@@ -18,6 +18,22 @@ import {openResqmlObjectContentByUUID} from "../main.js"
 import {deleteResqmlObject} from "../requests/uiRequest.js"
 
 
+export function openContentInNewTab(jsonContent){
+    var tab = window.open('about:blank', '_blank');
+    tab.document.write(jsonContent);
+    tab.document.close();
+}
+
+export function downloadJsonAsFile(jsonContent, fileName){
+    var element = document.createElement('a');
+    element.setAttribute('href', 'data:application/json;charset=utf-8,' + encodeURIComponent(jsonContent));
+    element.setAttribute('download', fileName);
+    element.style.display = 'none';
+    document.body.appendChild(element);
+    element.click();
+    document.body.removeChild(element);
+}
+
 export function getPopoverOpenUUID(uuidToOpen, posX, posY){
     const content = document.createElement("span");
     content.appendChild(document.createTextNode("Open"));

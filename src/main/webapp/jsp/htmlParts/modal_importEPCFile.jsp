@@ -20,13 +20,13 @@ limitations under the License.
 		import {resquestValidation} from "/ressources/script/modules/energyml/epcContentManager.js";
 
 		document.getElementById("submit_importEPCFromDisk").onclick = function(){
-			sendForm('importEpcFormDisk', 'modal_importEPC', 'rolling_import')
+			sendForm('importEpcFormDisk', 'modal_importEPC', 'rolling_import', false, false, true, true)
 				.then(function(){
 					resquestValidation(__ID_CONSOLE__, null);
 				});
 		}
 		document.getElementById("submit_importEPCFromURL").onclick = function(){
-			sendForm('importEpcFormURL', 'modal_importEPC', 'rolling_import')
+			sendForm('importEpcFormURL', 'modal_importEPC', 'rolling_import', false, false, true, true)
 				.then(function(){
 					resquestValidation(__ID_CONSOLE__, null);
 				});

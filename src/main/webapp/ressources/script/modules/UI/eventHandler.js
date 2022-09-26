@@ -73,8 +73,8 @@ export function initSessionLogEventHandler(console_id){
     const evt_list_onMessage = function(event) {
         // Decode message
         try{
-            var decodedMsg = window.atob(event.data);
-            if(decodedMsg.severity && decodedMsg.severity == __ENUM_CONSOLE_MSG_SEVERITY_ACTION__){
+            var decodedMsg = JSON.parse(window.atob(event.data));
+            if(decodedMsg.severity != null && decodedMsg.severity == __ENUM_CONSOLE_MSG_SEVERITY_ACTION__){
                 if(decodedMsg.message && decodedMsg.message.toLowerCase() == "reload"){
                     refreshWorkspace();
                 }
