@@ -23,7 +23,6 @@ import com.google.gson.Gson;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.openjdk.jol.info.GraphLayout;
-import org.openjdk.jol.vm.VM;
 
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;

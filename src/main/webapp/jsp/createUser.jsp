@@ -67,13 +67,13 @@ limitations under the License.
 							<div class="input-group-prepend">
 								<span class="input-group-text"><em class="fas fa-key"></em></span>
 							</div>
-							<input type="password" encrypt="bcrypt" class="form-control" placeholder="Password" name="password" required>
+							<input type="password" encrypt="bcrypt" class="form-control" placeholder="Password" name="password" required autocomplete="new-password">
 						</div>
 						<div class="input-group form-group">
 							<div class="input-group-prepend">
 								<span class="input-group-text"><em class="fas fa-key"></em></span>
 							</div>
-							<input type="password" encrypt="bcrypt" class="form-control" placeholder="Confirm password" name="password" required>
+							<input type="password" encrypt="bcrypt" class="form-control" placeholder="Confirm password" name="password" required autocomplete="new-password">
 						</div>
 
 

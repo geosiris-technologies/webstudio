@@ -88,8 +88,8 @@ export function setErrorsVisibility(currentElement, visibleValue){
     }
 
     if(rootElt!=null){
-        console.log("updating errors");
-        //const setVisible = visibleValue;
+        // console.log("updating errors");
+        // const setVisible = visibleValue;
         var els = rootElt.getElementsByClassName("msg-error");
         Array.prototype.forEach.call(els, function(elt) {
             elt.style.display = visibleValue ? "" : "none";

@@ -6,7 +6,7 @@ services:
 
   ws_webstudio:
     container_name: ws-public-webstudio
-    image: 'geomods/geomods-webstudio:1.0.0'
+    image: 'geomods/geomods-webstudio:latest'
     hostname: 'gitlab.com'
     environment:
       GITLAB_OMNIBUS_CONFIG: |

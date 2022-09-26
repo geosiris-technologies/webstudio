@@ -66,6 +66,7 @@ export function geosiris_createETP_connector_form(fun_isConnected, fun_isDisconn
     in2.name = "etp-server-username";
     in2.style = "width:100%";
     in2.placeholder = 'Username';
+    in2.autocomplete = "on";
     d2.appendChild(lbl2);
     d2.appendChild(in2);
 
@@ -82,6 +83,7 @@ export function geosiris_createETP_connector_form(fun_isConnected, fun_isDisconn
     in3.type = "password";
     in3.name = "etp-server-password";
     in3.style = "width:100%";
+    in3.autocomplete = "on";
     d3.appendChild(lbl3);
     d3.appendChild(in3);
 

@@ -18,8 +18,9 @@ import {sendGetURLAndReload} from "../UI/eventHandler.js"
 import {__USER_NAME__, beginTask, endTask, getVueOrientation, setVueOrientation, initRootEltSelector} from "../UI/ui.js"
 import {sendGetURL, sendGetURL_Promise, sendPostRequestJson} from "../requests/requests.js"
 import {appendConsoleMessage} from "../logs/console.js"
-import {__ENUM_CONSOLE_MSG_SEVERITY_INFO__, __ENUM_CONSOLE_MSG_SEVERITY_WARNING__, __RWS_CLIENT_NAME__, __RWS_SERVER_NAME__} from "../common/variables.js"
-
+import {__ENUM_CONSOLE_MSG_SEVERITY_INFO__, __ENUM_CONSOLE_MSG_SEVERITY_WARNING__, 
+        __ENUM_CONSOLE_MSG_SEVERITY_ERROR__, __RWS_CLIENT_NAME__, __RWS_SERVER_NAME__, 
+        getSeverityEnum} from "../common/variables.js"
 
 /**********************************************************/
 /** Do not forget to access in map with LOWERCASE key !! **/
@@ -155,12 +156,42 @@ export function resquestValidation(idConsoleElt, rootUUID){
                     var validationJSON = JSON.parse(responseText);
 
                     var msgList = [];
-                    msgList.push(
-                        { 
-                            severity: __ENUM_CONSOLE_MSG_SEVERITY_INFO__,
-                            originator: __RWS_CLIENT_NAME__,
-                            message: "VERIFICATIONS : " + validationJSON.length + " errors"
-                        });
+
+                    var cpt_errors = 0;
+                    var cpt_warnings = 0;
+                    for(var validMsgIdx=0; validMsgIdx<validationJSON.length; validMsgIdx++){
+                        var msgVerif = validationJSON[validMsgIdx];
+                        var severity = null;
+                        try{
+                            severity = getSeverityEnum(msgVerif.severity)
+                        }catch(exception){}
+                        if(severity == __ENUM_CONSOLE_MSG_SEVERITY_ERROR__)
+                            cpt_errors++;
+                        if(severity == __ENUM_CONSOLE_MSG_SEVERITY_WARNING__)
+                            cpt_warnings++;
+                    }
+
+                    var message = "Validation ";
+
+                    if(cpt_warnings > 0 || cpt_errors > 0){
+                        message += "report:";
+                        if(cpt_warnings > 0){
+                            message += cpt_warnings + " warning" + (cpt_warnings>1?"s ":" ");
+                            if(cpt_errors > 0)
+                                message +=  "and"
+                        }
+                        if(cpt_errors > 0){
+                            message += " " + cpt_errors + " error" + (cpt_errors>1?"s":"");
+                        }
+                    }else{
+                        message += "success"
+                    }
+                    msgList.push({ 
+                        severity: __ENUM_CONSOLE_MSG_SEVERITY_INFO__,
+                        originator: __RWS_CLIENT_NAME__,
+                        message: message
+                    });
+
 
                     for(var validMsgIdx=0; validMsgIdx<validationJSON.length; validMsgIdx++){
                         var msgVerif = validationJSON[validMsgIdx];

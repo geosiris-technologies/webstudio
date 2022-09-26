@@ -17,9 +17,7 @@ package com.geosiris.webstudio.model;
 
 import com.geosiris.energyml.utils.ResqmlAbstractType;
 import com.google.gson.Gson;
-import org.openjdk.jol.info.ClassLayout;
 import org.openjdk.jol.info.GraphLayout;
-import org.openjdk.jol.vm.VM;
 
 import java.util.List;
 

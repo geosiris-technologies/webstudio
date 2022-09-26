@@ -24,8 +24,8 @@ The WebStudio is a web application that allows to manipulate energyml file (such
 
 ## Version History
 
-- 1.0.0: 
-    - Initial Release
+- 1.0.1: 
+    - Initial working Release
 
 ## License
 

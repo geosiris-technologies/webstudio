@@ -107,14 +107,21 @@ export const __TB_MSG_SEVERITY__ = [
                                 __ENUM_CONSOLE_MSG_SEVERITY_TOAST__,
                             ];
 
-export function getSeverityClass(base, severity){
+export function getSeverityEnum(severity){
     var severity_upc = severity.toUpperCase();
     for(var idx=0;idx<__TB_MSG_SEVERITY__.length; idx++){
         if(severity_upc == __TB_MSG_SEVERITY__[idx].toUpperCase()){
-            return base + __TB_MSG_SEVERITY__[idx];
+            return __TB_MSG_SEVERITY__[idx];
         }
     }
+    return null;
+}
 
+export function getSeverityClass(base, severity){
+    var sev = getSeverityEnum(severity);
+    if(sev == null)
+        sev = __ENUM_CONSOLE_MSG_SEVERITY_LOG__;
+    return base + sev;
 }
 
 export const __MIN_PWD_SIZE__ = 8;

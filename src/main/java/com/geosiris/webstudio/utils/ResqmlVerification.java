@@ -83,7 +83,7 @@ public class ResqmlVerification {
                                 rootUUID,
                                 rootCitationTitle,
                                 rootType,
-                                ServerLogMessage.MessageType.WARNING));
+                                ServerLogMessage.MessageType.ERROR));
 
                     }
                 }
@@ -342,8 +342,8 @@ public class ResqmlVerification {
                 } else {
                     Object referencedObj = resqmlObjects.get(refUuid);
                     String refObjTitle = (String) ObjectController.getObjectAttributeValue(referencedObj, "Citation.Title");
-                    String refObjContentType = EPCGenericManager.getObjectContentType(referencedObj, true);
-                    String refObjQualifiedType = EPCGenericManager.getObjectQualifiedType(referencedObj, true);
+                    String refObjContentType = EPCGenericManager.getObjectContentType(referencedObj);
+                    String refObjQualifiedType = EPCGenericManager.getObjectQualifiedType(referencedObj);
 
                     String title = (String) dor.getData("title");
                     try {
@@ -357,7 +357,7 @@ public class ResqmlVerification {
                                     rootType,
                                     ServerLogMessage.MessageType.WARNING));
                         } else {
-                            if (contentType != null && contentType.compareTo(refObjContentType) != 0) {
+                            if (ObjectController.hasAttribute (dor.getData(), "contentType") && (contentType != null && contentType.compareTo(refObjContentType) != 0)) {
                                 messages.add(new LogResqmlVerification("DOR reference has wrong information",
                                         "Referenced object content type should be '" + refObjContentType + "' and not '"
                                                 + contentType + "' at path : " + dor.getName(),
@@ -365,9 +365,9 @@ public class ResqmlVerification {
                                         rootTitle,
                                         rootType,
                                         ServerLogMessage.MessageType.WARNING));
-                            }else if (qualifiedType != null && qualifiedType.compareTo(refObjQualifiedType) != 0) {
+                            }else if (ObjectController.hasAttribute (dor.getData(), "qualifiedType") && (qualifiedType != null && qualifiedType.compareTo(refObjQualifiedType) != 0)) {
                                 messages.add(new LogResqmlVerification("DOR reference has wrong information",
-                                        "Referenced object content type should be '" + refObjQualifiedType + "' and not '"
+                                        "Referenced object qualified type should be '" + refObjQualifiedType + "' and not '"
                                                 + qualifiedType + "' at path : " + dor.getName(),
                                         rootUUID,
                                         rootTitle,
@@ -502,7 +502,6 @@ public class ResqmlVerification {
 
                 // DOR infos
                 String dorTitle = (String) ObjectController.getObjectAttributeValue(dor, "Title");
-                String dorType = (String) ObjectController.getObjectAttributeValue(dor, "ContentType");
                 String dorVersion = (String) ObjectController.getObjectAttributeValue(dor, "ObjectVersion");
 
                 // Target object infos
@@ -512,36 +511,36 @@ public class ResqmlVerification {
                 }else{
                     dorTarget = additionalProperties.get(dorUuid);
                 }
+                boolean modificationOccured = false;
 
                 String targetTitle = (String) ObjectController.getObjectAttributeValue(dorTarget, "Citation.Title");
                 String targetVersion = (String) ObjectController.getObjectAttributeValue(dorTarget, "ObjectVersion");
-                String targetType = EPCGenericManager.getObjectContentType(dorTarget, true);
 
-                if(dorType == null){
-                    dorType = (String) ObjectController.getObjectAttributeValue(dor, "QualifiedType");
-                    targetType = EPCGenericManager.getObjectQualifiedType(dorTarget, true);
+                if(ObjectController.hasAttribute(dor, "ContentType")){
+                    String dorType = (String) ObjectController.getObjectAttributeValue(dor, "ContentType");
+                    String targetType = EPCGenericManager.getObjectContentType(dorTarget);
+                    if(dorType == null || dorType.compareTo(targetType) != 0){
+                        modificationOccured = true;
+                        try {
+                            ObjectController.editObjectAttribute(dor, "ContentType", EPCGenericManager.getObjectContentType(dorTarget));
+                        } catch (Exception e) {logger.debug(e.getMessage(), e);}
+                    }
                 }
-
-                // tests
-                boolean modificationOccured = false;
-
+                if(ObjectController.hasAttribute(dor, "QualifiedType")){
+                    String dorType = (String) ObjectController.getObjectAttributeValue(dor, "QualifiedType");
+                    String targetType = EPCGenericManager.getObjectQualifiedType(dorTarget);
+                    if(dorType == null || dorType.compareTo(targetType) != 0){
+                        modificationOccured = true;
+                        try {
+                            ObjectController.editObjectAttribute(dor, "QualifiedType", EPCGenericManager.getObjectQualifiedType(dorTarget));
+                        } catch (Exception e) {logger.debug(e.getMessage(), e);}
+                    }
+                }
                 if(dorTitle == null || dorTitle.compareTo(targetTitle) != 0){
                     modificationOccured = true;
                     try {
                         ObjectController.editObjectAttribute(dor, "Title", targetTitle);
                     } catch (Exception e) {logger.debug(e.getMessage(), e);}
-                }
-                if(dorType == null || dorType.compareTo(targetType) != 0){
-                    modificationOccured = true;
-                    try {
-                        ObjectController.editObjectAttribute(dor, "ContentType", EPCGenericManager.getObjectContentType(dorTarget, true));
-                    } catch (Exception e0) {
-                        try {
-                            String newQualifiedType = EPCGenericManager.getObjectQualifiedType(dorTarget, true);
-                            logger.debug("Setting Qualified type " + targetType + " === " + newQualifiedType);
-                            ObjectController.editObjectAttribute(dor, "QualifiedType", newQualifiedType);
-                        } catch (Exception e) {logger.debug(e.getMessage(), e);}
-                    }
                 }
                 if(targetVersion != null && (dorVersion == null || dorVersion.compareTo(targetVersion) != 0)){
                     try {
@@ -552,7 +551,7 @@ public class ResqmlVerification {
 
                 if(modificationOccured){
                     messages.add(new LogResqmlVerification("DOR updated",
-                            "DOR targetting " + dorUuid + "[" + targetTitle + "] updated",
+                            "DOR targeting " + dorUuid + "[" + targetTitle + "] updated",
                             objUuid, objTitle, objType,
                             ServerLogMessage.MessageType.INFO));
                 }
