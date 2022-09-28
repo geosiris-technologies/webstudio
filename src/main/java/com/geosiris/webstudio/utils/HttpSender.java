@@ -18,6 +18,7 @@ package com.geosiris.webstudio.utils;
 import com.geosiris.energyml.utils.Pair;
 import com.geosiris.webstudio.logs.ServerLogMessage;
 import com.geosiris.webstudio.logs.ServerLogMessage.MessageType;
+import com.google.gson.Gson;
 import jakarta.servlet.http.HttpSession;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -33,47 +34,51 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.Callable;
+import java.util.function.BiFunction;
+import java.util.function.Consumer;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 
 public class HttpSender {
-    public static Logger logger = LogManager.getLogger(HttpSender.class);
+	public static Logger logger = LogManager.getLogger(HttpSender.class);
 
 	private static final String LINE_FEED = "\r\n";
 
 	private static void addFilePart(HttpURLConnection con, String boundary,
-			String fieldName, String fileName, String fileContent, PrintWriter writer)
-					throws IOException {
+									String fieldName, String fileName, String fileContent, PrintWriter writer)
+			throws IOException {
 		//    	OutputStream outputStream = con.getOutputStream();
 		//PrintWriter writer = new PrintWriter(new OutputStreamWriter(outputStream, StandardCharsets.UTF_8),
 		//                true);
 		writer.append("--").append(boundary).append(LINE_FEED);
 		writer.append("Content-Disposition: form-data; name=\"").append(fieldName).append("\"; filename=\"").append(fileName).append("\"")
-		.append(LINE_FEED);
+				.append(LINE_FEED);
 		writer.append("Content-Type: ").append(URLConnection.guessContentTypeFromName(fileName))
-		.append(LINE_FEED);
+				.append(LINE_FEED);
 		writer.append("Content-Transfer-Encoding: text/plain").append(LINE_FEED);
 		writer.append(LINE_FEED);
 		writer.flush();
 
 		writer.append(fileContent);
 		writer.append(LINE_FEED);
-		writer.flush(); 
+		writer.flush();
 		//        writer.close();
 	}
 
-	private static void addFormField(String name, String value, String boundary, PrintWriter writer) {
+	public static void addFormField(String name, String value, String boundary, PrintWriter writer) {
 		writer.append("--").append(boundary).append(LINE_FEED);
 		writer.append("Content-Disposition: form-data; name=\"").append(name).append("\"")
-		.append(LINE_FEED);
-		writer.append("Content-Type: text/plain; charset=").append(String.valueOf(StandardCharsets.UTF_8)).append(
-				LINE_FEED);
-		writer.append(LINE_FEED);
+				.append(LINE_FEED);
+//		writer.append("Content-Type: text/plain; charset=").append(String.valueOf(StandardCharsets.UTF_8)).append(
+//				LINE_FEED);
+//		writer.append(LINE_FEED);
 		writer.append(value).append(LINE_FEED);
 		writer.flush();
 	}
 
-	private static List<String> finish(HttpURLConnection con, String boundary, PrintWriter writer) throws IOException {
-		List<String> response = new ArrayList<>();
+	public static String finish(HttpURLConnection con, String boundary, PrintWriter writer) throws IOException {
+		StringBuilder response = new StringBuilder();
 
 		writer.flush();
 		writer.append("--").append(boundary).append("--").append(LINE_FEED);
@@ -87,7 +92,7 @@ public class HttpSender {
 					con.getInputStream()));
 			String line;
 			while ((line = reader.readLine()) != null) {
-				response.add(line);
+				response.append(line).append("\n");
 			}
 			reader.close();
 			con.disconnect();
@@ -95,7 +100,7 @@ public class HttpSender {
 			throw new IOException("Server returned non-OK status: " + status + " : " + con.getResponseMessage());
 		}
 
-		return response;
+		return response.toString();
 	}
 
 	public static void sendfileWithPostRequest(
@@ -135,22 +140,78 @@ public class HttpSender {
 				addFilePart(con, boundary, fileParamName, fNameAndContent.l(), fNameAndContent.r(), writer);
 			}
 //			if(!WebStudioConfig.ENV_VAR_IS_IN_PRODUCTION)
-			logger.info(finish(con, boundary, writer).stream().reduce("", (subtotal, element) -> subtotal + "\n"+ element));
+			logger.info(finish(con, boundary, writer));
 		} catch (ConnectException e) {
-			SessionUtility.log(session, new ServerLogMessage(MessageType.DEBUG, "Workspace database connection exception", SessionUtility.WORKSPACE_NAME));
+			SessionUtility.log(session, new ServerLogMessage(MessageType.DEBUG, "Workspace database connection exception", SessionUtility.EDITOR_NAME));
 		} catch (Exception e) {
 			logger.error(e.getMessage(), e);
 		}
 	}
 
+	public static String sendfileWithPostRequest(
+			HttpSession session,
+			Consumer<OutputStream> f_epc_writer,
+			String _url, String login, String pwd,
+			String fileParamName, Map<String, String> otherParams) {
+		String boundary = "===" + System.currentTimeMillis() + "===";
+		String result = "";
+		try {
+			URL url = new URL(_url);
+			HttpURLConnection con = (HttpURLConnection) url.openConnection();
+			con.setRequestMethod("POST");
+
+			if(login!=null && login.length()>0) {
+				String auth = login + ":" + pwd;
+				byte[] encodedAuth = Base64.encodeBase64(auth.getBytes(StandardCharsets.UTF_8));
+				String authHeaderValue = "Basic " + new String(encodedAuth);
+				con.setRequestProperty("Authorization", authHeaderValue);
+			}
+
+			con.setUseCaches(false);
+			con.setDoOutput(true); // indicates POST method
+			con.setDoInput(true);
+			con.setRequestProperty("Content-Type", "multipart/form-data;boundary=" + boundary+"");
+
+
+			OutputStream outputStream = con.getOutputStream();
+			PrintWriter writer = new PrintWriter(new OutputStreamWriter(outputStream, StandardCharsets.UTF_8), true);
+
+			for(String paramName : otherParams.keySet()) {
+				logger.error("Setting param '"+paramName+"' with value : '" + otherParams.get(paramName)+"'");
+				addFormField(paramName, otherParams.get(paramName), boundary, writer);
+			}
+			writer.append(LINE_FEED).flush();
+			writer.append("--").append(boundary).append(LINE_FEED).flush();
+			writer.append("Content-Disposition: form-data; name=\"").append(fileParamName).append("\"; filename=\"").append("f.epc").append("\"")
+					.append(LINE_FEED).flush();
+			writer.append("Content-Type: application/octet-stream")
+					.append(LINE_FEED).flush();
+
+			f_epc_writer.accept(outputStream);
+
+			writer.append(LINE_FEED).flush();
+
+			result = finish(con, boundary, writer);
+		} catch (ConnectException e) {
+			Gson gson = new Gson();
+			result = gson.toJson(e);
+			SessionUtility.log(session, new ServerLogMessage(MessageType.DEBUG, "Http was sending post request but receive a connection exception", SessionUtility.EDITOR_NAME));
+		} catch (Exception e) {
+			logger.error(e.getMessage(), e);
+			Gson gson = new Gson();
+			result = gson.toJson(e);
+		}
+		return result;
+	}
+
 	public static void sendfileWithPostRequest_NoFileName(
 			HttpSession session,
-			List<String> filesContent, 
+			List<String> filesContent,
 			String _url, String login, String pwd,
 			String fileParamName, HashMap<String, String> otherParams) {
 		sendfileWithPostRequest(session, filesContent.stream().map(x -> new Pair<>("fileName", x)).collect(Collectors.toList()),
 				_url, login, pwd,
-				fileParamName, otherParams);	
+				fileParamName, otherParams);
 	}
 
 
@@ -187,7 +248,7 @@ public class HttpSender {
 				logger.info("GET request not worked");
 			}
 		} catch (ConnectException e) {
-			SessionUtility.log(session, new ServerLogMessage(MessageType.DEBUG, "Workspace database connection exception", SessionUtility.WORKSPACE_NAME));
+			SessionUtility.log(session, new ServerLogMessage(MessageType.DEBUG, "Workspace database connection exception", SessionUtility.EDITOR_NAME));
 		} catch (Exception e) {
 			logger.error(e.getMessage(), e);
 		}

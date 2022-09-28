@@ -147,6 +147,7 @@ export function openResqmlObjectContent(    uuid,
                         resqmlElt.refresh();
                     };
 
+                    /*var butPrintOSDU_Json = document.createElement("button");
                     var butPrintOSDU_Json = document.createElement("button");
                     butPrintOSDU_Json.appendChild(document.createTextNode("OSDU WKE"));
                     butPrintOSDU_Json.title = "OSDU Well Known Entities";
@@ -155,6 +156,17 @@ export function openResqmlObjectContent(    uuid,
                     divBtnGrp.appendChild(butPrintOSDU_Json);
 
                     butPrintOSDU_Json.onclick = function(){
+                        window.open("/GetObjectAsJson?uuid=" + uuid, '_blank').focus()
+                    };*/
+
+                    var butPrint_Json = document.createElement("button");
+                    butPrint_Json.appendChild(document.createTextNode("Json"));
+                    butPrint_Json.title = "Google Gson translation";
+                    butPrint_Json.className += " btn btn-outline-success objButtonAction";
+                    butPrint_Json.id = "but_Print_Json_" + uuid;
+                    divBtnGrp.appendChild(butPrint_Json);
+
+                    butPrint_Json.onclick = function(){
                         window.open("/GetObjectAsJson?uuid=" + uuid, '_blank').focus()
                     };
 

@@ -60,7 +60,7 @@ limitations under the License.
 						
 					</form>
 					<input class="btn btn-primary" name="submit" type="submit" value="Export" 
-							onclick="sendForm('exportToRDMSForm', 'modal_exportToRDMS', 'rolling_ExportToRDMS', false, false)">
+							onclick="sendForm('exportToRDMSForm', 'modal_exportToRDMS', 'rolling_ExportToRDMS', false, false, false, true)">
 				</div>
 			</div>
 		</div>

@@ -314,9 +314,10 @@ public class ETPRequest extends HttpServlet {
                         req_result = new StringBuilder("[");
                         int cptAnswer = 0;
                         for (Pair<String, Long> msgid : msgIds) {
+                            logger.info("waiting for message (" + msgid.r() + ")");
                             try {
                                 GetResourcesResponse getResResp = (GetResourcesResponse) etpClient.getEtpClientSession()
-                                        .waitForResponse(msgid.r(), ETPUtils.waitingForResponseTime);
+                                        .waitForResponse(msgid.r(), ETPUtils.waitingForResponseTime).get(0).getBody();
                                 SessionUtility.log(session, new ServerLogMessage(MessageType.LOG,
                                         "ETP <== Recieve ETP message " + getResResp.getClass().getSimpleName() + " : "
                                                 + getResResp,
@@ -335,6 +336,7 @@ public class ETPRequest extends HttpServlet {
                                 cptAnswer++;
                             } catch (Exception e) {
                                 logs.append(e.getMessage());
+                                logger.error(e.getMessage(), e);
                             }
                         }
                         if (cptAnswer > 0) {
@@ -392,9 +394,8 @@ public class ETPRequest extends HttpServlet {
                     lastUpdate = lastUpdate_cal.toGregorianCalendar().getTimeInMillis();
                 } catch (Exception ignore){}
 
-                String dataObjectType = EPCGenericManager.getPackageDomain_withVersionForETP(epc_obj, 2, 2, true) + "." + EPCGenericManager.getObjectTypeForFilePath(epc_obj);
                 String uri = new ETPUri(dataspace, EPCGenericManager.getPackageDomain_fromClassName(epc_obj.getClass().getName()),
-                                        EPCGenericManager.getSchemaVersion(epc_obj, true).replace(".", ""), dataObjectType, uuid, null ).toString();
+                                        EPCGenericManager.getSchemaVersion(epc_obj, false).replace(".", ""), EPCGenericManager.getObjectTypeForFilePath(epc_obj), uuid, null ).toString();
 
                 logger.error("lastUpdate : " + lastUpdate);
                 logger.error("uri : " + uri);

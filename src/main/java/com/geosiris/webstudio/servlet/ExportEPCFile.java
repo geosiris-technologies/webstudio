@@ -148,7 +148,7 @@ public class ExportEPCFile extends HttpServlet {
             if (closeEpc != null && closeEpc.toLowerCase().compareTo("true") == 0) {
                 FileReciever.closeEPC(session);
             } else {
-                logger.error("not closing epc : " + closeEpc);
+                logger.debug("not closing epc : " + closeEpc);
             }
         } else {
             logger.error("No epcFilePath found");
@@ -165,6 +165,7 @@ public class ExportEPCFile extends HttpServlet {
     public static void exportEPCFile(OutputStream out,
                                      WorkspaceContent workspace,
                                      ExportVersion exportVersion){
+        logger.info("@exportEPCFile");
         try {
             try(ZipOutputStream epc = new ZipOutputStream(out)) {
                 for (Map.Entry<String, Object> kv : workspace.getReadObjects().entrySet()) {
@@ -178,20 +179,21 @@ public class ExportEPCFile extends HttpServlet {
                 if (workspace.getNotReadObjects() != null) {
                     /// non resqml obj
                     for (Pair<String, byte[]> nonResqmlObj : workspace.getNotReadObjects()) {
+                        ZipEntry ze_resqml = new ZipEntry(nonResqmlObj.l());
+                        epc.putNextEntry(ze_resqml);
                         try {
-                            ZipEntry ze_resqml = new ZipEntry(nonResqmlObj.l());
-                            epc.putNextEntry(ze_resqml);
                             byte[] fileContent = nonResqmlObj.r();
                             for(int chunk=0; chunk<fileContent.length; chunk += 4096){
                                 epc.write(fileContent, chunk, Math.min(4096, fileContent.length-chunk));
                             }
-                            epc.closeEntry();
                         } catch (Exception e) {
                             logger.error(e.getMessage(), e);
                             logger.error("nonResqmlObj " + nonResqmlObj.l());
                         }
+                        epc.closeEntry();
                     }
                 }
+//                epc.finish();
             }
         } catch (IOException e) {
             logger.error(e.getMessage(), e);

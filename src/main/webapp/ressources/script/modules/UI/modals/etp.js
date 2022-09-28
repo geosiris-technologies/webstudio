@@ -221,7 +221,7 @@ export function loadETPObjectList(eltId_objectList, eltId_formRequest){
         formSubmit_import.className = "btn btn-primary geosiris-btn-etp";
         formSubmit_import.onclick = function(){
                                 sendForm(formImportETPobjects, 'modal_ETP', 'rolling_ETP',
-                                    false, false, true).then(
+                                    false, false, true, false).then(
                                         function(){resquestValidation(__ID_CONSOLE__, null);});
                             }
         formSubmit_import.appendChild(document.createTextNode("import"));
@@ -236,7 +236,7 @@ export function loadETPObjectList(eltId_objectList, eltId_formRequest){
         formSubmit_delete.onclick = function(){
                                 formInputRequest.value = "deletedataobject";
                                 sendForm(formImportETPobjects, 'modal_ETP', 'rolling_ETP', 
-                                    false, false, false).then(
+                                    false, false, false, false).then(
                                         function(){
                                             formInputRequest.value = "import";
                                             loadETPObjectList('ETPRequest_import_Form-etp_object_list', 
@@ -271,7 +271,7 @@ export function createETPImportObjects(urisAsTable){
         // removing duplicates and morphing epoch datetimes
         tableObjRelated.forEach( 
             related_obj_table => {
-                found_uri_table = null;
+                var found_uri_table = null;
 
                 for(var idx_p=0; idx_p<tableObjRelated_noDuplicates.length; idx_p++){
                     if(tableObjRelated_noDuplicates[idx_p][3] == related_obj_table[3]){ // On compare les uri
@@ -448,7 +448,7 @@ export function updateGetRelatedETPTableContent(relations){
 
 
 
-export function populate_getRelated(formId, divResId){
+export function populate_getRelated(formId, divResId, importRelatedFormId){
     // Progressbar
     beginETPRequest();
 
@@ -459,43 +459,46 @@ export function populate_getRelated(formId, divResId){
             divETP.removeChild(divETP.firstChild)
         }
 
-        const formImportETPobjects  = document.createElement("form");
+       /* const formImportETPobjects  = document.createElement("form");
         formImportETPobjects.method = "post";
-        formImportETPobjects.action = "ETPRequest";
+        formImportETPobjects.action = "ETPRequest";*/
 
         const formSubmit = document.createElement("input");
         formSubmit.value = "import";
         formSubmit.type = "button";
         formSubmit.className = "btn btn-primary";
         formSubmit.onclick = function(){
-                                sendForm(formImportETPobjects, 'modal_ETP', 'rolling_ETP').then(
+                                sendForm(document.getElementById(importRelatedFormId), 'modal_ETP', 'rolling_ETP', false, false, false, false).then(
                                     function(){resquestValidation(__ID_CONSOLE__, null);});
                              }
         formSubmit.appendChild(document.createTextNode("import"));
-        formImportETPobjects.appendChild(formSubmit);
+        //formImportETPobjects.appendChild(formSubmit);
 
-        const formInputRequest = document.createElement("input");
+        /*const formInputRequest = document.createElement("input");
         formInputRequest.hidden = "hidden";
         formInputRequest.name = "request";
         formInputRequest.value = "import";
-        formImportETPobjects.appendChild(formInputRequest);
+        formImportETPobjects.appendChild(formInputRequest);*/
 
         
 
         const formDivTable = document.createElement("div");
         formDivTable.className="modal_tab_table";
-        formImportETPobjects.appendChild(formDivTable);
+        //formImportETPobjects.appendChild(formDivTable);
 
         sendPostForm_Promise(document.getElementById(formId), "ETPRequest", false).then(
             uriAsJsonList => {
                 try{
+                    document.getElementById(importRelatedFormId).style.display = "";
                     var tableETP = JSON.parse(uriAsJsonList);
-                    eltTable = createETPImportObjects(tableETP);
+                    var eltTable = createETPImportObjects(tableETP);
                     if(eltTable != null){
                         formDivTable.appendChild(eltTable);
                     }
 
-                    divETP.appendChild(formImportETPobjects); // On ajoute qu'une fois tout fini
+                    //divETP.appendChild(formImportETPobjects); // On ajoute qu'une fois tout fini
+                    divETP.appendChild(formSubmit);
+                    divETP.appendChild(formDivTable);
                 }catch(e){
                     console.log("ERR : Json input : ");
                     console.log(uriAsJsonList);

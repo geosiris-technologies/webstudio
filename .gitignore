@@ -16,3 +16,4 @@ target/*
 .factorypath
 docker/tomcat_old/
 /todo.txt
+docker/compose/docker-compose-local-test.yml
