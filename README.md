@@ -26,6 +26,8 @@ The WebStudio is a web application that allows to manipulate energyml file (such
 
 - 1.0.1: 
     - Initial working Release
+- 1.0.2: 
+    - ETP connexion bug fix
 
 ## License
 
@@ -35,10 +37,14 @@ This project is licensed under the Apache 2.0 License - see the `LICENSE` file f
 
 Please enter an issue in the repo for any questions or problems.
 
+## Run the code :
+
+See project [webstudio-platfrom](https://github.com/geosiris-technologies/webstudio-platform)
+
 ## Compile the project:
 
 ```bash
-mvn -U -s settings.xml clean package
+mvn -U clean package
 ```
 
 If you do not have a **settings.xml** file, please copy the **ci_settings.xml** file and replace the **${env.CI_JOB_TOKEN}** variable by your own token, and save this new file as **settings.xml**
@@ -51,60 +57,12 @@ If you do not have a **settings.xml** file, please copy the **ci_settings.xml** 
  - https://github.com/geosiris-technologies/etpproto-java
  - https://github.com/geosiris-technologies/etptypes-java
 
-## Run the code :
-
-### For local tests (and local code changes):
-
-1. If you want to use your 'hand-compiled' **.war** file, please first refer to [Compile the project](#compile-the-project) section.
-2. If you want to compile inside the docker, comment the **LOCAL WAR** part of the [docker/webstudio-local.dockerfile](file:///./docker/webstudio-local.dockerfile), and uncomment the **DOCKER COMPILE** part.
-
-Run the following commands in the **docker/compose** folder.
-```bash
-docker-compose -f docker-compose-local.yml -p webstudio-public-local pull
-docker-compose -f docker-compose-local.yml -p webstudio-public-local build
-docker-compose -f docker-compose-local.yml -p webstudio-public-local up -d
-```
-
-**Note :** Remove the *-d* option for *up* command if you want to follow directly the main logs (not debug logs).
-
-### For local tests (need to compile the maven project yourself before):
-
-Run the following commands in the **docker/compose** folder.
-```bash
-docker-compose -f docker-compose.yml -p webstudio-official pull
-docker-compose -f docker-compose.yml -p webstudio-official build
-docker-compose -f docker-compose.yml -p webstudio-official up -d
-```
-
-**Note :** Remove the *-d* option for *up* command if you want to follow directly the main logs (not debug logs).
-
-### Reset all storage volumes (use carefully):
-
-If you have trouble with your local docker volumes (user database or workspace save).
-
-```bash
-docker-compose -f docker-compose-local.yml -p webstudio-public-local down --volumes
-docker-compose -f docker-compose.yml -p webstudio-official down --volumes
-```
-
-
-### Run standalone instance :
-
-```console
-docker run -d \
-  -p 80:80 -p 443:443 \
-  --env webstudio_enableUserDB=false \
-  --env webstudio_enableWorkspace=false \
-  geomods/geomods-webstudio:1.0.0 
-```
-
-
 ## Setting up project :
 
 ### With ini file :
 
 The WebStudio configuration can be done with a ".ini" file. Examples are given in the "docker/" folder of this projet.
-To be found by the WebStudio, you must set the environment variable **WS_CONFIG_INI_FILE_PATH** to the path of this file. 
+To be found by the WebStudio, you must set the environment variable **WS_CONFIG_INI_FILE_PATH** to the path of this file (inside the docker instance). 
 Example in a dockerFile : 
 ```dockerfile
 ENV WS_CONFIG_INI_FILE_PATH /config/sample-ws-config.ini
@@ -214,15 +172,4 @@ Change the **docker/server-production.xml** to have a connector like this:
       />
     </SSLHostConfig>
 </Connector>
-```
-
-
-## Check logs if run fails :
-
-If a error like "org.apache.jasper.servlet.TldScanner.scanJars At least one JAR was scanned for TLDs yet contained no TLDs.", check the tomcat 
-logs to see which servlet failed to start and why:
-
-```bash
-cat /usr/local/tomcat/logs/localhost.***.log
-cat /logs/webstudio.log
 ```
