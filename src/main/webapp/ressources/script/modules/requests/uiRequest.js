@@ -170,17 +170,6 @@ export function openResqmlObjectContent(    uuid,
                         window.open("/GetObjectAsJson?uuid=" + uuid, '_blank').focus()
                     };
 
-                    var butPrint_Json = document.createElement("button");
-                    butPrint_Json.appendChild(document.createTextNode("Json"));
-                    butPrint_Json.title = "Google Gson translation";
-                    butPrint_Json.className += " btn btn-outline-success objButtonAction";
-                    butPrint_Json.id = "but_Print_Json_" + uuid;
-                    divBtnGrp.appendChild(butPrint_Json);
-
-                    butPrint_Json.onclick = function(){
-                        window.open("/GetObjectAsJson?uuid=" + uuid, '_blank').focus()
-                    };
-
                     var butPrintXml = document.createElement("button");
                     butPrintXml.appendChild(document.createTextNode("Xml"));
                     butPrintXml.className += " btn btn-outline-success objButtonAction";

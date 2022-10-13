@@ -1,0 +1,166 @@
+{
+    "energyml.prodml2_2.AbstractDisposition": {
+        "QuantityMethod": "energyml.prodml2_2.QuantityMethodExt"
+    },
+    "energyml.prodml2_2.AbstractFluidComponent": {
+        "VolumeConcentration": "energyml.common2_3.MassPerVolumeMeasureExt"
+    },
+    "energyml.prodml2_2.AssetProductionVolumes": {
+        "NominalPeriod": "energyml.prodml2_2.ReportingDurationKindExt"
+    },
+    "energyml.prodml2_2.CompressibilityParameters": {
+        "FormationCompressibility": "energyml.common2_3.ReciprocalPressureMeasureExt",
+        "TotalCompressibility": "energyml.common2_3.ReciprocalPressureMeasureExt"
+    },
+    "energyml.prodml2_2.DasCalibrationInputPoint": {
+        "InputPointKind": "energyml.prodml2_2.DasCalibrationInputPointKindExt"
+    },
+    "energyml.prodml2_2.DasTimeArray": {
+        "Uom": "energyml.common2_3.TimeUomExt"
+    },
+    "energyml.prodml2_2.DeferredProductionVolume": {
+        "EstimationMethod": "energyml.prodml2_2.EstimationMethodExt"
+    },
+    "energyml.prodml2_2.Facility": {
+        "Kind": "energyml.prodml2_2.ReportingFacilityExt"
+    },
+    "energyml.prodml2_2.FaultConductivity": {
+        "PermeabilityLength": "energyml.common2_3.PermeabilityLengthMeasureExt"
+    },
+    "energyml.prodml2_2.FlashedGas": {
+        "GasDensity": "energyml.common2_3.MassPerVolumeMeasureExt",
+        "GrossEnergyContentPerUnitMass": "energyml.common2_3.EnergyPerMassMeasureExt",
+        "GrossEnergyContentPerUnitVolume": "energyml.common2_3.EnergyPerVolumeMeasureExt",
+        "NetEnergyContentPerUnitMass": "energyml.common2_3.EnergyPerMassMeasureExt",
+        "NetEnergyContentPerUnitVolume": "energyml.common2_3.EnergyPerVolumeMeasureExt"
+    },
+    "energyml.prodml2_2.FlashedLiquid": {
+        "LiquidDensity": "energyml.common2_3.MassPerVolumeMeasureExt"
+    },
+    "energyml.prodml2_2.FluidCharacterizationParameter": {
+        "Property": "energyml.prodml2_2.OutputFluidPropertyExt"
+    },
+    "energyml.prodml2_2.FluidCharacterizationTableColumn": {
+        "Property": "energyml.prodml2_2.OutputFluidPropertyExt",
+        "uom": "energyml.common2_3.UnitOfMeasureExt"
+    },
+    "energyml.prodml2_2.FluidComponentFraction": {
+        "VolumeConcentration": "energyml.common2_3.MassPerVolumeMeasureExt",
+        "VolumeFraction": "energyml.common2_3.VolumePerVolumeMeasureExt"
+    },
+    "energyml.prodml2_2.FluidCvdTestStep": {
+        "CumulativeStockTankGOR": "energyml.common2_3.VolumePerVolumeMeasureExt",
+        "FluidProducedGOR": "energyml.common2_3.VolumePerVolumeMeasureExt"
+    },
+    "energyml.prodml2_2.FluidSample": {
+        "SampleKind": "energyml.prodml2_2.FluidSampleKindExt"
+    },
+    "energyml.prodml2_2.FluidSampleAcquisition": {
+        "FormationPressureTemperatureDatum": "energyml.common2_3.LengthMeasureExt"
+    },
+    "energyml.prodml2_2.FluidVolumeReference": {
+        "Kind": "energyml.prodml2_2.VolumeReferenceKindExt"
+    },
+    "energyml.prodml2_2.FormationTesterSampleAcquisition": {
+        "CushionPressure": "energyml.common2_3.PressureMeasureExt"
+    },
+    "energyml.prodml2_2.FractureConductivity": {
+        "PermeabilityLength": "energyml.common2_3.PermeabilityLengthMeasureExt"
+    },
+    "energyml.prodml2_2.HorizontalRadialPermeability": {
+        "Permeability": "energyml.common2_3.PermeabilityRockMeasureExt"
+    },
+    "energyml.prodml2_2.Injection": {
+        "QuantityMethod": "energyml.prodml2_2.QuantityMethodExt"
+    },
+    "energyml.prodml2_2.NonHydrocarbonTest": {
+        "TestPressure": "energyml.common2_3.PressureMeasureExt",
+        "TestVolume": "energyml.common2_3.VolumeMeasureExt"
+    },
+    "energyml.prodml2_2.PermeabilityThicknessProduct": {
+        "PermeabilityLength": "energyml.common2_3.PermeabilityLengthMeasureExt"
+    },
+    "energyml.prodml2_2.PlusFluidComponent": {
+        "Kind": "energyml.prodml2_2.PlusComponentKindExt"
+    },
+    "energyml.prodml2_2.ProductDisposition": {
+        "Kind": "energyml.prodml2_2.DispositionKindExt"
+    },
+    "energyml.prodml2_2.ProductFluid": {
+        "ProductFluidKind": "energyml.prodml2_2.ProductFluidKindExt"
+    },
+    "energyml.prodml2_2.ProductRate": {
+        "ProductFluidKind": "energyml.prodml2_2.ProductFluidKindExt"
+    },
+    "energyml.prodml2_2.Production": {
+        "QuantityMethod": "energyml.prodml2_2.QuantityMethodExt"
+    },
+    "energyml.prodml2_2.ProductionWellTests": {
+        "NominalPeriodKind": "energyml.prodml2_2.ReportingDurationKindExt"
+    },
+    "energyml.prodml2_2.PseudoFluidComponent": {
+        "Kind": "energyml.prodml2_2.PseudoComponentKindExt"
+    },
+    "energyml.prodml2_2.PtaDataPreProcess": {
+        "DataConditioning": "energyml.prodml2_2.DataConditioningExt"
+    },
+    "energyml.prodml2_2.PureFluidComponent": {
+        "Kind": "energyml.prodml2_2.PureComponentKindExt"
+    },
+    "energyml.prodml2_2.PvtModelParameter": {
+        "kind": "energyml.prodml2_2.PvtModelParameterKindExt"
+    },
+    "energyml.prodml2_2.RateDependentSkinFactor": {
+        "InverseFlowrate": "energyml.common2_3.TimePerVolumeMeasureExt"
+    },
+    "energyml.prodml2_2.ReferenceSeparatorStage": {
+        "SeparatorTemperature": "energyml.common2_3.ThermodynamicTemperatureMeasureExt"
+    },
+    "energyml.prodml2_2.ServiceFluid": {
+        "ServiceFluidKind": "energyml.prodml2_2.ServiceFluidKindExt"
+    },
+    "energyml.prodml2_2.SulfurFluidComponent": {
+        "Kind": "energyml.prodml2_2.SulfurComponentKindExt",
+        "MolecularWeight": "energyml.common2_3.MolecularWeightMeasureExt"
+    },
+    "energyml.prodml2_2.TimeSeriesData": {
+        "Uom": "energyml.common2_3.UnitOfMeasureExt"
+    },
+    "energyml.prodml2_2.TimeSeriesStatistic": {
+        "Uom": "energyml.common2_3.UnitOfMeasureExt"
+    },
+    "energyml.prodml2_2.WaterAnalysisTest": {
+        "SalinityPerVolume": "energyml.common2_3.MassPerVolumeMeasureExt",
+        "TotalAlkalinityPerMass": "energyml.common2_3.MassPerMassMeasureExt",
+        "TotalAlkalinityPerVolume": "energyml.common2_3.MassPerVolumeMeasureExt",
+        "TotalDissolvedSolidsPerVolume": "energyml.common2_3.MassPerVolumeMeasureExt",
+        "TotalHardnessPerVolume": "energyml.common2_3.MassPerVolumeMeasureExt",
+        "TotalSedimentSolidsPerMass": "energyml.common2_3.MassPerMassMeasureExt",
+        "TotalSedimentSolidsPerVolume": "energyml.common2_3.MassPerVolumeMeasureExt",
+        "TotalSuspendedSolidsPerVolume": "energyml.common2_3.MassPerVolumeMeasureExt"
+    },
+    "energyml.prodml2_2.WaterAnalysisTestStep": {
+        "DissolvedCO2": "energyml.common2_3.MassPerVolumeMeasureExt",
+        "DissolvedH2S": "energyml.common2_3.MassPerVolumeMeasureExt",
+        "DissolvedO2": "energyml.common2_3.MassPerVolumeMeasureExt",
+        "Resistivity": "energyml.common2_3.ElectricalResistivityMeasureExt",
+        "WaterDensityChangeWithPressure": "energyml.common2_3.MassPerVolumePerPressureMeasureExt",
+        "WaterDensityChangeWithTemperature": "energyml.common2_3.MassPerVolumePerTemperatureMeasureExt"
+    },
+    "energyml.prodml2_2.WaterSampleComponent": {
+        "Anion": "energyml.prodml2_2.AnionKindExt",
+        "Cation": "energyml.prodml2_2.CationKindExt",
+        "MolarConcentration": "energyml.common2_3.AmountOfSubstancePerAmountOfSubstanceMeasureExt",
+        "OrganicAcid": "energyml.prodml2_2.OrganicAcidKindExt",
+        "VolumeConcentration": "energyml.common2_3.MassPerVolumeMeasureExt"
+    },
+    "energyml.prodml2_2.WellProductionParameters": {
+        "NominalPeriod": "energyml.prodml2_2.ReportingDurationKindExt"
+    },
+    "energyml.prodml2_2.WellboreFluidCompressibility": {
+        "Compressibility": "energyml.common2_3.ReciprocalPressureMeasureExt"
+    },
+    "energyml.prodml2_2.WellboreStorageCoefficient": {
+        "VolumePerPressure": "energyml.common2_3.VolumePerPressureMeasureExt"
+    }
+}

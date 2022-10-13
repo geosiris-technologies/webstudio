@@ -15,6 +15,7 @@ limitations under the License.
 */
 package com.geosiris.webstudio.servlet;
 
+import com.geosiris.energyml.pkg.EPCPackage;
 import com.geosiris.webstudio.utils.SessionUtility;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.MultipartConfig;
@@ -23,9 +24,13 @@ import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.servlet.http.HttpSession;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 import java.io.IOException;
 import java.io.PrintWriter;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
 import java.util.Map;
 
 /**
@@ -35,6 +40,7 @@ import java.util.Map;
 @MultipartConfig
 public class GetObjectAsXml extends HttpServlet {
     private static final long serialVersionUID = 1L;
+    public static Logger logger = LogManager.getLogger(GetObjectAsXml.class);
 
     /**
      * @see HttpServlet#HttpServlet()
@@ -57,10 +63,9 @@ public class GetObjectAsXml extends HttpServlet {
         Map<String, Object> map = SessionUtility.getResqmlObjects(session);
         String uuid = request.getParameter("uuid");
         String answer = "";
-
         if(map.containsKey(uuid)) {
-            Object resqmlObj = map.get(uuid);
-            answer = Editor.pkgManager.marshal(resqmlObj);
+            Object energymlObj = map.get(uuid);
+            answer = Editor.pkgManager.marshal(energymlObj);
         }
         // SessionUtility.log(session, new ServerLogMessage(MessageType.LOG, answer, SessionUtility.EDITOR_NAME));
         PrintWriter out = response.getWriter();

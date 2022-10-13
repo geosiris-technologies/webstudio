@@ -4,7 +4,7 @@
     <groupId>com.geosiris</groupId>
     <artifactId>webstudio</artifactId>
     <name>${project.groupId}:${project.artifactId}</name>
-    <version>1.0.1</version>
+    <version>1.0.4</version>
     <organization>
         <name>Geosiris</name>
         <url>http://www.geosiris.com</url>
@@ -74,27 +74,37 @@
         <dependency>
             <groupId>com.geosiris</groupId>
             <artifactId>energyml-resqml201</artifactId>
-            <version>1.0.1</version>
+            <version>1.0.4</version>
         </dependency>
         <dependency>
             <groupId>com.geosiris</groupId>
             <artifactId>energyml-resqml22</artifactId>
-            <version>1.0.1</version>
+            <version>1.0.4</version>
         </dependency>
         <dependency>
             <groupId>com.geosiris</groupId>
             <artifactId>energyml-resqml22-dev3</artifactId>
-            <version>1.0.1</version>
+            <version>1.0.4</version>
         </dependency>
         <dependency>
             <groupId>com.geosiris</groupId>
             <artifactId>energyml-witsml21</artifactId>
-            <version>1.0.1</version>
+            <version>1.0.4</version>
         </dependency>
         <dependency>
             <groupId>com.geosiris</groupId>
             <artifactId>energyml-witsml20</artifactId>
-            <version>1.0.1</version>
+            <version>1.0.4</version>
+        </dependency>
+        <dependency>
+            <groupId>com.geosiris</groupId>
+            <artifactId>energyml-prodml20</artifactId>
+            <version>1.0.4</version>
+        </dependency>
+        <dependency>
+            <groupId>com.geosiris</groupId>
+            <artifactId>energyml-prodml22</artifactId>
+            <version>1.0.4</version>
         </dependency>
         <!--
             ____        __    ___         ____
@@ -126,8 +136,7 @@
             <version>0.10</version>
         </dependency>
     </dependencies>
-    <build>
-    </build>
+    <build/>
     <profiles>
         <profile>
             <id>release</id>
