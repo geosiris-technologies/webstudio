@@ -33,11 +33,11 @@ export function rws__dateNowStr(){
 export function generateUUID(){
     // [0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}
     var result = "";
-    var characters = 'ABCDEFabcdef0123456789';
+    var characters = 'abcdef0123456789';
 
     var charactersLength = characters.length;
 
-    sequences = [8, 4, 4, 4, 12]
+    var sequences = [8, 4, 4, 4, 12]
 
     for ( var s = 0; s < sequences.length; s++ ) {
         for ( var i = 0; i < sequences[s]; i++ ) {

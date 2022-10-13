@@ -1,0 +1,60 @@
+{
+    "energyml.prodml2_0.AbstractDisposition": {
+        "QuantityMethod": "energyml.prodml2_0.QuantityMethodExt"
+    },
+    "energyml.prodml2_0.AssetProductionVolumes": {
+        "NominalPeriod": "energyml.prodml2_0.ReportingDurationKindExt"
+    },
+    "energyml.prodml2_0.DasCalibrationPoint": {
+        "CalibrationType": "energyml.prodml2_0.DasCalibrationTypeExt"
+    },
+    "energyml.prodml2_0.DeferredProduction": {
+        "EstimationMethod": "energyml.prodml2_0.EstimationMethodExt"
+    },
+    "energyml.prodml2_0.FluidCharacterizationTableColumn": {
+        "Property": "energyml.prodml2_0.OutputFluidPropertyExt"
+    },
+    "energyml.prodml2_0.FluidCharacterizationTableConstant": {
+        "Property": "energyml.prodml2_0.OutputFluidPropertyExt"
+    },
+    "energyml.prodml2_0.Injection": {
+        "QuantityMethod": "energyml.prodml2_0.QuantityMethodExt"
+    },
+    "energyml.prodml2_0.PlusFluidComponent": {
+        "Kind": "energyml.prodml2_0.PlusComponentEnumExt"
+    },
+    "energyml.prodml2_0.ProductDisposition": {
+        "Kind": "energyml.prodml2_0.DispositionKindExt"
+    },
+    "energyml.prodml2_0.ProductFluid": {
+        "ProductFluidKind": "energyml.prodml2_0.ProductFluidKindExt"
+    },
+    "energyml.prodml2_0.ProductRate": {
+        "ProductFluidKind": "energyml.prodml2_0.ProductFluidKindExt"
+    },
+    "energyml.prodml2_0.Production": {
+        "QuantityMethod": "energyml.prodml2_0.QuantityMethodExt"
+    },
+    "energyml.prodml2_0.PseudoFluidComponent": {
+        "Kind": "energyml.prodml2_0.PseudoComponentEnumExt"
+    },
+    "energyml.prodml2_0.PureFluidComponent": {
+        "Kind": "energyml.prodml2_0.PureComponentEnumExt"
+    },
+    "energyml.prodml2_0.PvtModelParameter": {
+        "kind": "energyml.prodml2_0.PvtModelParameterKindExt"
+    },
+    "energyml.prodml2_0.ReferenceSeparatorStage": {
+        "SeparatorTemperature": "energyml.common2_1.ThermodynamicTemperatureMeasureExt"
+    },
+    "energyml.prodml2_0.ServiceFluid": {
+        "ServiceFluidKind": "energyml.prodml2_0.ServiceFluidKindExt"
+    },
+    "energyml.prodml2_0.WaterAnalysisTestStep": {
+        "WaterDensityChangeWithPressure": "energyml.common2_1.MassPerVolumePerPressureMeasureExt",
+        "WaterDensityChangeWithTemperature": "energyml.common2_1.MassPerVolumePerTemperatureMeasureExt"
+    },
+    "energyml.prodml2_0.WellProductionParameters": {
+        "NominalPeriod": "energyml.prodml2_0.ReportingDurationKindExt"
+    }
+}
