@@ -628,8 +628,10 @@ export class ResqmlElement{
 
 			if(this.type.includes("CustomData")){
 				// On enlève le contenu de l'ancien titre
-				while (isUpdating && this.htmlAttributeElt.firstChild) {
-					this.htmlAttributeElt.removeChild(this.htmlAttributeElt.firstChild);
+				if(isUpdating){
+					while (this.htmlAttributeElt.firstChild) {
+						this.htmlAttributeElt.removeChild(this.htmlAttributeElt.firstChild);
+					}
 				}
 				var italicDiv = document.createElement("i");
 				italicDiv.className = "fa fa-exclamation-triangle";

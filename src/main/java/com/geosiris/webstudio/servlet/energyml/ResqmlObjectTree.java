@@ -74,8 +74,6 @@ public class ResqmlObjectTree extends HttpServlet {
                 else {
                     logger.error("Null json " + ObjectTree.createTree(map.get(uuid)).toJSON());
                 }
-                logger.debug("request on : /ResqmlObjectTree?uuid=" + uuid);
-                logger.debug(objTree.toJSON());
             }
         } else {
             // si pas d'uuid on envoie la liste des objets de l'epc
