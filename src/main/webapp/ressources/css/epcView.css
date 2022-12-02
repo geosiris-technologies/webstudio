@@ -343,9 +343,10 @@ label + input {
 }
 
 .typeCommentContainer{
+	color : black;
 	background: #f2f2f2;
 	z-index: 100;
-	border-radius: 30px;
+	border-radius: 10px;
 	border: 1px solid;
 	padding: 5px;
 	max-width: 800px;

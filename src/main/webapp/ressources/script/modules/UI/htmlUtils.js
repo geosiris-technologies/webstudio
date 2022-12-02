@@ -175,7 +175,7 @@ export function createRadio(labelTxt, value, radioName, checkableOnclickFunc_Wit
     radio.type = "radio";
     radio.name = radioName;
     radio.value = value;
-    radio.className = "form-check-input";
+    //radio.className = "form-check-input"; // create bug for the DOR interface
     if(checked!=null){
         radio.checked = checked;
     }

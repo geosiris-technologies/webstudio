@@ -19,8 +19,6 @@ import com.geosiris.energyml.utils.ExportVersion;
 import com.geosiris.webstudio.model.WorkspaceContent;
 import com.geosiris.webstudio.utils.HttpSender;
 import com.geosiris.webstudio.utils.SessionUtility;
-import energyml.common2_3.Citation;
-import energyml.resqml2_2.TriangulatedSetRepresentation;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.HttpServlet;
@@ -120,58 +118,5 @@ public class OSDU_Manifest extends HttpServlet {
 		response.setCharacterEncoding("UTF-8");
 		out.write(answer);
 		out.flush();
-	}
-
-	public static void main(String[] argv) throws IOException {
-//		File f = new File("C:/Users/Cryptaro/Downloads/java.epc");
-//		FileOutputStream fio = new FileOutputStream(f);
-
-//		try(ZipOutputStream epc = new ZipOutputStream(fio, StandardCharsets.UTF_8)) {
-////			epc.setLevel(0);
-//			ZipEntry ze_resqml = new ZipEntry("test.xml");
-//			epc.putNextEntry(ze_resqml);
-//			epc.write("coucou".getBytes(StandardCharsets.UTF_8));
-//			epc.closeEntry();
-////			epc.finish();
-////      		epc.flush();
-//		} catch (FileNotFoundException e) {
-//			throw new RuntimeException(e);
-//		}
-//		fio.close();
-
-		Map<String, String> otherParams = new HashMap<>();
-		otherParams.put("data_partition_id", "osdu");
-		otherParams.put("token", "ya29.a0Aa4xrXMgK0dBJo62n6NwsjUBvofohmy59DMtdpT7rrrewFDDIZOhNFmBUlmGpP33UUz7Y1QpWyq4p3SOj3KwXDgcWEQF7T0dHVAtpmNNTNhpWKim1JsA83s-ep50otqQHisE4uDjeLugnw78pNgYv0RzX_FEaCgYKATASARISFQEjDvL98VqQXGcQ1M5u1F7UTOQVxg0163");
-		otherParams.put("host", "https://community.gcp.gnrg-osdu.projects.epam.com/api/dataset/v1");
-
-//		HttpSender.sendfileWithPostRequest(null,
-//				(outputStream -> {
-//					try(ZipOutputStream epc = new ZipOutputStream(outputStream, StandardCharsets.UTF_8)) {
-//				//			epc.setLevel(0);
-//							ZipEntry ze_resqml = new ZipEntry("test.xml");
-//							epc.putNextEntry(ze_resqml);
-//							epc.write("coucou".getBytes(StandardCharsets.UTF_8));
-//							epc.closeEntry();
-//				//			epc.finish();
-//				//      		epc.flush();
-//						} catch (FileNotFoundException e) {
-//							throw new RuntimeException(e);
-//						} catch (IOException e) {
-//						throw new RuntimeException(e);
-//					}
-//				}),
-//				"http://localhost:8000/", null, null, "file", otherParams);
-		WorkspaceContent wc = new WorkspaceContent();
-		TriangulatedSetRepresentation tr = new TriangulatedSetRepresentation();
-		String uuid = UUID.randomUUID()+"";
-		Citation cit = new Citation();
-		cit.setTitle("coucou");
-		tr.setUuid(uuid);
-		tr.setCitation(cit);
-		wc.getReadObjects().put(uuid, tr);
-		HttpSender.sendfileWithPostRequest(null,
-				(outputStream -> ExportEPCFile.exportEPCFile(outputStream, wc, ExportVersion.CLASSIC)),
-				"http://localhost:8000/", null, null, "file", otherParams);
-
 	}
 }

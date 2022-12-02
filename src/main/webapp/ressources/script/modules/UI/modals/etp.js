@@ -201,7 +201,9 @@ export function loadETPObjectList(eltId_objectList, eltId_formRequest){
                     if(eltTable != null){
                         formDivTable.appendChild(eltTable);
                     }
-
+                    while(divETP.firstChild){
+                        divETP.removeChild(divETP.firstChild)
+                    }
                     divETP.appendChild(formImportETPobjects); // On ajoute qu'une fois tout fini
                     setErrorsVisibility(divETP, false);
                 }catch(e){
@@ -495,7 +497,9 @@ export function populate_getRelated(formId, divResId, importRelatedFormId){
                     if(eltTable != null){
                         formDivTable.appendChild(eltTable);
                     }
-
+                    while(divETP.firstChild){
+                        divETP.removeChild(divETP.firstChild)
+                    }
                     //divETP.appendChild(formImportETPobjects); // On ajoute qu'une fois tout fini
                     divETP.appendChild(formSubmit);
                     divETP.appendChild(formDivTable);

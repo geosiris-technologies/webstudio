@@ -123,7 +123,7 @@ limitations under the License.
         		<span class="nav-link fas fa-users" style="display: none" id="sessionCounter" title="Other connected users count"></a>
         		</li>
         		<li class="nav-item active">
-        			<h2 class="ws_title" id="ws_top_title">ResQML WebStudio</h2>
+        			<h2 class="ws_title" id="ws_top_title">Energyml WebStudio</h2>
         		</li>
         		<li class="nav-item navbar-text">
         			<div id="taskInProgressRoling" class="spinner-border text-success"

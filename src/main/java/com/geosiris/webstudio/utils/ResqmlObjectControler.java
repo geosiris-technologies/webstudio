@@ -394,15 +394,6 @@ public class ResqmlObjectControler {
         return null;
     }
 
-    public static void main(String[] argv) {
-//		try {
-//			logger.error(getSubAttributeClass(".trianglePatch.0.splitEdgePatch.0.splitEdges", TriangulatedSetRepresentation.class, null));
-//		} catch (Exception e) {
-//			logger.error(e.getMessage(), e);
-//		}
-    }
-
-
     public enum ModficationType {ADD_LIST_ELT, REMOVE_LIST_ELT, CREATE_ELT, EDITION}
 
 }
