@@ -495,7 +495,7 @@ export class ResqmlElement{
 
 //				console.log(this.name + " --> " + this.type + " :: " + (this.type.toLowerCase().includes('calendar')))
 				var divCollapseInput_TMP = null;
-                if(this.parentElt.properties!=null && this.parentElt.properties.length==1 && this.type.toLowerCase().includes("string")){
+                if(this.parentElt.properties!=null && this.type.toLowerCase().includes("string") && (this.parentElt.properties.length==1 || (this.value != null && this.value.length > 100)) ){
                     // On met un champs text plus gros si c'est une chaine de caratere et que c'est la seule propriete.
                     divCollapseInput_TMP = document.createElement("textarea");
                     divCollapseInput_TMP.rows = 10;
@@ -626,393 +626,406 @@ export class ResqmlElement{
 			}
 			this.htmlAttributeElt.name = ResqmlElement_NAMESUBATTPREFIX + "_" + shortName;
 
-			/** Attributs **/
-			
-
-			// Creation des sous-elements : 
-			var tabCreateSubAttrib  = [];
-			var tabListsAttribs = [];
-
-			if(!isUpdating){
-				this.htmlSubAttribElt = document.createElement("div");
-				if(this.isResqmlListType()){
-					this.htmlSubAttribElt.className = "dropper";
+			if(this.type.includes("CustomData")){
+				// On enlève le contenu de l'ancien titre
+				while (isUpdating && this.htmlAttributeElt.firstChild) {
+					this.htmlAttributeElt.removeChild(this.htmlAttributeElt.firstChild);
 				}
-			}
+				var italicDiv = document.createElement("i");
+				italicDiv.className = "fa fa-exclamation-triangle";
+				italicDiv.title = "Check object's xml translation to see the custom data";
+				italicDiv.appendChild(document.createTextNode("CustomData not supported"));
+				this.htmlAttributeElt.appendChild(italicDiv);
+			}else{
 
-			if(this.attributes != null && this.attributes.length>0){
-				for(var attIdx=0; attIdx < this.attributes.length; attIdx++){
-					const subA = this.attributes[attIdx];
-					if(ResqmlElement_isNullAttribute(subA)){	
-						// Les elements que l'on pourra créer
-						tabCreateSubAttrib.push(subA.getCurrentListContentElt());
-						//console.log("# Null attribt : " + subA.type);
-					}else{
-						const subAElt = subA.createView();
-						if(subAElt != null){
-							if(subA.isResqmlListType()){
-								//console.log("IS LIST : " );
-								if(subA.attributes!=null && subA.attributes.length>0){
+				/** Attributs **/
+
+				// Creation des sous-elements : 
+				var tabCreateSubAttrib  = [];
+				var tabListsAttribs = [];
+
+				if(!isUpdating){
+					this.htmlSubAttribElt = document.createElement("div");
+					if(this.isResqmlListType()){
+						this.htmlSubAttribElt.className = "dropper";
+					}
+				}
+
+				if(this.attributes != null && this.attributes.length>0){
+					for(var attIdx=0; attIdx < this.attributes.length; attIdx++){
+						const subA = this.attributes[attIdx];
+						if(ResqmlElement_isNullAttribute(subA)){	
+							// Les elements que l'on pourra créer
+							tabCreateSubAttrib.push(subA.getCurrentListContentElt());
+							//console.log("# Null attribt : " + subA.type);
+						}else{
+							const subAElt = subA.createView();
+							if(subAElt != null){
+								if(subA.isResqmlListType()){
+									//console.log("IS LIST : " );
+									if(subA.attributes!=null && subA.attributes.length>0){
+										this.htmlSubAttribElt.appendChild(subAElt);
+									//console.log(" ----------- " );
+									}
+									//console.log(subA);
+									tabListsAttribs.push(subA.getCurrentListContentElt());
+								}else{
 									this.htmlSubAttribElt.appendChild(subAElt);
-								//console.log(" ----------- " );
-								}
-								//console.log(subA);
-								tabListsAttribs.push(subA.getCurrentListContentElt());
-							}else{
-								this.htmlSubAttribElt.appendChild(subAElt);
-								if(this.isResqmlListType()){
-									const currentDraggableElt = subA; 
-									const currentDraggableElt_html = subAElt;
-									subAElt.className = "draggableElt";
-									if(!subAElt.lastChild.previousSibling.className.includes("draggableButton") && this.attributes.length > 1){
-										var butDrag = document.createElement("span");
-										butDrag.className = "draggableButton";
-										butDrag.name = this.name;
-										const constButDrag = butDrag;
-										geosiris_DndHandler.applyDragEvents(constButDrag, function(){updateListEltIdx(currentDraggableElt_html, currentDraggableElt);});
-										subAElt.insertBefore(butDrag, subAElt.lastChild);
+									if(this.isResqmlListType()){
+										const currentDraggableElt = subA; 
+										const currentDraggableElt_html = subAElt;
+										subAElt.className = "draggableElt";
+										if(!subAElt.lastChild.previousSibling.className.includes("draggableButton") && this.attributes.length > 1){
+											var butDrag = document.createElement("span");
+											butDrag.className = "draggableButton";
+											butDrag.name = this.name;
+											const constButDrag = butDrag;
+											geosiris_DndHandler.applyDragEvents(constButDrag, function(){updateListEltIdx(currentDraggableElt_html, currentDraggableElt);});
+											subAElt.insertBefore(butDrag, subAElt.lastChild);
+										}
 									}
 								}
+							}else{
+								tabCreateSubAttrib.push(subA.getCurrentListContentElt());
 							}
-						}else{
-							tabCreateSubAttrib.push(subA.getCurrentListContentElt());
 						}
+					}
+
+
+					// Pour les draggables 
+					if(this.isResqmlListType()){
+						geosiris_DndHandler.applyDropEvents(this.htmlSubAttribElt);
 					}
 				}
 
 
-				// Pour les draggables 
-				if(this.isResqmlListType()){
-					geosiris_DndHandler.applyDropEvents(this.htmlSubAttribElt);
-				}
-			}
+				
 
-
-			
-
-			//console.log("List for : " + this.name + " is ");console.log(tabListsAttribs);
-			//console.log("ResqmlElement_isNullAttribute: " + this.name + " is ");console.log(tabCreateSubAttrib);
-			// Creation du titre
-			if(!isUpdating){
-				this.htmlTitleElt = document.createElement("span");
-				if(this.mandatory=="true"){
-					this.htmlTitleElt.className += " mandatoryElt";
-				}
-			}else{
-				if(this.htmlTitleElt!=null){
-					// On enlève le contenu de l'ancien titre
-					while (this.htmlTitleElt.firstChild) {
-						this.htmlTitleElt.removeChild(this.htmlTitleElt.firstChild);
+				//console.log("List for : " + this.name + " is ");console.log(tabListsAttribs);
+				//console.log("ResqmlElement_isNullAttribute: " + this.name + " is ");console.log(tabCreateSubAttrib);
+				// Creation du titre
+				if(!isUpdating){
+					this.htmlTitleElt = document.createElement("span");
+					if(this.mandatory=="true"){
+						this.htmlTitleElt.className += " mandatoryElt";
 					}
 				}else{
-					console.log("null title");
-					console.log(this);
-				}
-			}
-
-			var showTypeAsTooltip = false;
-
-			var typeInTitle = "[" + shortType + "] "
-
-			if(this.parentElt != null){
-				if(shortType.endsWith("List")){
-					typeInTitle = "";
-				}else if(shortType.length + shortName.length > 25){
-					typeInTitle = typeInTitle.replace( /[a-z]/g, '' )
-					showTypeAsTooltip = true;
-				}
-			}else{
-				typeInTitle += " " + this.rootUUID;
-			}
-
-
-			var booleanInTitle = ""
-			if(this.properties != null){
-				// Search boolean properties to print in title
-				for(var propIdx=0;propIdx<this.properties.length; propIdx++){
-					var prop = this.properties[propIdx];
-					if(prop.type.toLowerCase().endsWith("boolean")
-						&& (prop.value.toLowerCase()=="true" 
-							|| prop.value.toLowerCase()=="yes" 
-							|| prop.value.toLowerCase()=="1") 
-						){
-						var propName = prop.name;
-						propName = propName.substring(propName.lastIndexOf('.')+1);
-						if(propName.startsWith("Is") && propName.length > 2){
-							propName = propName.substring(2);
+					if(this.htmlTitleElt!=null){
+						// On enlève le contenu de l'ancien titre
+						while (this.htmlTitleElt.firstChild) {
+							this.htmlTitleElt.removeChild(this.htmlTitleElt.firstChild);
 						}
-						booleanInTitle += " {" + propName + "} ";
+					}else{
+						console.log("null title");
+						console.log(this);
 					}
 				}
-			}
 
-			var titleValue = typeInTitle + booleanInTitle + shortName ;
-			/*console.log('This title : ' + titleValue + " -- ")
-			console.log(this.properties)*/
+				var showTypeAsTooltip = false;
 
-			if(!isNaN(parseInt(shortName)) || this.type.toLowerCase().includes("dataobjectreference")){
-				// On cherche si pour les elements des listes on peut avoir un meilleur nom
-				// Pour tous les fils, on regarde si il existe un element Title
+				var typeInTitle = "[" + shortType + "] "
+
+				if(this.parentElt != null){
+					if(shortType.endsWith("List")){
+						typeInTitle = "";
+					}else if(shortType.length + shortName.length > 25){
+						typeInTitle = typeInTitle.replace( /[a-z]/g, '' )
+						showTypeAsTooltip = true;
+					}
+				}else{
+					typeInTitle += " " + this.rootUUID;
+				}
+
+
+				var booleanInTitle = ""
 				if(this.properties != null){
-					var found_title = false;
-					for(var propIdx=0; propIdx < this.properties.length; propIdx++){
-						const subProp = this.properties[propIdx];
-						var subPropName = subProp.name;
-						if(subPropName.includes(".")){
-							subPropName = subPropName.substring(subPropName.lastIndexOf('.')+1);
-						}
-						if(subPropName.toLowerCase() == "title"){
-							titleValue += " '" + subProp.value + "'";
-							found_title = false;
-							break;
+					// Search boolean properties to print in title
+					for(var propIdx=0;propIdx<this.properties.length; propIdx++){
+						var prop = this.properties[propIdx];
+						if(prop.type.toLowerCase().endsWith("boolean")
+							&& (prop.value.toLowerCase()=="true" 
+								|| prop.value.toLowerCase()=="yes" 
+								|| prop.value.toLowerCase()=="1") 
+							){
+							var propName = prop.name;
+							propName = propName.substring(propName.lastIndexOf('.')+1);
+							if(propName.startsWith("Is") && propName.length > 2){
+								propName = propName.substring(2);
+							}
+							booleanInTitle += " {" + propName + "} ";
 						}
 					}
-					// Si on ne trouve pas de title, on cherche une value (e.g. les value dans les StringTableLookup)
-					if(!found_title){
+				}
+
+				var titleValue =  booleanInTitle + shortName ;
+				/*console.log('This title : ' + titleValue + " -- ")
+				console.log(this.properties)*/
+
+				if(!isNaN(parseInt(shortName)) || this.type.toLowerCase().includes("dataobjectreference")){
+					// On cherche si pour les elements des listes on peut avoir un meilleur nom
+					// Pour tous les fils, on regarde si il existe un element Title
+					if(this.properties != null){
+						var found_title = false;
 						for(var propIdx=0; propIdx < this.properties.length; propIdx++){
 							const subProp = this.properties[propIdx];
 							var subPropName = subProp.name;
 							if(subPropName.includes(".")){
 								subPropName = subPropName.substring(subPropName.lastIndexOf('.')+1);
 							}
-							if(subPropName.toLowerCase() == "value"){
-								titleValue += " <" + subProp.value + ">";
+							if(subPropName.toLowerCase() == "title"){
+								titleValue += " '" + subProp.value + "'";
 								found_title = false;
 								break;
 							}
 						}
-					}
-				}
-				if(this.attributes!=null){
-					for(var attIdx=0; attIdx < this.attributes.length; attIdx++){
-						const subA = this.attributes[attIdx];
-						if(subA.properties != null && subA.properties.length > 0){
-							var subA_shortName = subA.name;
-							if(subA_shortName.includes(".")){
-								subA_shortName = subA_shortName.substring(subA_shortName.lastIndexOf('.')+1);
-							}
-							for(var propIdx=0; propIdx < subA.properties.length; propIdx++){
-								const subProp = subA.properties[propIdx];
+						// Si on ne trouve pas de title, on cherche une value (e.g. les value dans les StringTableLookup)
+						if(!found_title){
+							for(var propIdx=0; propIdx < this.properties.length; propIdx++){
+								const subProp = this.properties[propIdx];
 								var subPropName = subProp.name;
 								if(subPropName.includes(".")){
 									subPropName = subPropName.substring(subPropName.lastIndexOf('.')+1);
 								}
-								if(subPropName.toLowerCase() == "title"){
-									titleValue += " " + subA_shortName.replace( /[a-z]/g, '' ) + "(" + subProp.value + ")";
+								if(subPropName.toLowerCase() == "value"){
+									titleValue += " <" + subProp.value + ">";
+									found_title = false;
 									break;
 								}
 							}
 						}
 					}
-				}
-			}
-
-
-			this.htmlTitleElt.appendChild(document.createTextNode(titleValue));
-			if(showTypeAsTooltip){
-				this.htmlTitleElt.title = shortType;
-			}
-			
-
-			if(!isUpdating){
-				// Creation du bouton de collapser d'arbre
-				this.subAttribCollapserElt = document.createElement("span");
-				//this.subAttribCollapserElt.id = this.rootUUID + this.name;
-				this.subAttribCollapserElt.style.cursor = "pointer";
-				this.subAttribCollapserElt.className    = "resqmlCollapse fas fa-chevron-right";
-
-
-				this.subAttribCollapserElt.onclick = 
-					function(){
-						if(constThis.htmlSubAttribElt != null){
-							if(constThis.subAttribCollapserElt.className.includes("fa-chevron-right")){
-								constThis.subAttribCollapserElt.className = constThis.subAttribCollapserElt.className.replace("fa-chevron-right", "fa-chevron-down");
-								constThis.htmlSubAttribElt.style.display  = "";
-							}else{
-								constThis.subAttribCollapserElt.className = constThis.subAttribCollapserElt.className.replace("fa-chevron-down", "fa-chevron-right");
-								constThis.htmlSubAttribElt.style.display  = "none";
+					if(this.attributes!=null){
+						for(var attIdx=0; attIdx < this.attributes.length; attIdx++){
+							const subA = this.attributes[attIdx];
+							if(subA.properties != null && subA.properties.length > 0){
+								var subA_shortName = subA.name;
+								if(subA_shortName.includes(".")){
+									subA_shortName = subA_shortName.substring(subA_shortName.lastIndexOf('.')+1);
+								}
+								for(var propIdx=0; propIdx < subA.properties.length; propIdx++){
+									const subProp = subA.properties[propIdx];
+									var subPropName = subProp.name;
+									if(subPropName.includes(".")){
+										subPropName = subPropName.substring(subPropName.lastIndexOf('.')+1);
+									}
+									if(subPropName.toLowerCase() == "title"){
+										titleValue += " " + subA_shortName.replace( /[a-z]/g, '' ) + "(" + subProp.value + ")";
+										break;
+									}
+								}
 							}
 						}
-					};
+					}
+				}
 
 
-				
-				this.htmlAttributeElt.appendChild(this.subAttribCollapserElt);
-
-
-				this.htmlAttributeElt.appendChild(this.htmlTitleElt);
+				// Title type
+				var htmlTitleElt_type = document.createElement("span");
+				htmlTitleElt_type.appendChild(document.createTextNode(typeInTitle));
+				this.htmlTitleElt.appendChild(htmlTitleElt_type);
 
 				if(mapResqmlTypesComment[this.type.toLowerCase()] != null){
 					var commentType = document.createElement("span");
 					commentType.className = "typeCommentIcon fas fa-question-circle";
-					commentType.title = mapResqmlTypesComment[this.type]
-					this.htmlAttributeElt.appendChild(commentType);
+					this.htmlTitleElt.appendChild(commentType);
 					var divCommentTitle = createHoverableHtmlContent(commentType, mapResqmlTypesComment[this.type.toLowerCase()]);
 					
-					this.htmlAttributeElt.appendChild(divCommentTitle);
+					this.htmlTitleElt.appendChild(divCommentTitle);
 				}else{
 					//console.log("no comment for " + this.type);
 				}
 
+				var htmlTitleElt_values = document.createElement("span");
+				htmlTitleElt_values.appendChild(document.createTextNode(titleValue));
+				this.htmlTitleElt.appendChild(htmlTitleElt_values);
+				if(showTypeAsTooltip){
+					this.htmlTitleElt.title = shortType;
+				}
+				
 
-				if(constThis.type.toLowerCase().includes("datasetpart")
-					|| constThis.type.toLowerCase().includes("hdf5dataset")){
-					var butOpenHDFView = document.createElement("img");
-					butOpenHDFView.src = "ressources/img/HDF_logo.png";
-					butOpenHDFView.alt = "[ HDFView ]";
-					butOpenHDFView.className = "hdfViewIcon"
-					butOpenHDFView.title = "Open in HDFView"
-					//var butOpenHDFView = document.createElement("span");
-					//butOpenHDFView.appendChild(document.createTextNode("[[HDFView]]"));
-					//butOpenHDFView.appendChild(document.createTextNode(""));
-					butOpenHDFView.onclick = 	function(){
-													//sendGetURL("GeosirisHDFView://D:\\Geosiris\\CLOUD\\GTM\\data\\OK_01_ALWYN_DEPTH\\ALWYN-RESQML.h5", false, null);
-													//console.log(constThis);
-													var pathInHDF = "";
-													for(var propIdx=0; propIdx<constThis.properties.length; propIdx++){
-														if(constThis.properties[propIdx].name.toLowerCase().endsWith("pathinhdffile")
-															|| constThis.properties[propIdx].name.toLowerCase().endsWith("pathinexternalfile"))
-														{
-															//console.log(constThis.properties[propIdx]);
-															pathInHDF = constThis.properties[propIdx].value;
-															break;
+				if(!isUpdating){
+					// Creation du bouton de collapser d'arbre
+					this.subAttribCollapserElt = document.createElement("span");
+					//this.subAttribCollapserElt.id = this.rootUUID + this.name;
+					this.subAttribCollapserElt.style.cursor = "pointer";
+					this.subAttribCollapserElt.className    = "resqmlCollapse fas fa-chevron-right";
+
+					this.subAttribCollapserElt.onclick = 
+						function(){
+							if(constThis.htmlSubAttribElt != null){
+								if(constThis.subAttribCollapserElt.className.includes("fa-chevron-right")){
+									constThis.subAttribCollapserElt.className = constThis.subAttribCollapserElt.className.replace("fa-chevron-right", "fa-chevron-down");
+									constThis.htmlSubAttribElt.style.display  = "";
+								}else{
+									constThis.subAttribCollapserElt.className = constThis.subAttribCollapserElt.className.replace("fa-chevron-down", "fa-chevron-right");
+									constThis.htmlSubAttribElt.style.display  = "none";
+								}
+							}
+						};
+
+					this.htmlAttributeElt.appendChild(this.subAttribCollapserElt);
+
+					this.htmlAttributeElt.appendChild(this.htmlTitleElt);
+
+					if(constThis.type.toLowerCase().includes("datasetpart")
+						|| constThis.type.toLowerCase().includes("hdf5dataset")){
+						var butOpenHDFView = document.createElement("img");
+						butOpenHDFView.src = "ressources/img/HDF_logo.png";
+						butOpenHDFView.alt = "[ HDFView ]";
+						butOpenHDFView.className = "hdfViewIcon"
+						butOpenHDFView.title = "Open in HDFView"
+						//var butOpenHDFView = document.createElement("span");
+						//butOpenHDFView.appendChild(document.createTextNode("[[HDFView]]"));
+						//butOpenHDFView.appendChild(document.createTextNode(""));
+						butOpenHDFView.onclick = 	function(){
+														//sendGetURL("GeosirisHDFView://D:\\Geosiris\\CLOUD\\GTM\\data\\OK_01_ALWYN_DEPTH\\ALWYN-RESQML.h5", false, null);
+														//console.log(constThis);
+														var pathInHDF = "";
+														for(var propIdx=0; propIdx<constThis.properties.length; propIdx++){
+															if(constThis.properties[propIdx].name.toLowerCase().endsWith("pathinhdffile")
+																|| constThis.properties[propIdx].name.toLowerCase().endsWith("pathinexternalfile"))
+															{
+																//console.log(constThis.properties[propIdx]);
+																pathInHDF = constThis.properties[propIdx].value;
+																break;
+															}
 														}
-													}
 
-													for(var attIdx=0; attIdx<constThis.attributes.length; attIdx++){
-														var cur_attrib = constThis.attributes[attIdx]; 
-														if(cur_attrib.name.toLowerCase().endsWith("epcexternalpartreference")){
-															var extUuid = ""
-															for(var propIdx=0; propIdx<cur_attrib.properties.length; propIdx++){
-																if(cur_attrib.properties[propIdx].name.toLowerCase().endsWith(".uuid"))
-																{
-																	//console.log("uuid found")
-																	extUuid = cur_attrib.properties[propIdx].value;
-																	break;
+														for(var attIdx=0; attIdx<constThis.attributes.length; attIdx++){
+															var cur_attrib = constThis.attributes[attIdx]; 
+															if(cur_attrib.name.toLowerCase().endsWith("epcexternalpartreference")){
+																var extUuid = ""
+																for(var propIdx=0; propIdx<cur_attrib.properties.length; propIdx++){
+																	if(cur_attrib.properties[propIdx].name.toLowerCase().endsWith(".uuid"))
+																	{
+																		//console.log("uuid found")
+																		extUuid = cur_attrib.properties[propIdx].value;
+																		break;
+																	}
+																}
+																try{
+																	cur_attrib.getResqmlObjectJson(extUuid, "Filename").then(
+																		res => {
+																			openHDFViewAskH5Location(res.value, pathInHDF);
+																		});
+																}catch(e){
+																	console.log(e);
 																}
 															}
-															try{
-																cur_attrib.getResqmlObjectJson(extUuid, "Filename").then(
-																	res => {
-																		openHDFViewAskH5Location(res.value, pathInHDF);
-																	});
-															}catch(e){
-																console.log(e);
-															}
 														}
-													}
-													/*openHDFViewAskH5Location(pathInHDF);
-													console.log("===> HDF5 open")
-													console.log(constThis.attributes)*/
-											 	};
-					this.htmlAttributeElt.appendChild(butOpenHDFView);
-				}
+														/*openHDFViewAskH5Location(pathInHDF);
+														console.log("===> HDF5 open")
+														console.log(constThis.attributes)*/
+												 	};
+						this.htmlAttributeElt.appendChild(butOpenHDFView);
+					}
 
 
-				// Si il y a des sous-element a creer
-				if(tabCreateSubAttrib.length>0 || tabListsAttribs.length>0){
-					this.htmlSubAttribCreatorList = this.createSubAttribAddingListCollapser(tabCreateSubAttrib.concat(tabListsAttribs));
-					if(this.htmlSubAttribCreatorList != null){
-						this.htmlAttributeElt.appendChild(this.htmlSubAttribCreatorList);
+					// Si il y a des sous-element a creer
+					if(tabCreateSubAttrib.length>0 || tabListsAttribs.length>0){
+						this.htmlSubAttribCreatorList = this.createSubAttribAddingListCollapser(tabCreateSubAttrib.concat(tabListsAttribs));
+						if(this.htmlSubAttribCreatorList != null){
+							this.htmlAttributeElt.appendChild(this.htmlSubAttribCreatorList);
+						}
+					}
+
+					if(!this.isResqmlListType() && this.name.length>0){
+						// Bouton de suppression
+						var deleteBut = createDeleteButton("deleteButton deleteButtonTree", "Delete Element");
+						deleteBut.onclick = function(){constThis.remove(true);};
+						this.htmlAttributeElt.appendChild(deleteBut);
+					}
+
+					if(this.htmlSubAttribElt != null){
+						this.htmlAttributeElt.appendChild(this.htmlSubAttribElt);
+						this.htmlSubAttribElt.style.display = "none";
+						this.htmlSubAttribElt.className += " treeSubAttribute";
+					}
+
+				}else{	// updating
+					// Si il y a des sous-element a creer
+					if(tabCreateSubAttrib.length>0 || tabListsAttribs.length>0){
+						var newCreatorList = this.createSubAttribAddingListCollapser(tabCreateSubAttrib.concat(tabListsAttribs), this);
+						if(this.htmlSubAttribCreatorList != null){	// Si il y en avait un avant on le remplace
+							if(newCreatorList != null){
+								this.htmlAttributeElt.replaceChild(newCreatorList, this.htmlSubAttribCreatorList);
+								try{
+									this.htmlSubAttribCreatorList.remove();
+								}catch(Ee){console.log(Ee);}
+							}else{
+								this.htmlAttributeElt.remove();
+							}
+						}else{	// Si il y en avait pas avant on l'ajoute apres le title 
+							if(newCreatorList != null){
+								this.htmlTitleElt.after(newCreatorList);
+							}
+						}
+						this.htmlSubAttribCreatorList = newCreatorList;
+					}else{
+						if(this.htmlSubAttribCreatorList != null){
+							this.htmlSubAttribCreatorList.remove();
+							this.htmlSubAttribCreatorList = null;
+						}
 					}
 				}
 
-				if(!this.isResqmlListType() && this.name.length>0){
-					// Bouton de suppression
-					var deleteBut = createDeleteButton("deleteButton deleteButtonTree", "Delete Element");
-					deleteBut.onclick = function(){constThis.remove(true);};
-					this.htmlAttributeElt.appendChild(deleteBut);
-				}
-
-				if(this.htmlSubAttribElt != null){
-					this.htmlAttributeElt.appendChild(this.htmlSubAttribElt);
+				// Si il y a des sous-attributs on affiche la fleche, sinon on ne l'affiche pas
+				if(this.htmlSubAttribElt.children.length <= 0){
+					this.subAttribCollapserElt.style.display = "none";
+					this.subAttribCollapserElt.className = this.subAttribCollapserElt.className.replace("fa-chevron-down", "fa-chevron-right");
 					this.htmlSubAttribElt.style.display = "none";
-					this.htmlSubAttribElt.className += " treeSubAttribute";
-				}
-
-			}else{	// updating
-				// Si il y a des sous-element a creer
-				if(tabCreateSubAttrib.length>0 || tabListsAttribs.length>0){
-					var newCreatorList = this.createSubAttribAddingListCollapser(tabCreateSubAttrib.concat(tabListsAttribs), this);
-					if(this.htmlSubAttribCreatorList != null){	// Si il y en avait un avant on le remplace
-						if(newCreatorList != null){
-							this.htmlAttributeElt.replaceChild(newCreatorList, this.htmlSubAttribCreatorList);
-							try{
-								this.htmlSubAttribCreatorList.remove();
-							}catch(Ee){console.log(Ee);}
-						}else{
-							this.htmlAttributeElt.remove();
-						}
-					}else{	// Si il y en avait pas avant on l'ajoute apres le title 
-						if(newCreatorList != null){
-							this.htmlTitleElt.after(newCreatorList);
-						}
-					}
-					this.htmlSubAttribCreatorList = newCreatorList;
 				}else{
-					if(this.htmlSubAttribCreatorList != null){
-						this.htmlSubAttribCreatorList.remove();
-						this.htmlSubAttribCreatorList = null;
-					}
+					this.subAttribCollapserElt.style.display = "";
 				}
-			}
+				
 
-			// Si il y a des sous-attributs on affiche la fleche, sinon on ne l'affiche pas
-			if(this.htmlSubAttribElt.children.length <= 0){
-				this.subAttribCollapserElt.style.display = "none";
-				this.subAttribCollapserElt.className = this.subAttribCollapserElt.className.replace("fa-chevron-down", "fa-chevron-right");
-				this.htmlSubAttribElt.style.display = "none";
-			}else{
-				this.subAttribCollapserElt.style.display = "";
-			}
-			
+				/** Property **/
+				if((this.properties!= null && this.properties.length > 0) || this.value != null){
+					const propRootElt = this.htmlElt_propertyRoot;
+					if(propRootElt != null){
+						var lastStyleDisplay = "none";
+						if(this.htmlCurrentProperty!=null){
+							lastStyleDisplay = this.htmlCurrentProperty.style.display;
+							this.htmlCurrentProperty.remove();
+						}
 
-			/** Property **/
-			if((this.properties!= null && this.properties.length > 0) || this.value != null){
-				const propRootElt = this.htmlElt_propertyRoot;
-				if(propRootElt != null){
-					var lastStyleDisplay = "none";
-					if(this.htmlCurrentProperty!=null){
-						lastStyleDisplay = this.htmlCurrentProperty.style.display;
-						this.htmlCurrentProperty.remove();
+						this.htmlCurrentProperty = this.createPropertyTable();
+						this.htmlCurrentProperty.style.display = lastStyleDisplay;
+						propRootElt.appendChild(this.htmlCurrentProperty);
+
+						const constCurrentProp = this.htmlCurrentProperty;
+						
+						this.htmlTitleElt.style.cursor = "pointer";
+						if(!this.htmlTitleElt.className.includes("treeLeafWithProperty"))
+							this.htmlTitleElt.className += "  treeLeafWithProperty";
+						//this.htmlTitleElt.style.fontStyle = "italic";
+
+						this.htmlTitleElt.onclick = function(){
+							for(var propChildIdx=0; propChildIdx < propRootElt.childNodes.length; propChildIdx++){
+								try{
+									// on invisibilise toutes les propriétés
+									propRootElt.childNodes[propChildIdx].style.display = "none";
+									// console.log("child disable : " + propRootElt.childNodes[propChildIdx] + " " + propChildIdx);
+								}catch(e){console.error("/!\\ child not disable : " + propChildIdx);}
+							} 
+							//console.log(constCurrentProp);
+							constCurrentProp.style.display = "";
+						};
+					}else{
+	//					 console.log("no property ROOT " + this.name);
 					}
-
-					this.htmlCurrentProperty = this.createPropertyTable();
-					this.htmlCurrentProperty.style.display = lastStyleDisplay;
-					propRootElt.appendChild(this.htmlCurrentProperty);
-
-					const constCurrentProp = this.htmlCurrentProperty;
-					
-					this.htmlTitleElt.style.cursor = "pointer";
-					if(!this.htmlTitleElt.className.includes("treeLeafWithProperty"))
-						this.htmlTitleElt.className += "  treeLeafWithProperty";
-					//this.htmlTitleElt.style.fontStyle = "italic";
-
+				}else{
+					// console.log("no property for " + this.name);
+					// Si on a pas de propriete on active le click pour ouvrir les sous element a la place.
+					const constThis = this;
 					this.htmlTitleElt.onclick = function(){
-						for(var propChildIdx=0; propChildIdx < propRootElt.childNodes.length; propChildIdx++){
-							try{
-								// on invisibilise toutes les propriétés
-								propRootElt.childNodes[propChildIdx].style.display = "none";
-								// console.log("child disable : " + propRootElt.childNodes[propChildIdx] + " " + propChildIdx);
-							}catch(e){console.error("/!\\ child not disable : " + propChildIdx);}
-						} 
-						//console.log(constCurrentProp);
-						constCurrentProp.style.display = "";
+						constThis.subAttribCollapserElt.click();
 					};
-				}else{
-//					 console.log("no property ROOT " + this.name);
 				}
-			}else{
-				// console.log("no property for " + this.name);
-				// Si on a pas de propriete on active le click pour ouvrir les sous element a la place.
-				const constThis = this;
-				this.htmlTitleElt.onclick = function(){
-					constThis.subAttribCollapserElt.click();
-				};
-			}
 
-			if(!isUpdating && this.parentElt == null){
-				this.subAttribCollapserElt.click();
+				if(!isUpdating && this.parentElt == null){
+					this.subAttribCollapserElt.click();
+				}
 			}
 		}
 

@@ -33,8 +33,8 @@ export function sendGetURL(url, showRequestResult, onloadFunction) {
     }else{
         xmlHttp.addEventListener("load", onloadFunction);
     }
-    xmlHttp.addEventListener('error', (x) => console.log("Error in GET request " + e));
-    xmlHttp.addEventListener('abort', (x) => console.log("Error in GET request " + e));
+    xmlHttp.addEventListener('error', (x) => {console.log("Error in GET request "); console.log(x)});
+    xmlHttp.addEventListener('abort', (x) => {console.log("Error in GET request "); console.log(x)});
     xmlHttp.send( null );
     //console.log("sending get on '" + url + "'");
     sendGetURL_Promise(url); //.then((result) => console.log("HAHAHA "+ result));

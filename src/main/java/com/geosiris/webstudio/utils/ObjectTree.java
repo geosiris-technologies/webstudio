@@ -18,6 +18,8 @@ package com.geosiris.webstudio.utils;
 import com.geosiris.energyml.utils.ObjectController;
 import com.geosiris.energyml.utils.Pair;
 import com.geosiris.webstudio.property.ConfigurationType;
+import com.geosiris.webstudio.servlet.Editor;
+import com.google.gson.Gson;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -92,34 +94,37 @@ public class ObjectTree {
                     simpleName.substring(0, 1).toLowerCase() + simpleName.substring(1));
         }
         ObjectTree tree = new ObjectTree(name, obj, objClass, parent, isMandatory);
-
         if (!bypassNullObj && obj != null) {
             List<Pair<Class<?>, String>> attributes = ObjectController.getClassAttributes(objClass);
             if (List.class.isAssignableFrom(objClass)) {
                 // Si c'est une liste on va chercher les elements
                 int cpt = 0;
                 for (Object elt : (List) obj) {
-                    // logger.error("LIST CONTENT ("+cpt+") " + elt);
-                    // Non on ne test pas si c'est une propriete car c'est le contenu de la liste
-                    // donc peut importe le type,
-                    Class<?> eltClass = Object.class;
-                    if (elt != null) {
-                        eltClass = elt.getClass();
-                        tree.appendChild(createTree(name + "." + cpt, elt, eltClass, tree, bypassNullObj));
-                        cpt++;
-                    } else {
-                        try {
-                            assert parent != null;
-                            eltClass = (Class<?>) ObjectController.getClassTemplates(parent.getDataClass(),
-                                    name.substring(name.lastIndexOf(".") + 1)).getActualTypeArguments()[0];
+                    if(name.toLowerCase().matches("^\\.customdata\\..*")){
+                        // traitement specifique pour les custom data qui ne sont pas gerees par le WS:
+                        // do not give the custom data to the view, to avoid wrong modification
+                    }else {
+                        // logger.error("LIST CONTENT ("+cpt+") " + elt);
+                        // Non on ne test pas si c'est une propriete car c'est le contenu de la liste
+                        // donc peut importe le type,
+                        Class<?> eltClass = Object.class;
+                        if (elt != null) {
+                            eltClass = elt.getClass();
+                            tree.appendChild(createTree(name + "." + cpt, elt, eltClass, tree, bypassNullObj));
+                        } else {
+                            try {
+                                assert parent != null;
+                                eltClass = (Class<?>) ObjectController.getClassTemplates(parent.getDataClass(),
+                                        name.substring(name.lastIndexOf(".") + 1)).getActualTypeArguments()[0];
 
-                            logger.error("Trying to create with class : " + eltClass);
-                        } catch (Exception e) {
-                            logger.error(e.getMessage(), e);
+                                logger.error("Trying to create with class : " + eltClass);
+                            } catch (Exception e) {
+                                logger.error(e.getMessage(), e);
+                            }
+                            tree.appendChild(createTree(name + "." + cpt, elt, eltClass, tree, bypassNullObj));
                         }
-                        tree.appendChild(createTree(name + "." + cpt, elt, eltClass, tree, bypassNullObj));
-                        cpt++;
                     }
+                    cpt++;
                 }
                 // On met la valeur a null car on met la valeur comme des enfants de l'arbre
                 tree.data = null;
@@ -359,11 +364,10 @@ public class ObjectTree {
         }
 
         // TODO : faire les filtre de "typevalue" pour les classes finissant par "Ext"
-        // on cherche la classe de mÃªme nom sans "Ext" et on contraint en type enum
+        // on cherche la classe de meme nom sans "Ext" et on contraint en type enum
 
         // Pour cela regarder le root elet pout avoir la version puis chercher si le
-        // package
-        // contient un type ext
+        // package contient un type ext
 
         // boolean hasChildOrProperty = false;
         // attributes
@@ -387,26 +391,37 @@ public class ObjectTree {
             // hasChildOrProperty = true;
         }
 
-        // On met une valeur si ce n'est pas un array et si c'est un type modifiable
-        // directement (comme les proprietes)
-        if (data != null && !dataClass.getName().toLowerCase().endsWith("array")
-                && ObjectController.isPropertyClass(data.getClass())) {
-            String dataAsString = data + "";
-            if (data.getClass().isEnum()) {
-                try {
-                    Method m_enulValue = data.getClass().getMethod("value");
-                    dataAsString = (String) m_enulValue.invoke(data);
-                } catch (NoSuchMethodException | SecurityException | IllegalAccessException | IllegalArgumentException
-                         | InvocationTargetException ignore) {
+//        if(name.matches(".*[cC]ustom[dD]ata(\\.[Aa]ny)?\\.[\\d]+.\\w+")){
+//            // Traitement specifique pour les CustomData
+//            String dataAsString = Editor.pkgManager.marshal(data);
+//            if(dataAsString == null || dataAsString.length() <=0){
+//                Gson gson = new Gson();
+//                gson.toJson(data);
+//                jsonValue.append("  \"value\" : ").append(dataAsString).append("\n");
+//            }
+//        }else {
+            // On met une valeur si ce n'est pas un array et si c'est un type modifiable
+            // directement (comme les proprietes)
+            if (data != null && !dataClass.getName().toLowerCase().endsWith("array")
+                    && ObjectController.isPropertyClass(data.getClass())) {
+                String dataAsString = data + "";
+                if (data.getClass().isEnum()) {
+                    try {
+                        Method m_enumValue = data.getClass().getMethod("value");
+                        dataAsString = (String) m_enumValue.invoke(data);
+                    } catch (NoSuchMethodException | SecurityException | IllegalAccessException |
+                             IllegalArgumentException
+                             | InvocationTargetException ignore) {
+                    }
                 }
+                dataAsString = Utility.transformStringForJsonCompatibility(dataAsString);
+                jsonValue.append("  \"value\" : ").append(dataAsString).append("\n");
+            } else if (data == null && ObjectController.isPrimitiveClass(dataClass)) {
+                jsonValue.append("  \"value\" : \"\"\n");
+            } else {
+                jsonValue = new StringBuilder(jsonValue.substring(0, jsonValue.lastIndexOf(",")) + " ");
             }
-            dataAsString = Utility.transformStringForJsonCompatibility(dataAsString);
-            jsonValue.append("  \"value\" : ").append(dataAsString).append("\n");
-        } else if (data == null && ObjectController.isPrimitiveClass(dataClass)) {
-            jsonValue.append("  \"value\" : \"\"\n");
-        } else {
-            jsonValue = new StringBuilder(jsonValue.substring(0, jsonValue.lastIndexOf(",")) + " ");
-        }
+//        }
         jsonValue.append("}");
         return jsonValue.toString().replaceAll("\t", "    ");
     }

@@ -88,7 +88,7 @@ export function initSessionLogEventHandler(console_id){
         //console.log("EVENT: ");
         //console.log(decodedMsg);
     };
-    rws_addEventListeners('logs', evt_list_onMessage, evt_list_onMessage);
+    rws_addEventListeners('logs', evt_list_onMessage, null);
 }
 
 
