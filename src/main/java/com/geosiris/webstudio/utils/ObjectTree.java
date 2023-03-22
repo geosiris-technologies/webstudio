@@ -18,6 +18,8 @@ package com.geosiris.webstudio.utils;
 import com.geosiris.energyml.utils.ObjectController;
 import com.geosiris.energyml.utils.Pair;
 import com.geosiris.webstudio.property.ConfigurationType;
+import com.geosiris.webstudio.servlet.Editor;
+import com.google.gson.Gson;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
