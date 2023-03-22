@@ -420,6 +420,54 @@ export function createSelect_selector(optionList_str, targetList_htmlElt, target
 
 }
 
+
+export function createSelector(optionList, label_str, select_id){
+    var div = document.createElement("div");
+    div.class = "form-control";
+
+    var label = document.createElement("label");
+    label.for = select_id;
+    label.appendChild(document.createTextNode(label_str));
+    label.style.display = 'ruby-base';
+    div.appendChild(label);
+
+    const selector = document.createElement("select");
+    selector.name = select_id;
+    selector.id = select_id;
+    selector.className += 'form-control';
+    selector.style.width = 'max-content';
+
+    selector.update = function (t_optionList){
+        var selectedValue = null;
+        while(selector.firstChild){
+            selector.firstChild.remove();
+        }
+
+        [].forEach.call(t_optionList, (elt, idx) =>{
+            var option = document.createElement("option");
+            option.value = elt;
+            option.appendChild(document.createTextNode(elt));
+            selector.appendChild(option);
+        });
+
+        if(selectedValue != null){
+            selector.childNodes.forEach((child_opt, idx)=>{
+                if(child_opt.value == selectedValue){
+                    selector.selectedIndex = idx;
+                }
+            })
+        }
+        try{
+            selectedValue = selector.selectedOptions[0].value
+        }catch{}
+
+    };
+    selector.update(optionList);
+    label.appendChild(selector);
+    return div;
+}
+
+
 export function createDropDownButton(htmlEltMenuList, id){
     var rootDiv = document.createElement("div");
     rootDiv.className = "dropdown btn-group";

@@ -15,15 +15,11 @@ limitations under the License.
 */
 package com.geosiris.webstudio.filters;
 
+import jakarta.servlet.*;
+import jakarta.servlet.http.HttpServletResponse;
+
 import java.io.IOException;
 import java.util.Collection;
-
-import jakarta.servlet.FilterChain;
-import jakarta.servlet.FilterConfig;
-import jakarta.servlet.ServletException;
-import jakarta.servlet.ServletRequest;
-import jakarta.servlet.ServletResponse;
-import jakarta.servlet.http.HttpServletResponse;
 
 public class SameSiteFilter implements jakarta.servlet.Filter {
     @Override

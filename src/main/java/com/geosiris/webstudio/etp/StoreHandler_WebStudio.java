@@ -27,15 +27,18 @@ import jakarta.servlet.http.HttpSession;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
-import java.io.UnsupportedEncodingException;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
+import java.util.concurrent.BlockingQueue;
+import java.util.concurrent.LinkedBlockingDeque;
 
 
 public class StoreHandler_WebStudio extends StoreHandler{
     public static Logger logger = LogManager.getLogger(StoreHandler_WebStudio.class);
     private HttpSession session;
+    public final BlockingQueue<String> importableUUID = new LinkedBlockingDeque<>();
 
 
     public StoreHandler_WebStudio(HttpSession session){
@@ -69,20 +72,16 @@ public class StoreHandler_WebStudio extends StoreHandler{
     @Override
     public Collection<Message> on_GetDataObjectsResponse(GetDataObjectsResponse msg, MessageHeader msgHeader, ClientInfo clientInfo) {
         logger.info("[StoreHandler_WebStudio] received message" + msg);
-        List<String> filesContent = new ArrayList<>();
+        List<String> filesToImport = new ArrayList<>();
         for (CharSequence dr : msg.getDataObjects().keySet()) {
-//            logger.info("\t => " + dr);
-            try {
-                filesContent.add(new String(msg.getDataObjects().get(dr).getData().array(), "UTF-8"));
-            } catch (UnsupportedEncodingException e) {
-                logger.error(e.getMessage(), e);
+            if(canBeImported(msg.getDataObjects().get(dr).getResource().getUri().toString(), true)) {
+                filesToImport.add(new String(msg.getDataObjects().get(dr).getData().array(), StandardCharsets.UTF_8));
             }
-
         }
-        String res = FileReciever.loadFiles_Unnamed(session, filesContent, false, true, true);
+        String res = FileReciever.loadFiles_Unnamed(session, filesToImport, false, true, true);
 
         SessionUtility.log(session, new ServerLogMessage(ServerLogMessage.MessageType.LOG, res, SessionUtility.EDITOR_NAME));
-        SessionUtility.log(session, new ServerLogMessage(ServerLogMessage.MessageType.TOAST,"ETP : " + filesContent.size()
+        SessionUtility.log(session, new ServerLogMessage(ServerLogMessage.MessageType.TOAST,"ETP : " + filesToImport.size()
                 + " imported objects. If they not appear in the table view, refresh the page. ",SessionUtility.EDITOR_NAME));
         SessionUtility.log(session, new ServerLogMessage(ServerLogMessage.MessageType.ACTION, "reload", SessionUtility.EDITOR_NAME));
         return new ArrayList<>();
@@ -100,5 +99,20 @@ public class StoreHandler_WebStudio extends StoreHandler{
         return new ArrayList<>();
     }
 
+    private boolean canBeImported(String inputUri, boolean removeIfFound){
+        boolean found = false;
+        logger.info("[StoreHandler_WebStudio] searching " + inputUri);
+        List<String> urisToImport = new ArrayList<>(importableUUID);
+        for(String uriToImport : urisToImport){
+            logger.info("\t[StoreHandler_WebStudio] <==" + uriToImport);
+            if(uriToImport.contains(inputUri)){
+                found = true;
+                if(removeIfFound){
+                    importableUUID.remove(inputUri);
+                }
+            }
+        }
+        return found;
+    }
 
 }

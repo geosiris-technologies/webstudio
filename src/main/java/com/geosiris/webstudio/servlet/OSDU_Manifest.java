@@ -38,7 +38,6 @@ import java.io.InputStream;
 import java.io.PrintWriter;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.UUID;
 
 /**
  * Servlet implementation class FirstServlet

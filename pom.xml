@@ -4,7 +4,7 @@
     <groupId>com.geosiris</groupId>
     <artifactId>webstudio</artifactId>
     <name>${project.groupId}:${project.artifactId}</name>
-    <version>1.0.5</version>
+    <version>1.0.6</version>
     <organization>
         <name>Geosiris</name>
         <url>http://www.geosiris.com</url>
@@ -68,7 +68,7 @@
         <dependency>
             <groupId>com.geosiris</groupId>
             <artifactId>etpproto-java</artifactId>
-            <version>1.0.0</version>
+            <version>1.0.1</version>
         </dependency>
         <!-- Energyml deps -->
         <dependency>

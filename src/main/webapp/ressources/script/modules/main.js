@@ -29,6 +29,10 @@ import {openResqmlObjectContent} from "./requests/uiRequest.js"
 import {closeTabulation, getOpenObjectsUuid_GivingTabHeader, saveResqmlObject_promise} from "./UI/tabulation.js"
 import {__ID_CONSOLE__, __ID_EPC_TABLE_DIV__, __ID_EPC_TABS_CONTAINER__, __ID_EPC_TABS_HEADER__} from "./common/variables.js"
 
+import {GeoThreeJS, fun_import_surface} from "./UI/lib/geo-threejs/geo-threejs.js";
+
+export let geo3DVue = null;
+
 export function initWebStudioView(){
     createSplitter("#cyGrapher","#graphElementChecked", 65, 30, null, 55, 16);
     try{setVueOrientation("right", false);}catch(err){console.log(err);}
@@ -94,6 +98,7 @@ export function initWebStudioView(){
     });
 
     $(document).ready(function() {
+        init3DVue(document.getElementById("geo3DVue"));
         $('.dropright button').on("click", function(e) {
             e.stopPropagation();
             e.preventDefault();
@@ -107,6 +112,7 @@ export function initWebStudioView(){
 
 
         initSessionMetrics("ws_sessionMetrics");
+
     });
 
     $("#modal_ETP").on('show.bs.modal', function(){
@@ -134,6 +140,7 @@ export function initWebStudioView(){
     });
 
     //console.log('#initWebStudioView')
+
 }
 
 
@@ -161,4 +168,39 @@ export function saveResqmlObjectByUUID(uuid){
 
 export function getOpenObjectsUuid(){
     return getOpenObjectsUuid_GivingTabHeader(__ID_EPC_TABS_HEADER__);
+}
+
+
+export function init3DVue(parentElt){
+    const fileDiv = document.createElement("div");
+    const fileInput = document.createElement("input");
+    const fileBut = document.createElement("button");
+
+    fileInput.type = "file";
+
+    fileBut.appendChild(document.createTextNode("Import"))
+    fileBut.onclick = function(){
+        try{
+            Array.from(fileInput.files).forEach( file => {
+                if (file) {
+                    var reader = new FileReader();
+                    reader.readAsText(file, "UTF-8");
+                    reader.onload = function (evt) {
+                        fun_import_surface(geo3DVue, evt.target.result, file.name);
+                    }
+                    reader.onerror = function (evt) {
+                        document.getElementById("fileContents").innerHTML = "error reading file";
+                    }
+                }
+            });
+        }catch(Except){console.log(Except);}
+    };
+
+    fileDiv.appendChild(fileInput);
+    fileDiv.appendChild(fileBut);
+
+    parentElt.appendChild(fileDiv);
+
+    geo3DVue = new GeoThreeJS(1200, 800);
+    geo3DVue.createView(parentElt);
 }

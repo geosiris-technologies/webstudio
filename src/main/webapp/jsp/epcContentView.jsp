@@ -47,6 +47,7 @@ public Boolean restrictedExperiment(String prod_type){
 <link rel="stylesheet" type="text/css" href="ressources/css/console.css" media="all"/>
 <link rel="stylesheet" type="text/css" href="ressources/css/snackbar.css" media="all"/>
 <link rel="stylesheet" type="text/css" href="ressources/css/vue3D.css" media="all"/>
+<link rel="stylesheet" type="text/css" href="ressources/css/geoThreeJS.css" media="all"/>
 
 <% 
 	// TODO : changer pour faire des fichiers specifiques pour les tests plutot que mettre cette variable

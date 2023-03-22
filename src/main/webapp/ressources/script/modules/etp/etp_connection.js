@@ -15,7 +15,7 @@ limitations under the License.
 */
 
 import {sendGetURL_Promise, sendPostForm_Promise} from "../requests/requests.js"
-import {__RWS_ETP_LOGIN__, __RWS_ETP_PWD__, __RWS_ETP_URI__, set__RWS_ETP_LOGIN__, set__RWS_ETP_PWD__, set__RWS_ETP_URI__} from "../common/variables.js"
+import {__RWS_ETP_LOGIN__, __RWS_ETP_PWD__, __RWS_ETP_URI__, set__RWS_ETP_LOGIN__, set__RWS_ETP_PWD__, set__RWS_ETP_URI__, dataspaces_needs_update, dataspace_reset_timer, dataspace_has_been_updated} from "../common/variables.js"
 
 
 export function geosiris_createETP_connector_form(fun_isConnected, fun_isDisconnected, callpre_func, callback_func){
@@ -112,64 +112,60 @@ export function geosiris_createETP_connector_form(fun_isConnected, fun_isDisconn
     const cst_callpre_func = callpre_func;
     const cst_callback_func = callback_func;
 
-    const func_update_btn_view = function(btnConn, input_req){
+    const func_update_btn_view = function(btnConn, input_req, isConnected){
         cst_callpre_func();
-        sendGetURL_Promise("ETPConnexion?request=isconnected").then(
-            responseText =>{
-                var isConnected = responseText.toLowerCase()=="true";
-                if(isConnected){
+        
+            if(isConnected){
 
-                    // we retake informations about the connexion. 
-                    // It is important if the page has been reload with an active etp
-                    // connexion, to be able to send the connexion infos to activity launcher
-                    // or to the 3D vue model importer (server-visu)
-                    sendGetURL_Promise("ETPConnexionInfos").then(
-                        responseText_infos =>{
-                            try{
-                                const etpInfosJson = JSON.parse(responseText_infos);
-                                if(etpInfosJson["serverUrl"] != null){
-                                    set__RWS_ETP_URI__(etpInfosJson["serverUrl"]);
-                                    set__RWS_ETP_LOGIN__(etpInfosJson["login"]);
-                                    set__RWS_ETP_PWD__(etpInfosJson["password"]);
-                                }else{
-                                    console.log("ETP should be connected but no url found : ");
-                                    console.log(responseText_infos);
-                                }
-                            }catch(jsonFailed){
-                                console.log(jsonFailed);
+                // we retake informations about the connexion. 
+                // It is important if the page has been reload with an active etp
+                // connexion, to be able to send the connexion infos to activity launcher
+                // or to the 3D vue model importer (server-visu)
+                sendGetURL_Promise("ETPConnexionInfos").then(
+                    responseText_infos =>{
+                        try{
+                            const etpInfosJson = JSON.parse(responseText_infos);
+                            if(etpInfosJson["serverUrl"] != null){
+                                set__RWS_ETP_URI__(etpInfosJson["serverUrl"]);
+                                set__RWS_ETP_LOGIN__(etpInfosJson["login"]);
+                                set__RWS_ETP_PWD__(etpInfosJson["password"]);
+                            }else{
+                                console.log("ETP should be connected but no url found : ");
+                                console.log(responseText_infos);
                             }
+                        }catch(jsonFailed){
+                            console.log(jsonFailed);
                         }
-                    );
-                    
+                    }
+                );
+                
 
-                    HAS_BEEN_CONNECTED_ONCE = true;
-                    btnConn.value = "Close ETP connection";
-                    btnConn.className = "btn btn-danger";
-                    input_req.value="disconnect";
-                    div_inputs.style.display = 'none';
-                    if(cst_fun_isConnected != null){
-                        cst_fun_isConnected();
-                    }
-                }else{
-                    if(in0.value != null && in0.value.length>0){
-                        set__RWS_ETP_URI__("");
-                        set__RWS_ETP_LOGIN__("");
-                        set__RWS_ETP_PWD__("");
-                    }
-                    btnConn.value = "Establish etp connexion";
-                    btnConn.className = "btn btn-primary";
-                    input_req.value="connect";
-                    div_inputs.style.display = '';
-                    if(HAS_BEEN_CONNECTED_ONCE && cst_fun_isDisconnected != null){
-                        cst_fun_isDisconnected();
-                    }
+                HAS_BEEN_CONNECTED_ONCE = true;
+                btnConn.value = "Close ETP connection";
+                btnConn.className = "btn btn-danger";
+                input_req.value="disconnect";
+                div_inputs.style.display = 'none';
+                if(cst_fun_isConnected != null){
+                    cst_fun_isConnected();
+                }
+            }else{
+                if(in0.value != null && in0.value.length>0){
+                    set__RWS_ETP_URI__("");
+                    set__RWS_ETP_LOGIN__("");
+                    set__RWS_ETP_PWD__("");
+                }
+                btnConn.value = "Establish etp connexion";
+                btnConn.className = "btn btn-primary";
+                input_req.value="connect";
+                div_inputs.style.display = '';
+                if(HAS_BEEN_CONNECTED_ONCE && cst_fun_isDisconnected != null){
+                    cst_fun_isDisconnected();
                 }
             }
-        );
         update_dataspaces_inputs(cst_callback_func);
     }
-    form.updateView = function(){
-        func_update_btn_view(btnConnect, inreq);
+    form.updateView = function(isConnected){
+        func_update_btn_view(btnConnect, inreq, isConnected);
     }
 
     const btnConnect = document.createElement("input");
@@ -181,7 +177,8 @@ export function geosiris_createETP_connector_form(fun_isConnected, fun_isDisconn
         if(inreq.value=="disconnect" || in0.value.length>0 ){
             sendPostForm_Promise(form, "ETPConnexion", false).then(
                 function(){
-                    form.updateView();
+                    dataspace_reset_timer();
+                    update_etp_connexion_views();
                 }
             )
             d_err.style.display = 'none';
@@ -196,9 +193,13 @@ export function geosiris_createETP_connector_form(fun_isConnected, fun_isDisconn
 }
 
 export function update_etp_connexion_views(){
-    [].forEach.call(document.getElementsByClassName("ETPConnexion_form"), (elt, idx)=> {
-                        elt.updateView();
+    sendGetURL_Promise("ETPConnexion?request=isconnected").then(
+            responseText =>{
+                var isConnected = responseText.toLowerCase()=="true";
+        [].forEach.call(document.getElementsByClassName("ETPConnexion_form"), (elt, idx)=> {
+                        elt.updateView(isConnected);
                     });
+    });
 }
 
 export function create_dataspace_input(callback_func){
@@ -219,6 +220,7 @@ export function create_dataspace_input(callback_func){
 
     selectDataspace.update = function (dataspacesNamesArray){
         var selectedValue = null;
+        // keep previous selected value during updates
         try{
             selectedValue = selectDataspace.selectedOptions[0].value
         }catch{}
@@ -240,6 +242,7 @@ export function create_dataspace_input(callback_func){
             selectDataspace.appendChild(option);
         });
 
+
         if(callback_func != null){
             callback_func();
         }
@@ -257,8 +260,11 @@ export function create_dataspace_input(callback_func){
     return div;
 }
 
-export function update_dataspaces_inputs(callback_func){
-    sendGetURL_Promise("ETPListDataspaces").then(
+export function update_dataspaces_inputs(callback_func, force){
+    console.log("dataspaces_needs_update" + dataspaces_needs_update());
+    if( (force != null && force) || dataspaces_needs_update() ){
+        dataspace_has_been_updated()
+        sendGetURL_Promise("ETPListDataspaces").then(
             responseText =>{
                 try{
                     var dataspacesNames = JSON.parse(responseText);
@@ -270,7 +276,7 @@ export function update_dataspaces_inputs(callback_func){
                     callback_func()
                 }
             });
-    
+    }
 }
 
 

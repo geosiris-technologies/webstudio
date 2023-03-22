@@ -25,10 +25,12 @@ import Energistics.Etp.v12.Protocol.Store.*;
 import com.geosiris.energyml.utils.EPCGenericManager;
 import com.geosiris.energyml.utils.ObjectController;
 import com.geosiris.etp.communication.Message;
+import com.geosiris.etp.protocols.handlers.StoreHandler;
 import com.geosiris.etp.utils.ETPDefaultProtocolBuilder;
 import com.geosiris.etp.utils.ETPUri;
 import com.geosiris.etp.utils.Pair;
 import com.geosiris.etp.websocket.ETPClient;
+import com.geosiris.webstudio.etp.StoreHandler_WebStudio;
 import com.geosiris.webstudio.logs.ServerLogMessage;
 import com.geosiris.webstudio.logs.ServerLogMessage.MessageType;
 import com.geosiris.webstudio.property.ConfigurationType;
@@ -45,17 +47,12 @@ import jakarta.servlet.http.HttpServletResponse;
 import jakarta.servlet.http.HttpSession;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.apache.tomcat.util.http.fileupload.FileItemIterator;
-import org.apache.tomcat.util.http.fileupload.FileItemStream;
-import org.apache.tomcat.util.http.fileupload.disk.DiskFileItemFactory;
-import org.apache.tomcat.util.http.fileupload.servlet.ServletFileUpload;
-import org.apache.tomcat.util.http.fileupload.util.Streams;
 
 import javax.xml.datatype.XMLGregorianCalendar;
 import java.io.IOException;
-import java.io.InputStream;
 import java.io.PrintWriter;
 import java.util.*;
+import java.util.stream.Collectors;
 
 /**
  * Servlet implementation class ETPRequest
@@ -101,36 +98,8 @@ public class ETPRequest extends HttpServlet {
             return;
         }
 
-        HashMap<String, List<String>> etpRequestParameterMap = new HashMap<>();
+        HashMap<String, List<String>> etpRequestParameterMap = SessionUtility.getParameterMap(request);
 
-        if (ServletFileUpload.isMultipartContent(request)) {
-            DiskFileItemFactory factory = new DiskFileItemFactory();
-
-            ServletFileUpload upload = new ServletFileUpload(factory);
-
-            try {
-                FileItemIterator iterator = upload.getItemIterator(request);
-
-                while (iterator.hasNext()) {
-                    FileItemStream item = iterator.next();
-                    InputStream stream = item.openStream();
-
-                    if (item.isFormField()) {
-                        String value = Streams.asString(stream);
-                        logger.info("$> " + item.getFieldName() + " => " + value);
-                        if (!etpRequestParameterMap.containsKey(item.getFieldName()))
-                            etpRequestParameterMap.put(item.getFieldName(), new ArrayList<>());
-                        etpRequestParameterMap.get(item.getFieldName()).add(value);
-                    }
-                }
-            } catch (Exception e) {
-                logger.error(e.getMessage(), e);
-            }
-        } else {
-            for (String k : request.getParameterMap().keySet()) {
-                etpRequestParameterMap.put(k, Arrays.asList(request.getParameterMap().get(k)));
-            }
-        }
         String jsonContent = manageETPRequest(etpRequestParameterMap, request.getSession(false));
 
         PrintWriter out = response.getWriter();
@@ -157,6 +126,9 @@ public class ETPRequest extends HttpServlet {
             logger.info("Asking aknowledge : " + ask_aknowledge);
 
             ETPClient etpClient = (ETPClient) session.getAttribute(SessionUtility.SESSION_ETP_CLIENT_ID);
+
+            StoreHandler_WebStudio storeHandler = (StoreHandler_WebStudio) etpClient.getEtpConnection().getProtocolHandlers().get(StoreHandler.protocol);
+
             boolean isConnected = etpClient != null && etpClient.isConnected();
             if (isConnected) {
                 try {
@@ -241,6 +213,8 @@ public class ETPRequest extends HttpServlet {
                                         SessionUtility.EDITOR_NAME));
                             mapUri.put(mapUri.size()+"", etpuri.toString());
                         }
+
+                        storeHandler.importableUUID.addAll(mapUri.values().stream().map(CharSequence::toString).collect(Collectors.toList()));
 
                         GetDataObjects getDataO = ETPDefaultProtocolBuilder.buildGetDataObjects(mapUri, "xml");
                         List<Message> dataResp_m_l = ETPUtils.sendETPRequest(session, etpClient, getDataO, ask_aknowledge, -1);

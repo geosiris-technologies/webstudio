@@ -168,3 +168,20 @@ export var SEM_IS_LOADING_WORKSPACE = false;
 export function setSEM_IS_LOADING_WORKSPACE(value){
     SEM_IS_LOADING_WORKSPACE = value;
 }
+
+
+// Caches
+
+var last_dataspace_update_time = 0;
+
+export function dataspaces_needs_update(){
+    return (new Date() - last_dataspace_update_time) / 1000 > 180; // si sup a 3 min
+}
+
+export function dataspace_reset_timer(){
+    last_dataspace_update_time = 0;
+}
+
+export function dataspace_has_been_updated(){
+    last_dataspace_update_time = new Date();
+}

@@ -28,10 +28,15 @@ import jakarta.servlet.http.HttpServletResponse;
 import jakarta.servlet.http.HttpSession;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.apache.tomcat.util.http.fileupload.FileItemIterator;
+import org.apache.tomcat.util.http.fileupload.FileItemStream;
+import org.apache.tomcat.util.http.fileupload.disk.DiskFileItemFactory;
+import org.apache.tomcat.util.http.fileupload.servlet.ServletFileUpload;
+import org.apache.tomcat.util.http.fileupload.util.Streams;
 
 import java.io.IOException;
-import java.util.List;
-import java.util.Map;
+import java.io.InputStream;
+import java.util.*;
 import java.util.concurrent.ConcurrentLinkedQueue;
 
 public class SessionUtility {
@@ -149,5 +154,36 @@ public class SessionUtility {
 
     public static boolean configIsMoreVerborseThan(ConfigurationType config){
         return wsProperties.getConfigurationType().value >= config.value;
+    }
+
+    public static HashMap<String, List<String>> getParameterMap(HttpServletRequest request){
+        HashMap<String, List<String>> parameterMap = new HashMap<>();
+
+        if (ServletFileUpload.isMultipartContent(request)) {
+            DiskFileItemFactory factory = new DiskFileItemFactory();
+            ServletFileUpload upload = new ServletFileUpload(factory);
+            try {
+                FileItemIterator iterator = upload.getItemIterator(request);
+                while (iterator.hasNext()) {
+                    FileItemStream item = iterator.next();
+                    InputStream stream = item.openStream();
+
+                    if (item.isFormField()) {
+                        String value = Streams.asString(stream);
+                        if (!parameterMap.containsKey(item.getFieldName()))
+                            parameterMap.put(item.getFieldName(), new ArrayList<>());
+                        parameterMap.get(item.getFieldName()).add(value);
+                    }
+                }
+            } catch (Exception e) {
+                logger.error(e.getMessage(), e);
+            }
+        } else {
+            for (String k : request.getParameterMap().keySet()) {
+                parameterMap.put(k, Arrays.asList(request.getParameterMap().get(k)));
+            }
+        }
+
+        return parameterMap;
     }
 }

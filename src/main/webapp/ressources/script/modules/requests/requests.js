@@ -161,7 +161,7 @@ export function sendPostForm(form, url, showRequestResult) {
         XHR.open(form.method, url, true);
         //console.log("form methode " + form.method);
     }else
-    XHR.open("post", url, true);
+    XHR.open("POST", url, true);
 
     // Les données envoyées sont ce que l'utilisateur a mis dans le formulaire
     XHR.send(FD);
@@ -186,6 +186,17 @@ export function sendPostRequest(str_url, dict_parameters){
     // Soumission du formulaire
     document.body.appendChild(form);
     form.submit();
+}
+
+export function sendPostRequest_Promise(str_url, dict_parameters){
+    return new Promise(function (resolve, reject) {
+        var XHR = new XMLHttpRequest();
+        XHR.addEventListener("load", function(event) {
+            resolve(event.target.responseText)
+        });
+        XHR.open("POST", str_url, true);
+        XHR.send(dict_parameters);
+    });
 }
 export function sendPostRequestJson(str_url, dict){
     // Creation dynamique du formulaire
@@ -227,8 +238,8 @@ export async function sendPostRequestJson_Promise(str_url, dict, showRequestResu
         
         xhr.setRequestHeader("Accept", "application/json");
         xhr.setRequestHeader("Content-Type", "application/json");
-        xhr.setRequestHeader("Sec-Fetch-Site", "cross-site");
-        xhr.setRequestHeader("Sec-Fetch-Mode", "no-cors");
+//        xhr.setRequestHeader("Sec-Fetch-Site", "cross-site");
+//        xhr.setRequestHeader("Sec-Fetch-Mode", "no-cors");
 
         console.log("Sending");
         console.log(dict);
