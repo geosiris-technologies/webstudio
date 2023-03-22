@@ -16,30 +16,36 @@ limitations under the License.
 package com.geosiris.webstudio.utils;
 
 import Energistics.Etp.v12.Datatypes.ServerCapabilities;
+import com.geosiris.energyml.utils.ObjectController;
 import com.geosiris.etp.communication.ClientInfo;
 import com.geosiris.etp.communication.ConnectionType;
 import com.geosiris.etp.communication.ETPConnection;
 import com.geosiris.etp.communication.Message;
 import com.geosiris.etp.protocols.CommunicationProtocol;
 import com.geosiris.etp.protocols.ProtocolHandler;
+import com.geosiris.etp.protocols.handlers.DataArrayHandler;
 import com.geosiris.etp.protocols.handlers.DataspaceHandler;
 import com.geosiris.etp.protocols.handlers.DiscoveryHandler;
 import com.geosiris.etp.protocols.handlers.StoreHandler;
+import com.geosiris.etp.utils.ETPHelper;
+import com.geosiris.etp.utils.ETPUri;
 import com.geosiris.etp.websocket.ETPClient;
-import com.geosiris.webstudio.etp.CoreHandler_WebStudio;
-import com.geosiris.webstudio.etp.DataspaceHandler_WebStudio;
-import com.geosiris.webstudio.etp.DiscoveryHandler_WebStudio;
-import com.geosiris.webstudio.etp.StoreHandler_WebStudio;
+import com.geosiris.webstudio.etp.*;
 import com.geosiris.webstudio.logs.ServerLogMessage;
+import com.geosiris.webstudio.servlet.Editor;
 import jakarta.servlet.http.HttpSession;
+import jakarta.xml.bind.JAXBException;
 import org.apache.avro.specific.SpecificRecordBase;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.eclipse.jetty.http.HttpURI;
 
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 public class ETPUtils {
     public static Logger logger = LogManager.getLogger(ETPUtils.class);
@@ -83,6 +89,10 @@ public class ETPUtils {
 
     public static Boolean establishConnexion(HttpSession session, HttpURI host, String userName, String password,
                                              Boolean askConnection) {
+
+        SessionUtility.log(session, new ServerLogMessage( ServerLogMessage.MessageType.TOAST,
+                    "(ETP) trying to establish connexion with '" + host + "'",
+                    SessionUtility.EDITOR_NAME));
         if (askConnection) {
             ETPClient etpClient = establishConnexionForClient(session, host, userName, password);
             if (etpClient != null) {
@@ -114,7 +124,7 @@ public class ETPUtils {
     }
 
 
-    public static ETPClient establishConnexionForClient(HttpSession session, HttpURI host, String userName, String password, boolean useDefaultHandler) {
+    private static ETPClient establishConnexionForClient(HttpSession session, HttpURI host, String userName, String password, boolean useDefaultHandler) {
         ClientInfo clientInfo = new ClientInfo(host, 4000, 4000);
         Map<CommunicationProtocol, ProtocolHandler> protocolHandlers = new HashMap<>();
         if(useDefaultHandler){
@@ -122,19 +132,159 @@ public class ETPUtils {
             protocolHandlers.put(StoreHandler.protocol, new StoreHandler());
             protocolHandlers.put(DataspaceHandler.protocol, new DataspaceHandler());
             protocolHandlers.put(DiscoveryHandler.protocol, new DiscoveryHandler());
+            protocolHandlers.put(DataArrayHandler.protocol, new DataArrayHandler_WebStudio());
 
         }else{
             protocolHandlers.put(CoreHandler_WebStudio.protocol, new CoreHandler_WebStudio());
             protocolHandlers.put(StoreHandler_WebStudio.protocol, new StoreHandler_WebStudio(session));
             protocolHandlers.put(DataspaceHandler_WebStudio.protocol, new DataspaceHandler_WebStudio());
             protocolHandlers.put(DiscoveryHandler_WebStudio.protocol, new DiscoveryHandler_WebStudio());
+            protocolHandlers.put(DataArrayHandler.protocol, new DataArrayHandler_WebStudio());
         }
         ETPConnection etpConnection = new ETPConnection(ConnectionType.CLIENT, new ServerCapabilities(), clientInfo, protocolHandlers);
 
         return ETPClient.getInstanceWithAuth_Basic(host, etpConnection, 5000, userName, password);
     }
 
-    public static ETPClient establishConnexionForClient(HttpSession session, HttpURI host, String userName, String password) {
+    private static ETPClient establishConnexionForClient(HttpSession session, HttpURI host, String userName, String password) {
         return establishConnexionForClient(session, host, userName, password, false);
+    }
+
+    public static Map<String, String> getOffFile(ETPClient etpClient, String uri, Boolean normalizePosition) throws JAXBException {
+        String fileContent = ETPHelper.sendGetDataObjects_pretty(etpClient, Arrays.asList(new String[]{uri}), "xml", 50000).get(0);
+        Object resqmlObj = Editor.pkgManager.unmarshal(fileContent).getValue();
+
+        String title = (String) ObjectController.getObjectAttributeValue(resqmlObj, "citation.Title");
+        String uuid = (String) ObjectController.getObjectAttributeValue(resqmlObj, "uuid");
+
+        System.out.println("Title : " + ObjectController.getObjectAttributeValue(resqmlObj, "citation.Title") + "\n" + resqmlObj);
+
+        long offsetPoints = 0;
+
+        StringBuilder off_points = new StringBuilder();
+        StringBuilder off_triangles = new StringBuilder();
+
+        long nbPoints = 0;
+        long nbfaces = 0;
+
+        if(resqmlObj.getClass().getSimpleName().compareToIgnoreCase("TriangulatedSetRepresentation") == 0) {
+            List<Object> trianglePatch = (List<Object>) ObjectController.getObjectAttributeValue(resqmlObj, "trianglePatch");
+            System.out.println("patchs : " + trianglePatch.size() + "\n\t" + (trianglePatch.size() > 0 ? trianglePatch.get(0) : "NONE"));
+            for (Object patch : trianglePatch) {
+                List<Object> pointsExtArray = ObjectController.findSubObjects(ObjectController.getObjectAttributeValue(patch, "geometry"), "ExternalDataArrayPart", true);
+                List<Object> trianglesExtArray = ObjectController.findSubObjects(ObjectController.getObjectAttributeValue(patch, "triangles"), "ExternalDataArrayPart", true);
+
+                assert pointsExtArray.size() > 0;
+                assert pointsExtArray.size() == trianglesExtArray.size(); // Should have as many pointExtArray as triangleExtArray
+
+                for (int patchPart_idx = 0; patchPart_idx < pointsExtArray.size(); patchPart_idx++) {
+                    String pathInExternalFile_point = (String) ObjectController.getObjectAttributeValue(pointsExtArray.get(patchPart_idx), "PathInExternalFile");
+                    String pathInExternalFile_triangles = (String) ObjectController.getObjectAttributeValue(trianglesExtArray.get(patchPart_idx), "PathInExternalFile");
+
+                    List<Number> allpoints = ETPHelper.sendGetDataArray_prettier(etpClient, uri, pathInExternalFile_point, 5000, true);
+                    List<Number> alltriangles = ETPHelper.sendGetDataArray_prettier(etpClient, uri, pathInExternalFile_triangles, 5000, true);
+
+                    for (int p_idx = 0; p_idx < allpoints.size() - 2; p_idx += 3) {
+                        off_points.append(allpoints.get(p_idx).floatValue()).append(" ");
+                        off_points.append(allpoints.get(p_idx + 1).floatValue()).append(" ");
+                        off_points.append(allpoints.get(p_idx + 2).floatValue()).append("\n");
+                        nbPoints++;
+                    }
+                    for (int f_idx = 0; f_idx < alltriangles.size() - 2; f_idx += 3) {
+                        off_triangles.append("3 ");
+                        off_triangles.append(offsetPoints + alltriangles.get(f_idx).longValue()).append(" ");
+                        off_triangles.append(offsetPoints + alltriangles.get(f_idx + 1).longValue()).append(" ");
+                        off_triangles.append(offsetPoints + alltriangles.get(f_idx + 2).longValue()).append("\n");
+                        nbfaces++;
+                    }
+
+                    offsetPoints += allpoints.size() / 3;
+                }
+            }
+        } else if(resqmlObj.getClass().getSimpleName().compareToIgnoreCase("PolylineSetRepresentation") == 0)  {
+            List<Object> patchs = (List<Object>) ObjectController.getObjectAttributeValue(resqmlObj, "linePatch");
+            for (Object patch : patchs) {
+                List<Object> pointsExtArray = ObjectController.findSubObjects(ObjectController.getObjectAttributeValue(patch, "geometry"), "ExternalDataArrayPart", true);
+                assert pointsExtArray.size() > 0;
+                for (Object patchPart : pointsExtArray) {
+                    String pathInExternalFile_point = (String) ObjectController.getObjectAttributeValue(patchPart, "PathInExternalFile");
+                    List<Number> allpoints = ETPHelper.sendGetDataArray_prettier(etpClient, uri, pathInExternalFile_point, 5000, true);
+                    for (int p_idx = 0; p_idx < allpoints.size() - 2; p_idx += 3) {
+                        off_points.append(allpoints.get(p_idx).floatValue()).append(" ");
+                        off_points.append(allpoints.get(p_idx + 1).floatValue()).append(" ");
+                        off_points.append(allpoints.get(p_idx + 2).floatValue()).append("\n");
+                        nbPoints++;
+                    }
+                }
+            }
+        } else if(resqmlObj.getClass().getSimpleName().compareToIgnoreCase("PointSetRepresentation") == 0)  {
+            List<Object> patchs = (List<Object>) ObjectController.getObjectAttributeValue(resqmlObj, "NodePatchGeometry");
+            for (Object patch : patchs) {
+                List<Object> pointsExtArray = ObjectController.findSubObjects(ObjectController.getObjectAttributeValue(patch, "Points"), "ExternalDataArrayPart", true);
+                assert pointsExtArray.size() > 0;
+                for (Object patchPart : pointsExtArray) {
+                    String pathInExternalFile_point = (String) ObjectController.getObjectAttributeValue(patchPart, "PathInExternalFile");
+                    List<Number> allpoints = ETPHelper.sendGetDataArray_prettier(etpClient, uri, pathInExternalFile_point, 5000, true);
+                    for (int p_idx = 0; p_idx < allpoints.size() - 2; p_idx += 3) {
+                        off_points.append(allpoints.get(p_idx).floatValue()).append(" ");
+                        off_points.append(allpoints.get(p_idx + 1).floatValue()).append(" ");
+                        off_points.append(allpoints.get(p_idx + 2).floatValue()).append("\n");
+                        nbPoints++;
+                    }
+                }
+            }
+        }
+
+        StringBuilder result = new StringBuilder();
+        result.append("OFF\n\n");
+        result.append(nbPoints).append(" ").append(nbfaces).append(" ").append("0\n");
+        result.append(off_points).append("\n");
+        result.append(off_triangles);
+
+        Map<String, String> surfMap = new HashMap<>();
+        surfMap.put("data", result.toString());
+        surfMap.put("fileType", "off");
+        surfMap.put("type", resqmlObj.getClass().getSimpleName());
+        surfMap.put("uuid", uuid);
+        surfMap.put("title", title);
+        return surfMap;
+    }
+
+    private static final Pattern pat_contentType = Pattern.compile("application/x-(?<domain>[\\w]+)\\+xml;version=(?<domainVersion>[\\d\\.]+);type=(?<type>[\\w\\d_]+)");
+    private static final Pattern pat_qualifiedType = Pattern.compile("(?<domain>[a-zA-Z]+)(?<domainVersion>[\\d]+)\\.(?<type>[\\w_]+)");
+
+    public static ETPUri getUriFromDOR(Object dor, String dataspace){
+        String cq_type = "";
+        try{
+            cq_type = (String) ObjectController.getObjectAttributeValue(dor, "ContentType");
+        }catch (Exception ignore) {}
+        if (cq_type == null){
+            try {
+                cq_type = (String) ObjectController.getObjectAttributeValue(dor, "QualifiedType");
+            } catch (Exception ignore2) {}
+        }
+        Matcher m = pat_contentType.matcher(cq_type);
+
+        String domain = null;
+        String domainVersion = null;
+        String type = null;
+
+        if(m.find()){
+            // found
+            domain = m.group("domain");
+            domainVersion = m.group("domainVersion").replaceAll("\\.", "");
+            type = m.group("type");
+        }else{
+            m = pat_qualifiedType.matcher(cq_type);
+            if(m.find()){
+                // found
+                domain = m.group("domain");
+                domainVersion = m.group("domainVersion").replaceAll("\\.", "");
+                type = m.group("type");
+            }
+        }
+        return new ETPUri(dataspace, domain, domainVersion, type,
+                (String) ObjectController.getObjectAttributeValue(dor, "uuid"),
+                "");
     }
 }

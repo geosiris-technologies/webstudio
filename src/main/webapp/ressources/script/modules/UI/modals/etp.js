@@ -18,13 +18,14 @@ import {create_dataspace_input, geosiris_createETP_connector_form, update_etp_co
 import {modal_getParentContainer, sendForm} from "./modalEntityManager.js"
 import {importObjectIn3DView} from "./misc.js"
 import {appendConsoleMessage} from "../../logs/console.js"
-import {call_after_DOM_updated} from "../htmlUtils.js"
-import {sendPostForm_Promise, sendPostRequestJson_Promise} from "../../requests/requests.js"
+import {call_after_DOM_updated, createSelector} from "../htmlUtils.js"
+import {sendPostForm_Promise, sendPostRequestJson_Promise, sendPostRequest} from "../../requests/requests.js"
 import {resquestValidation} from "../../energyml/epcContentManager.js"
 import {createTableFromData, transformTabToFormCheckable} from "../table.js"
 import {checkAllRelations} from "./exportEPC.js"
 import {refreshHighlightedOpenedObjects} from "../ui.js"
 import {REGEX_ETP_URI, __ENUM_CONSOLE_MSG_SEVERITY_TOAST__, __ID_CONSOLE__, __RWS_CLIENT_NAME__} from "../../common/variables.js"
+import {geo3DVue} from "../../main.js"
 
 
 var ETP_REQUEST_LAUNCH = 0
@@ -60,19 +61,16 @@ export function init_etp_forms(){
     // Initiate
 
     $("#modal_ETP").on('show.bs.modal', function(){
-        modal_ETP_form_connection.updateView();
+        update_etp_connexion_views();
     });
 
     setErrorsVisibility(null, false);
     setEnableETPButtons(false);
 
     // Dataspaces list
-
     var form_ids = Array.prototype.slice.call(document.querySelectorAll('*')).filter(function (el) { 
         return el.id.match("ETPRequest.*_[Ff]orm$");
     });
-
-
 
     for(var f_idx in  form_ids){
         var f_elt = form_ids[f_idx];
@@ -117,6 +115,28 @@ export function setEnableETPButtons(enableValue){
 
 // Fin partie ETP connexion
 
+
+export function launchActivity(ce_type_elt_id){
+    var formETPObjectList = document.getElementById("ETPRequest_import_Form-etp_object_list")
+    var dataspace = document.getElementById("etp_dataspace_import").value
+    var checkedUris = [...formETPObjectList.querySelectorAll(".custom-checkbox input:checked")].map(elt => {
+        var uri = elt.value;
+        if(dataspace != null && dataspace.length > 0){
+            if(!uri.includes("dataspace")){
+                uri = uri.replace("eml:///", "eml:///dataspace('" + dataspace + "')/")
+            }
+        }
+        return uri;
+    })
+    if(checkedUris != null && checkedUris.length > 0){
+        var ce_type = document.getElementById(ce_type_elt_id).value;
+        var data = {"uris": checkedUris, "ce-type": ce_type};
+
+        return sendPostRequestJson_Promise("/LaunchActivityWorkflow", data, true);
+    }
+
+}
+
 export function loadUrisIn3DVue(){
     var formETPObjectList = document.getElementById("ETPRequest_import_Form-etp_object_list")
     var dataspace = document.getElementById("etp_dataspace_import").value
@@ -128,24 +148,26 @@ export function loadUrisIn3DVue(){
                 }
             }
             return uri;
-        })
-    var importType = "SURFACES";
-    try{
-        var selectImportType = document.getElementById("etpImport_importType");
-        importType = selectImportType.options[selectImportType.selectedIndex].value;
-    }catch(ex){console.log(ex);}
-
-    var pointSize = "0.1";
-    try{
-        pointSize = document.getElementById("etpImport_pointSize").value;
-    }catch(ex){console.log(ex);}
+        });
 
     if(checkedUris != null && checkedUris.length > 0){
-        importObjectIn3DView(checkedUris, importType, pointSize).then(msg => appendConsoleMessage(__ID_CONSOLE__, { 
-                            severity: __ENUM_CONSOLE_MSG_SEVERITY_TOAST__,
-                            originator: __RWS_CLIENT_NAME__,
-                            message: msg
-                        }));
+        importObjectIn3DView(checkedUris).then(fileContent => {
+            try{
+                var jsonValueList = JSON.parse(fileContent);
+                console.log("3D vue is Loading " + jsonValueList.length + " entities");
+                jsonValueList.forEach(obj =>{
+                    try{
+                        geo3DVue.importSurface(obj["data"], obj["type"] + "_" + obj["uuid"] + "[" + obj["title"] + "]." + obj["fileType"]);
+                    }catch(exception){
+                        console.log(fileContent);
+                        console.log(exception);
+                    }
+                });
+            }catch(exception){
+                console.log(fileContent);
+                console.log(exception);
+            }
+        });
     }
 
 }
@@ -248,6 +270,34 @@ export function loadETPObjectList(eltId_objectList, eltId_formRequest){
                             }
         formSubmit_delete.appendChild(document.createTextNode("Delete data object"));
         formImportETPobjects.appendChild(formSubmit_delete);
+
+
+        const formSubmit_visualize = document.createElement("input");
+        formSubmit_visualize.value = "Visualize data object";
+        formSubmit_visualize.type = "button";
+        formSubmit_visualize.className = "btn btn-info geosiris-btn-etp";
+        formSubmit_visualize.onclick = function(){
+                                loadUrisIn3DVue();
+                            }
+        formSubmit_visualize.appendChild(document.createTextNode("Visualize data object"));
+        formImportETPobjects.appendChild(formSubmit_visualize);
+
+        // activity launcher
+        const launch_select_id = "etp_select_activity_type";
+        const div_activityLaunch = createSelector(["Process_0hv5t1z.started", "MULTIPLE_MBA.started"], "ce-type", launch_select_id);
+
+        const formSubmit_launch_activity = document.createElement("input");
+        formSubmit_launch_activity.value = "Launch activity";
+        formSubmit_launch_activity.type = "button";
+        formSubmit_launch_activity.className = "btn btn-info geosiris-btn-etp";
+        formSubmit_launch_activity.onclick = function(){
+                                launchActivity(launch_select_id);
+                            }
+
+        formSubmit_launch_activity.appendChild(document.createTextNode("Launch activity"));
+        div_activityLaunch.appendChild(formSubmit_launch_activity);
+        formImportETPobjects.appendChild(div_activityLaunch);
+
         endETPRequest();
     });
 }

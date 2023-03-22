@@ -41,3 +41,15 @@ limitations under the License.
 
 
 <!--  fin bootstrap -->
+
+<!-- Threejs -->
+<script type="importmap">
+    {
+        "imports": {
+            "three": "https://unpkg.com/three@0.147.0/build/three.module.js",
+            "three/addons/": "https://unpkg.com/three@0.147.0/examples/jsm/"
+        }
+    }
+</script>
+
+<script async src="https://unpkg.com/es-module-shims@1.6.2/dist/es-module-shims.js"></script>

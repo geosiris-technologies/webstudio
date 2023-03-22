@@ -28,6 +28,8 @@ limitations under the License.
 <%@ include file="/jsp/htmlParts/modal_FIRPView.jsp"%>	
 <%@ include file="/jsp/htmlParts/modal_ETP.jsp"%>
 
+<%@ include file="/jsp/htmlParts/modal_3D_view.jsp"%>
+
 <!-- <%@ include file="/jsp/htmlParts/modal_getOSDUManifest.jsp"%> -->
 
 <style type="text/css">
@@ -82,6 +84,7 @@ limitations under the License.
 
 					<div class="dropdown-divider"></div>
 
+                	<a class="dropdown-item" data-toggle="modal" data-target="#modal_3D_view">3D View</a>
                 	<a class="dropdown-item" data-toggle="modal" data-target="#modal_FIRPView">FIRP view</a>
 					<a class="dropdown-item" data-toggle="modal" data-target="#modal_ETP">ETP requests</a>
                 	<a class="dropdown-item" data-toggle="modal" data-target="#modal_PropertiesDict">Show Common properties dictionary</a>

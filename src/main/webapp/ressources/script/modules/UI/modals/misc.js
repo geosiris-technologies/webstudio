@@ -14,7 +14,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-import {downloadGetURL_Promise, sendGetURL_Promise, sendPostRequestJson_Promise} from "../../requests/requests.js"
+import {downloadGetURL_Promise, sendGetURL_Promise, sendPostRequestJson_Promise, sendPostRequest_Promise} from "../../requests/requests.js"
 import {beginTask, endTask} from "../ui.js"
 import {modal_waitDomUpdate, sendForm} from "./modalEntityManager.js"
 import {sendGetURLAndReload} from "../eventHandler.js"
@@ -88,7 +88,7 @@ export function doExportEPC(){
 }
 
 // unity
-export function importObjectIn3DView(uris, importType, pointSize){
+export function importObjectIn3DView(uris){//, importType, pointSize){
     appendConsoleMessage(__ID_CONSOLE__, { 
                                 severity: __ENUM_CONSOLE_MSG_SEVERITY_TOAST__,
                                 originator: __RWS_CLIENT_NAME__,
@@ -96,7 +96,9 @@ export function importObjectIn3DView(uris, importType, pointSize){
                             });
     var data = {"uris": uris};
 
-    if(__RWS_ETP_URI__ != null && __RWS_ETP_LOGIN__ != null && __RWS_ETP_PWD__ != null){
+    return sendPostRequestJson_Promise("/ETPLoadSurfaceInVue", data, false);
+
+    /*if(__RWS_ETP_URI__ != null && __RWS_ETP_LOGIN__ != null && __RWS_ETP_PWD__ != null){
         if(!__RWS_ETP_URI__.startsWith("ws")){
             set__RWS_ETP_URI__("ws://" + __RWS_ETP_URI__);
         }
@@ -109,7 +111,7 @@ export function importObjectIn3DView(uris, importType, pointSize){
                     "pointSize": pointSize
                 };
                     
-    }
+    }*/
 
-    return sendPostRequestJson_Promise("visu-server/importObjects/", data, true);
+    //return sendPostRequestJson_Promise("visu-server/importObjects/", data, true);
 }

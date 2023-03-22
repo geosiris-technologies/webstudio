@@ -47,10 +47,10 @@ export function createJavaTypeView(javaParam, funcName){
 export function createETPRequestFuncForm(){
     const result = document.createElement("div");
     const targetDiv = document.createElement("div");
-    targetDiv.className = "etp-object-parameter-block"
-    targetDiv.name = "etp-object-parameter-block"
-    const objectsName = []
-    const objectsParams = []
+    targetDiv.className = "etp-object-parameter-block";
+    targetDiv.name = "etp-object-parameter-block";
+    const objectsName = [];
+    const objectsParams = [];
     
     get_ETP_Functions_Promise().then(
         funcsAsJSON => {

@@ -33,73 +33,73 @@ public class DataArrayHandler_WebStudio extends DataArrayHandler{
 
     @Override
     public Collection<Message> on_GetDataArrayMetadata(GetDataArrayMetadata msg, MessageHeader msgHeader, ClientInfo clientInfo) {
-        logger.info("[DataArrayHandler_WebStudio] received message" + msg);
+        // logger.info("[DataArrayHandler_WebStudio] received message" + msg);
         return new ArrayList<>();
     }
 
     @Override
     public Collection<Message> on_GetDataArrayMetadataResponse(GetDataArrayMetadataResponse msg, MessageHeader msgHeader, ClientInfo clientInfo) {
-        logger.info("[DataArrayHandler_WebStudio] received message" + msg);
+        // logger.info("[DataArrayHandler_WebStudio] received message" + msg);
         return new ArrayList<>();
     }
 
     @Override
     public Collection<Message> on_GetDataArrays(GetDataArrays msg, MessageHeader msgHeader, ClientInfo clientInfo) {
-        logger.info("[DataArrayHandler_WebStudio] received message" + msg);
+        // logger.info("[DataArrayHandler_WebStudio] received message" + msg);
         return new ArrayList<>();
     }
 
     @Override
     public Collection<Message> on_GetDataArraysResponse(GetDataArraysResponse msg, MessageHeader msgHeader, ClientInfo clientInfo) {
-        logger.info("[DataArrayHandler_WebStudio] received message" + msg);
+        // logger.info("[DataArrayHandler_WebStudio] received message" + msg);
         return new ArrayList<>();
     }
 
     @Override
     public Collection<Message> on_GetDataSubarrays(GetDataSubarrays msg, MessageHeader msgHeader, ClientInfo clientInfo) {
-        logger.info("[DataArrayHandler_WebStudio] received message" + msg);
+        // logger.info("[DataArrayHandler_WebStudio] received message" + msg);
         return new ArrayList<>();
     }
 
     @Override
     public Collection<Message> on_GetDataSubarraysResponse(GetDataSubarraysResponse msg, MessageHeader msgHeader, ClientInfo clientInfo) {
-        logger.info("[DataArrayHandler_WebStudio] received message" + msg);
+        // logger.info("[DataArrayHandler_WebStudio] received message" + msg);
         return new ArrayList<>();
     }
 
     @Override
     public Collection<Message> on_PutDataArrays(PutDataArrays msg, MessageHeader msgHeader, ClientInfo clientInfo) {
-        logger.info("[DataArrayHandler_WebStudio] received message" + msg);
+        // logger.info("[DataArrayHandler_WebStudio] received message" + msg);
         return new ArrayList<>();
     }
 
     @Override
     public Collection<Message> on_PutDataArraysResponse(PutDataArraysResponse msg, MessageHeader msgHeader, ClientInfo clientInfo) {
-        logger.info("[DataArrayHandler_WebStudio] received message" + msg);
+        // logger.info("[DataArrayHandler_WebStudio] received message" + msg);
         return new ArrayList<>();
     }
 
     @Override
     public Collection<Message> on_PutDataSubarrays(PutDataSubarrays msg, MessageHeader msgHeader, ClientInfo clientInfo) {
-        logger.info("[DataArrayHandler_WebStudio] received message" + msg);
+        // logger.info("[DataArrayHandler_WebStudio] received message" + msg);
         return new ArrayList<>();
     }
 
     @Override
     public Collection<Message> on_PutDataSubarraysResponse(PutDataSubarraysResponse msg, MessageHeader msgHeader, ClientInfo clientInfo) {
-        logger.info("[DataArrayHandler_WebStudio] received message" + msg);
+        // logger.info("[DataArrayHandler_WebStudio] received message" + msg);
         return new ArrayList<>();
     }
 
     @Override
     public Collection<Message> on_PutUninitializedDataArrays(PutUninitializedDataArrays msg, MessageHeader msgHeader, ClientInfo clientInfo) {
-        logger.info("[DataArrayHandler_WebStudio] received message" + msg);
+        // logger.info("[DataArrayHandler_WebStudio] received message" + msg);
         return new ArrayList<>();
     }
 
     @Override
     public Collection<Message> on_PutUninitializedDataArraysResponse(PutUninitializedDataArraysResponse msg, MessageHeader msgHeader, ClientInfo clientInfo) {
-        logger.info("[DataArrayHandler_WebStudio] received message" + msg);
+        // logger.info("[DataArrayHandler_WebStudio] received message" + msg);
         return new ArrayList<>();
     }
 

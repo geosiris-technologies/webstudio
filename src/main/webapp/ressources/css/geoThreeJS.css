@@ -1,0 +1,31 @@
+.geothreejs-canvas{
+    position: fixed;
+    left: 15px;
+    max-width:1200px;
+    width:1200px;
+    border: 2px solid black;
+    padding: 0px;
+}
+.geothreejs-scene-ui{
+    position: fixed;
+    right:55px;
+    width:calc(100% - 1340px);
+}
+.geothreejs-canvas-label {
+    position: absolute;
+    top: 5px;
+    left: 20px;
+    text-align: center;
+    z-index: 100;
+    display: block;
+}
+.scene2{
+    position: absolute;
+    right: 0;
+    border: 1px solid black;
+    width: 100px;
+    height: 100px;
+    top: 0px;
+    margin: 0px; 
+    padding: 0px;
+}
