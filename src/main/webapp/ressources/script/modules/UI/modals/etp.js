@@ -345,6 +345,39 @@ export function createETPImportObjects(urisAsTable){
             }
         );
 
+
+        /*----------------------*/
+        /*const f_cols = []
+        
+        f_cols.push(new JsonTableColumnizer_Checkbox(
+            "sample_check", 
+            (obj) => obj[3],
+            (event, isChecked, uri) => {
+                etp_triggerViewUpdateOnResourceChecked(cst_etpTable, isChecked, uri);
+            })
+        );
+        f_cols.push(new JsonTableColumnizer_Icon("far fa-trash-alt deleteButton", "fas fa-trash-alt deleteButton"));
+
+        const attrib_list = ["pkg", "type", "uuid", "uri", "related", "storeCreated", "storeLastWrite"];
+        attrib_list.forEach(
+            (attrib) => {
+                f_cols.push(
+                    new JsonTableColumnizer_DotAttrib(
+                        attrib.substring(0, 1).toUpperCase() + attrib.substring(1),
+                        attrib,
+                        null,
+                        null,
+                        (elt)=>"etp_uri",
+                        null,
+                        "pointer"
+                    )
+                );
+            }
+        );
+
+        var tableETP = toTable(tableObjRelated_noDuplicates, f_cols);
+        tableETP.className += " table-striped table-bordered table-hover table-fixed table-top-fixed";*/
+        /*----------------------*/
         tableETP = createTableFromData(tableObjRelated_noDuplicates, 
                         ["pkg", "type", "uuid", "uri", "related", "storeCreated", "storeLastWrite"], 
                         ["Package", "Type", "UUID", "Uri", "Related to", "Store Created", "Store Last Write"], 

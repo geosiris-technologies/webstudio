@@ -18,6 +18,16 @@ import {openResqmlObjectContentByUUID} from "../main.js"
 import {deleteResqmlObject} from "../requests/uiRequest.js"
 
 
+export const MOUSE_EVENT_LIST = ["click", "contextmenu", "dblclick", "mousedown", "mouseenter", "mouseleave", "mousemove", "mouseout", "mouseover", "mouseup"]
+
+export function add_mouse_event_listener(elt, func){
+    MOUSE_EVENT_LIST.forEach(
+        (evt_name) => {
+            elt.addEventListener(evt_name, func);
+        }
+    )
+}
+
 export function openContentInNewTab(jsonContent){
     var tab = window.open('about:blank', '_blank');
     tab.document.write(jsonContent);
@@ -468,7 +478,7 @@ export function createSelector(optionList, label_str, select_id){
 }
 
 
-export function createDropDownButton(htmlEltMenuList, id){
+export function createDropDownButton(htmlEltMenuList, id, menu_class){
     var rootDiv = document.createElement("div");
     rootDiv.className = "dropdown btn-group";
 
@@ -490,8 +500,12 @@ export function createDropDownButton(htmlEltMenuList, id){
     rootDiv.appendChild(button);
 
     var divMenu = document.createElement("div");
-    divMenu.className = "dropdown-menu";
     divMenu.setAttribute("aria-labelledby", id);
+    divMenu.className = "dropdown-menu";
+
+    if(menu_class != null && menu_class.length > 0){
+        divMenu.className += " " + menu_class;
+    }
 
 
     for(var eltId=0; eltId<htmlEltMenuList.length; eltId++){

@@ -42,6 +42,20 @@ export function getHtmlEltIdxInParent(elt_html){
 		chIdx++;
 	return chIdx;
 }
+export function getResqmlEltCitationTitle(resqmlElt){
+	try{
+		var citation = null;
+		try{
+			citation = Array.from(resqmlElt.attributes).filter(att => att.name.includes(".Citation"))[0];
+		}catch(exceptCitation){}
+		var title = "";
+		try{
+			title = Array.from(citation.properties).filter(att => att.name.startsWith(".Citation.Title"))[0].value;
+		}catch(exceptTitle){}
+		return title;
+	}catch(except){console.log(except);console.log(resqmlElt);}
+	return "";
+}
 
 export function getResqmlEltTitleText(resqmlElt){
 	var tabulatioHeaderText = resqmlElt.rootUUID;
@@ -55,14 +69,7 @@ export function getResqmlEltTitleText(resqmlElt){
 		// on enlève les lettre non majuscules du type
 		type = "[" + type.replace(regexTypeReplace, '') + "] ";
 
-		var citation = null;
-		try{
-			citation = Array.from(resqmlElt.attributes).filter(att => att.name.includes(".Citation"))[0];
-		}catch(exceptCitation){}
-		var title = "";
-		try{
-			title = Array.from(citation.properties).filter(att => att.name.startsWith(".Citation.Title"))[0].value;
-		}catch(exceptTitle){}
+		var title = getResqmlEltCitationTitle(resqmlElt);
 		tabulatioHeaderText = type + title + "(" + resqmlElt.rootUUID + ")";
 
 	}catch(except){console.log(except);console.log(resqmlElt);}
@@ -734,7 +741,11 @@ export class ResqmlElement{
 						typeInTitle = typeInTitle.replace( /[a-z]/g, '' )
 						showTypeAsTooltip = true;
 					}
-				}else{
+				}else{ // the Top title
+					var title = getResqmlEltCitationTitle(this);
+					if (title != null && title.length > 0){
+						typeInTitle += " '" + title + "'";
+					}
 					typeInTitle += " " + this.rootUUID;
 				}
 
@@ -880,7 +891,6 @@ export class ResqmlElement{
 						//butOpenHDFView.appendChild(document.createTextNode("[[HDFView]]"));
 						//butOpenHDFView.appendChild(document.createTextNode(""));
 						butOpenHDFView.onclick = 	function(){
-														//sendGetURL("GeosirisHDFView://D:\\Geosiris\\CLOUD\\GTM\\data\\OK_01_ALWYN_DEPTH\\ALWYN-RESQML.h5", false, null);
 														//console.log(constThis);
 														var pathInHDF = "";
 														for(var propIdx=0; propIdx<constThis.properties.length; propIdx++){
@@ -1321,7 +1331,7 @@ export class ResqmlElement{
 			}
 		}
 		if(tabSubAttElt.length>0){
-			var dropDown = createDropDownButton(tabSubAttElt, "subAttributeCreatorList_"+this.name);
+			var dropDown = createDropDownButton(tabSubAttElt, "subAttributeCreatorList_"+this.name, "dropdown-menu-energyml-elt");
 			dropDown.title = "Create sub element";
 			dropDown.className += " dropDownCreateSubAttribute";
 			return dropDown;

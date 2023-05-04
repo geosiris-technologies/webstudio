@@ -62,3 +62,14 @@ export function isResqmlFinalElt(elt){
     && !isResqmlListType(elt.type)
     ;// || elt.type.includes("XMLGregorianCalendar");
 }
+
+export function getAttribute(obj, att){
+    var paths = att.split(".");
+    if(paths.length > 1){
+        return getAttribute(obj[paths[0]], paths.slice(1).join("."))
+    }else if (paths.length == 1){
+        return obj[paths[0]]
+    }else{
+        return null;
+    }
+}

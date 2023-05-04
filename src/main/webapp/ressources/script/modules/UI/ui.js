@@ -17,11 +17,13 @@ limitations under the License.
 import {call_after_DOM_updated, createDeleteResqmlButton, createDropDownDivider, createRadio, createSplitter} from "./htmlUtils.js"
 import {hasBeenDisconnected, refreshWorkspace, rws_addEventListeners} from "./eventHandler.js"
 import {appendConsoleMessage} from "../logs/console.js"
-import {getAllOpendedObjects} from "../requests/uiRequest.js"
+import {getAllOpendedObjects, deleteResqmlObject} from "../requests/uiRequest.js"
 import {compare, copyOtherTableSortingParams, createTableFromData, highlightTableCellFromClass, highlightTableLineFromTdText, transformTab_AddColumn} from "./table.js"
 import {SEM_IS_LOADING_WORKSPACE, getObjectTableCellClass, setSEM_IS_LOADING_WORKSPACE} from "../common/variables.js"
+import {getAttribute} from "../common/utils.js"
 import {openResqmlObjectContentByUUID} from "../main.js"
 import {energymlRootTypes, savePreferences} from "../energyml/epcContentManager.js"
+import {JsonTableColumnizer_Checkbox, JsonTableColumnizer_Radio, JsonTableColumnizer_Icon, JsonTableColumnizer_DotAttrib, toTable} from "./jsonToTable.js"
 
 
 export var __USER_NAME__ = "";
@@ -486,7 +488,7 @@ export function initRootEltSelector(typeSelector){
 }
 
 export function getResqmlObjectTable(dataTableContent, dataTableColumn, oldTable){
-    var dataTableHeader = dataTableColumn.map(title => title[0].toUpperCase() + title.substring(1));
+    /*var dataTableHeader = dataTableColumn.map(title => title[0].toUpperCase() + title.substring(1));
     var table = createTableFromData(dataTableContent, dataTableColumn, dataTableHeader, 
                                     dataTableContent.map(elt => [ function(){openResqmlObjectContentByUUID(elt['uuid'])} ]), 
                                     null,
@@ -494,7 +496,51 @@ export function getResqmlObjectTable(dataTableContent, dataTableColumn, oldTable
                                         // On met le oldTable à null ici pour trier seulement apres l'ajout de la nouvelle colonne,
                                         // sinon les boutons de suppressions ne seront pas en face des bons elements.
 
-    transformTab_AddColumn(table, "", 0, dataTableContent.map(elt => createDeleteResqmlButton(elt)), "colName_delete", "");
+    transformTab_AddColumn(table, "", 0, dataTableContent.map(elt => createDeleteResqmlButton(elt)), "colName_delete", "");*/
+
+    /*-----------------*/
+    const f_cols = []
+    
+    /*f_cols.push(new JsonTableColumnizer_Checkbox("sample_check", (obj) => getAttribute(obj, "uuid")));*/
+    /*f_cols.push(new JsonTableColumnizer_Radio("sample_radio", (obj) => getAttribute(obj, "uuid")));*/
+    f_cols.push(new JsonTableColumnizer_Icon(
+        "far fa-trash-alt deleteButton", 
+        "fas fa-trash-alt deleteButton",
+        function(event, elt){
+            if(event.type == "click"){
+                deleteResqmlObject(
+                    elt["uuid"], 
+                    elt["type"], 
+                    elt["title"]
+                );
+            }
+        }
+    ));
+
+    const attrib_list = dataTableColumn;
+    attrib_list.forEach(
+        (attrib) => {
+            f_cols.push(
+                new JsonTableColumnizer_DotAttrib(
+                    attrib.substring(0, 1).toUpperCase() + attrib.substring(1),
+                    attrib,
+                    function(event, elt){
+                        if(event.type == "click"){
+                            openResqmlObjectContentByUUID(elt['uuid']);
+                        }
+                    },
+                    null,
+                    (elt)=>elt["uuid"]+ "-tab",
+                    null,
+                    "pointer"
+                )
+            );
+        }
+    );
+
+    var table = toTable(dataTableContent, f_cols);
+    table.className += " table-striped table-bordered table-hover table-fixed table-top-fixed";
+    /*-----------------*/
     copyOtherTableSortingParams(table, oldTable, dataTableColumn);
 
     return table;
