@@ -120,8 +120,9 @@ export function initSessionMetrics(spanSessionMetrics_id){
 export function refreshWorkspace(){
     beginTask();
     console.log("refreshing workspace")
-    return loadResqmlData().then( 
+    return loadResqmlData().then(
         function(){
+            endTask();
             const openedObjects = getAllOpendedObjects();
             // On remet a jour le tableau après la sauvegarde au cas
             // où le nom d'un element aurait changé
@@ -154,9 +155,9 @@ export function sendGetURLAndReload(url, showRequestResult){
 }
 
 export function sendPostFormAndReload(form, url, showRequestResult, functAfterReload){
-    beginTask();
     const openedObjects = getAllOpendedObjects();
 
+    beginTask();
     return sendPostForm_Promise(form, url, showRequestResult).then(
         function(){
             endTask();
@@ -179,5 +180,5 @@ export function sendPostFormAndReload(form, url, showRequestResult, functAfterRe
                     }
                     refreshHighlightedOpenedObjects();
                 });
-        });
+        }).catch(() => endTask());
 }

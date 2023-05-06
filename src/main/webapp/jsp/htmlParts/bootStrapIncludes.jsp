@@ -51,5 +51,7 @@ limitations under the License.
         }
     }
 </script>
-
 <script async src="https://unpkg.com/es-module-shims@1.6.2/dist/es-module-shims.js"></script>
+
+<!-- JSZip -->
+<script src="/ressources/script/modules/UI/lib/jszip.min.js" type="text/javascript"></script>

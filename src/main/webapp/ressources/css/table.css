@@ -14,6 +14,12 @@
   	border-spacing: 0;
 	white-space: nowrap;
 }
+.table-top-fixed td, .table-top-fixed th{
+	max-width: 350px;
+    overflow: hidden;
+    padding-left: 10px;
+    padding-right: 10px;
+}
 
 .colName_num{
 	text-align: right;

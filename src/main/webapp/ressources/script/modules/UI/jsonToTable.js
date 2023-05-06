@@ -18,7 +18,8 @@ import {getAttribute} from "../common/utils.js"
 
 
 export class JsonTableColumnizer{
-    constructor(mouseListener, mouseListener_title, f_className, f_className_title, cursor) {
+    constructor(title, mouseListener, mouseListener_title, f_className, f_className_title, cursor) {
+        this.title = title;
         this.mouseListener = mouseListener;
         this.mouseListener_title = mouseListener_title;
         this.f_className = f_className;
@@ -60,13 +61,12 @@ export class JsonTableColumnizer{
 
     getSortAttribute(){return null;} // TODO: redefine
     _getDomElt(obj){ return document.createTextNode(obj); } // TODO: redefine
-    _getColumnTitleElt(){ return document.createTextNode(""); } // TODO: redefine
+    _getColumnTitleElt(){ return document.createTextNode(this.title!=null?this.title:""); } // TODO: redefine
 }
 
 export class JsonTableColumnizer_DotAttrib extends JsonTableColumnizer{
     constructor(title, attrib, mouseListener, mouseListener_title, f_className, f_className_title, cursor) {
-        super(mouseListener, mouseListener_title, f_className, f_className_title, cursor);
-        this.title = title;
+        super(title, mouseListener, mouseListener_title, f_className, f_className_title, cursor);
         this.attrib = attrib;
     }
     getSortAttribute(){return this.attrib;}
@@ -80,7 +80,7 @@ export class JsonTableColumnizer_DotAttrib extends JsonTableColumnizer{
 
 export class JsonTableColumnizer_Icon extends JsonTableColumnizer{
     constructor(iconClassCode, iconClassCodeHovered, mouseListener, mouseListener_title, f_className, f_className_title) {
-        super(mouseListener, mouseListener_title, f_className, f_className_title);
+        super(null, mouseListener, mouseListener_title, f_className, f_className_title);
         this.iconClassCode = iconClassCode;
         this.iconClassCodeHovered = iconClassCodeHovered;
     }
@@ -98,7 +98,7 @@ export class JsonTableColumnizer_Icon extends JsonTableColumnizer{
 
 export class JsonTableColumnizer_Checkbox extends JsonTableColumnizer{
     constructor(name, f_value, onChange) {
-        super(null, null, null, null);
+        super(null, null, null, null, null);
         this.f_value = f_value;
         this.name = name;
         this.onChange = onChange;
@@ -190,7 +190,7 @@ export class JsonTableColumnizer_Checkbox extends JsonTableColumnizer{
 
 export class JsonTableColumnizer_Radio extends JsonTableColumnizer{
     constructor(name, f_value) {
-        super(null, null, null, null);
+        super(null, null, null, null, null);
         this.f_value = f_value;
         this.name = name;
         this.class_id = (Math.random() + 1).toString(36).substring(7);
@@ -231,6 +231,7 @@ export function _toTable_body(
                     _table_line.appendChild(_table_line_col);
                     //_table_line_col.className += " colName_" + key;
                     _table_line_col.appendChild(f_col.getDomElt(const_elt, _table_line_col));
+                    _table_line_col.title = _table_line_col.textContent;
                 }
             );
         }
@@ -331,7 +332,8 @@ export function sample(){
                     },
                     null,
                     (elt)=>elt["uuid"]+ "-tab",
-                    null
+                    null,
+                    "pointer"
                 )
             );
         }

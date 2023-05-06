@@ -18,6 +18,7 @@ import {call_after_DOM_updated, createDeleteResqmlButton, createDropDownDivider,
 import {hasBeenDisconnected, refreshWorkspace, rws_addEventListeners} from "./eventHandler.js"
 import {appendConsoleMessage} from "../logs/console.js"
 import {getAllOpendedObjects, deleteResqmlObject} from "../requests/uiRequest.js"
+import {sendGetWorkspaceObjectsList} from "../requests/requests.js"
 import {compare, copyOtherTableSortingParams, createTableFromData, highlightTableCellFromClass, highlightTableLineFromTdText, transformTab_AddColumn} from "./table.js"
 import {SEM_IS_LOADING_WORKSPACE, getObjectTableCellClass, setSEM_IS_LOADING_WORKSPACE} from "../common/variables.js"
 import {getAttribute} from "../common/utils.js"
@@ -31,6 +32,7 @@ export var __USER_NAME__ = "";
 var NB_TASK = 0;
 
 export function beginTask(exclusiv){
+    // console.trace();
     if(NB_TASK == 0 || exclusiv==null || exclusiv==false){
         try{
             NB_TASK++;
@@ -38,13 +40,16 @@ export function beginTask(exclusiv){
         }catch(e){}
 
         // Cursor wait
+        // console.log(`BeginTask ${NB_TASK}`);
         return true;
     }
     document.body.style.cursor = 'progress';
+    // console.log(`BeginTask ${NB_TASK}`);
     return false;
 }
 
 export function endTask(){
+    // console.trace();
     try{
         NB_TASK--;
         if(NB_TASK<=0){
@@ -58,6 +63,7 @@ export function endTask(){
             );
         }
     }catch(e){}
+    // console.log(`EndTask ${NB_TASK}`);
     return NB_TASK;
 }
 
@@ -121,12 +127,10 @@ export function setUserName(userName, usrGrp, spanSessionCounter_id){
     loadWorkspaceBut.className = "dropdown-item ";
     loadWorkspaceBut.innerHTML = "Load workspace";
     loadWorkspaceBut.onclick = function(){
-        beginTask();
         call_after_DOM_updated(
             function(){
                 refreshWorkspace();
             });
-        endTask();
     }
 
     sessionInfoMenu.appendChild(loadWorkspaceBut);
@@ -274,9 +278,16 @@ export function initSessionCounter(spanSessionCounter_id){
 
 export function initEditorContent(    idTable, idObjectList, idTabHeader, idTabContainer,
                             idConsoleElt, classObjectContent, classObjectProperty, 
-                            idFilterButton){    
+                            idFilterButton){
+    return sendGetWorkspaceObjectsList().then( (jsonObjectList) => {
+        createTable(jsonObjectList,
+            idTable, idObjectList, idTabHeader, idConsoleElt,
+            idTabContainer, classObjectContent, 
+            classObjectProperty, 0, false, idFilterButton);
+        return jsonObjectList;
+    });
 
-    return new Promise(function (resolve, reject) {
+    /*return new Promise(function (resolve, reject) {
                             var xmlHttp = new XMLHttpRequest();
                             beginTask();
                             // On récupère la liste des objets de l'epc
@@ -285,7 +296,6 @@ export function initEditorContent(    idTable, idObjectList, idTabHeader, idTabC
                             //console.log("before loading");
                             xmlHttp.onload = function (e) {
                                 endTask();
-                                var jsonResqmlObjectList = document.createTextNode(xmlHttp.responseText);
                                 var jsonObject = JSON.parse(xmlHttp.responseText);
 
                                 createTable(jsonObject,
@@ -300,7 +310,7 @@ export function initEditorContent(    idTable, idObjectList, idTabHeader, idTabC
                                 reject(err);                    // Si erreur
                             }
                             xmlHttp.send( null );
-                        });
+                        });*/
 }
 
 
@@ -313,6 +323,26 @@ export function refreshHighlightedOpenedObjects(){
             );
 }
 
+export function refreshExistingObjectInWorkspace(){
+    const openedUUID = openedObjects.map(x => x.resqmlElt.rootUUID);
+    Array.prototype.forEach.call(openedUUID, uuid =>
+            highlightTableCellFromClass(getObjectTableCellClass(uuid), true)
+            );
+}
+/*
+export function highlightTableCellFromClass(cellClass, enable){
+    //console.log("coloring cell "+ cellClass)
+    Array.prototype.forEach.call(
+        document.getElementsByClassName(cellClass),  
+        function(element) {
+            if(enable && !element.className.includes("openedObject"))
+                element.className += " openedObject";
+            else if(!enable)
+                element.className = element.className.replace(/openedObject/g,'');
+            
+        });
+}*/
+
 
 export function createTable(jsonList,
         idTable, idObjectList, idTabHeader, idConsoleElt,
@@ -321,7 +351,6 @@ export function createTable(jsonList,
         sortColumnNum, sortReverse, 
         idFilterButton){
 
-    //console.log("createTable ")
     if(!SEM_IS_LOADING_WORKSPACE){
         setSEM_IS_LOADING_WORKSPACE(true);
         beginTask();

@@ -14,7 +14,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-import {sendGetURL_Promise, downloadGetURL_Promise, sendDeleteURL_Promise} from "../../requests/requests.js"
+import {downloadGetURL_Promise, sendDeleteURL_Promise, getJsonObjectFromServer} from "../../requests/requests.js"
 import {addJsonData} from "../../energyml/JsonElementVue.js"
 import {randomColor, createDeleteButton} from "../htmlUtils.js"
 import {beginTask, endTask} from "../ui.js"
@@ -25,7 +25,7 @@ export function refreshPropertyDictVue(){
     return updateJsonDictUI("/GetAdditionalObjects", 'container_PropertiesDict', 
                     'modal_PropertiesDict_progressBar', "counter_PropertiesDict", 
                     true,
-                    null).then(x => endTask());
+                    null).then(x => endTask()).catch(() => endTask());
 }
 
 export function refreshWorkspaceDictVue(){
@@ -76,22 +76,19 @@ export function refreshWorkspaceDictVue(){
                             }
                         }catch(e){}
 
-                    }).then(x => endTask());
+                    }).then(x => endTask()).catch(() => endTask());
 }
 
 
 export function updateJsonDictUI(uri, containerId, progressBarId, counterId, printListIdx, f_applyOnKey){
     document.getElementById(progressBarId).style.display = "";
-    return sendGetURL_Promise(uri).then(
-        jsonResp => {
-            try{
-                var objectList = JSON.parse(jsonResp);
-                var container = document.getElementById(containerId);
-                while(container.firstChild){
-                    container.removeChild(container.firstChild);
-                }
-                addJsonData(objectList, container, printListIdx, f_applyOnKey);
-            }catch(exceptJson){console.log("Except " + exceptJson + "\n" + jsonResp);}
+    return getJsonObjectFromServer(uri).then(
+        objectList => {
+            var container = document.getElementById(containerId);
+            while(container.firstChild){
+                container.removeChild(container.firstChild);
+            }
+            addJsonData(objectList, container, printListIdx, f_applyOnKey);
             document.getElementById(progressBarId).style.display = "none";
             updateCountViewableJsonDictUI(containerId, counterId);
     });

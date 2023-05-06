@@ -17,7 +17,7 @@ limitations under the License.
 import {createTabulation, openTabulation, saveAllResqmlObject_promise} from "../UI/tabulation.js"
 import {beginTask, endTask, refreshHighlightedOpenedObjects} from "../UI/ui.js"
 import {sendGetURLAndReload, sendPostFormAndReload} from "../UI/eventHandler.js"
-import {downloadGetURL_Promise, sendGetURL, sendGetURL_Promise} from "./requests.js"
+import {downloadGetURL_Promise, sendGetURL, sendGetURL_Promise, getJsonObjectFromServer} from "./requests.js"
 import {genObjectContentDivElementId, genObjectContentElementId, genObjectPropertyElementId, resquestCorrection, resquestObjectCopy, resquestValidation} from "../energyml/epcContentManager.js"
 import {ResqmlElement} from "../energyml/ResqmlElement.js"
 import {appendConsoleMessage} from "../logs/console.js"
@@ -38,19 +38,18 @@ export function saveAllResqmlObjectContent(){
         /*$("#modal_exportEPCAndClose").modal();
         console.log("all promises");*/
         //sendGetURLAndReload('FileReciever?close=true', false);
-    });
+    }).catch(() => endTask());
 }
 
 export function exportAndClose(fileName){
     console.log("exporting and closing file  " + fileName);
-    
     beginTask();
-    var promExport = downloadGetURL_Promise("ExportEPCFile?epcFilePath="+fileName, fileName);
-    return promExport.then(function (data) {
-                        console.log("closing file");
-                        endTask();
-                        sendGetURLAndReload('FileReciever?close=true', false);
-                    });
+    return downloadGetURL_Promise("ExportEPCFile?epcFilePath="+fileName, fileName).then(
+        function (data) {
+        console.log("closing file");
+        endTask();
+        sendGetURLAndReload('FileReciever?close=true', false);
+    }).catch(() => endTask());;
 
 }
 
@@ -64,7 +63,6 @@ export function openResqmlObjectContent(    uuid,
     //        console.log("create tab");
             var xmlHttp = new XMLHttpRequest();
 
-            // On récupère la liste des objets de l'epc
             xmlHttp.open( "GET", "ResqmlObjectTree?uuid="+uuid, true ); // false for synchronous request
 
             xmlHttp.onload = function(){
@@ -327,14 +325,9 @@ export function deleteResqmlObject(uuid, type, title){
         inputUUID.value = uuid;
         formDelete.appendChild(inputUUID);
 
-        sendGetURL("ResqmlLinkedObjects?uuid=" + uuid, false, 
-                function(answer){
-                    //console.log("beforeDeletion");
-                    var objectList = [];
-                    try{
-                        objectList = JSON.parse(answer);
-                    }catch(exceptJson){console.log("Except " + exceptJson);}
-
+        getJsonObjectFromServer("ResqmlLinkedObjects?uuid=" + uuid).then( 
+                function(objectList){
+                    console.log(`ResqmlLinkedObjects ${objectList}`);
                     var resultAttributeToSearch = ["num", "type", "title", "uuid"];
                     var dataTableHeader = ["Num", "Type", "Title", "Uuid"];
 
@@ -424,7 +417,7 @@ export function deleteResqmlObject(uuid, type, title){
                     }
 
                 }
-        );
+        ).catch(() => endTask());
     }else{
         console.log('Delete while task allready running')
     }

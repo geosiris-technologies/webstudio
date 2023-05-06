@@ -410,7 +410,10 @@ public class FileReciever extends HttpServlet {
                             }
                         }
 
-                    } else if (item.getFieldName().compareTo("epcInputFile") == 0) {
+                    } else if (item.getFieldName().compareTo("epcInputFile") == 0
+                            || item.getFieldName().compareTo("epcInputFile[]") == 0 
+                            || item.getFieldName().compareTo("file") == 0 
+                            || item.getFieldName().compareTo("files[]") == 0) {
                         if (item.getName() != null && item.getName().length() > 0) {
                             logger.info("File input : " + item.getName());
                             if (item.getName().toLowerCase().endsWith(".h5")) {

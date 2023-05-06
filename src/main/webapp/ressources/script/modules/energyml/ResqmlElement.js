@@ -1241,19 +1241,17 @@ export class ResqmlElement{
 						+ "&command=delete"
 						+ "&path=" + this.name;
 			//console.log("remove and request server : " + this.name + " URL : " + url);
-			sendGetURL(	url,
-						true, 
-						function(){
-							if(constThis.parentElt != null){
-								/*console.log("fini delete");
-								console.log("refresh parent : ");
-								console.log(constThis.parentElt);*/
-								constThis.parentElt.refresh();
-							}else{
-								console.log("null parent for refresh");
-								console.log(constThis);
-							}
-						});
+			fetch(url).then(function(){
+				if(constThis.parentElt != null){
+					/*console.log("fini delete");
+					console.log("refresh parent : ");
+					console.log(constThis.parentElt);*/
+					constThis.parentElt.refresh();
+				}else{
+					console.log("null parent for refresh");
+					console.log(constThis);
+				}
+			});
 		}else{
 			if(this.htmlAttributeElt != null && this.htmlAttributeElt.parentNode != null){
 				//console.log("removing elt : " + this.name);

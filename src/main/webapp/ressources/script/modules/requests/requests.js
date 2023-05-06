@@ -16,13 +16,14 @@ limitations under the License.
 
 import {appendConsoleMessage} from "../logs/console.js"
 import {__ID_CONSOLE_MODAL__} from "../common/variables.js"
+import {beginTask, endTask} from "../UI/ui.js"
 
 
 export function sendGetURL(url, showRequestResult, onloadFunction) {
     var xmlHttp = new XMLHttpRequest();
 
     xmlHttp.open( "GET", url, true );
-    // Si la fonction demande un argment en parametre, on passe le resultat text de la requete
+    // Si la fonction demande un argument en parametre, on passe le resultat text de la requete
     if( !(onloadFunction === undefined) && onloadFunction!=null && onloadFunction.length>0){
         xmlHttp.addEventListener("load", 
             function(){
@@ -37,8 +38,7 @@ export function sendGetURL(url, showRequestResult, onloadFunction) {
     xmlHttp.addEventListener('abort', (x) => {console.log("Error in GET request "); console.log(x)});
     xmlHttp.send( null );
     //console.log("sending get on '" + url + "'");
-    sendGetURL_Promise(url); //.then((result) => console.log("HAHAHA "+ result));
-    return xmlHttp;
+    return sendGetURL_Promise(url); //.then((result) => console.log("HAHAHA "+ result));
 }
 
 export function sendGetURL_Promise(url) {
@@ -263,5 +263,34 @@ export function sendDeleteURL_Promise(url) {
             reject(err);                    // Si erreur
         }
         xmlHttp.send( null );
+    });
+}
+
+
+export function sendGetWorkspaceObjectsList(){    
+    return getJsonObjectFromServer("ResqmlObjectTree");
+}
+
+
+export function getJsonObjectFromServer(url){
+    beginTask();
+    return fetch(url)
+    .then(response => {
+        endTask();
+        if (!response.ok) {
+            return response.json()
+                .catch(() => {
+                    // Couldn't parse the JSON
+                    console.log(new Error(response.status));
+                    return {};
+                })
+                .then(({message}) => {
+                    // Got valid JSON with error response, use it
+                    console.log(new Error(message || response.status));
+                    return {};
+                });
+        }
+        // Successful response, parse the JSON and return the data
+        return response.json();
     });
 }
