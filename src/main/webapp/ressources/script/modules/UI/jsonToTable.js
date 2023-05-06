@@ -254,6 +254,7 @@ export function toTable(
     list_JsonTableColumnizer.forEach(
         (f_col) => {
             const _table_head_cell = document.createElement("th");
+            _table_head_cell.style.cursor = "pointer";
             _table_head_cell.appendChild(f_col.getColumnTitleElt());
             _table_head_line.appendChild(_table_head_cell);
 

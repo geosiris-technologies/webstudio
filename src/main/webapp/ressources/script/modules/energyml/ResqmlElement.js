@@ -1370,11 +1370,7 @@ export class ResqmlElement{
 		if(enableFilter && (subEltType.includes("DataObjectReference") || subEltType.includes("ContactElement")) ){
 			link.onclick = function(){
 
-				var xmlHttp = new XMLHttpRequest();
-				//console.log('getting ResqmlAccessibleDOR '); console.log(constThis);
-				xmlHttp.open( "GET", "ResqmlAccessibleDOR?uuid="+constThis.rootUUID+"&subParamPath="+constThis.name+"&subParamName="+currentName, true ); 
-
-				xmlHttp.onload = function(){
+				getJsonObjectFromServer("ResqmlAccessibleDOR?uuid="+constThis.rootUUID+"&subParamPath="+constThis.name+"&subParamName="+currentName).then(function(jsonContent){
 					const modalID = "modalDOR_" + constThis.rootUUID; // modal window id to open
 
 					// Debut du formulaire 
@@ -1444,9 +1440,6 @@ export class ResqmlElement{
 					inputRootUUID.hidden = "hidden";
 					formCreate.appendChild(inputRootUUID);
 
-					//console.log(">> createSubAttribAddingElt ");
-					//console.log(xmlHttp.responseText);
-					var jsonContent = JSON.parse(xmlHttp.responseText);
 					var tableDOR = createTableFromData(
 							jsonContent, 
 							["num", "type", "title", "uuid", "schemaVersion"], 
@@ -1505,8 +1498,7 @@ export class ResqmlElement{
 					modalContentDiv.appendChild(inputSubmit);
 
 					openModal(modalID, "Creating DOR for " + constThis.rootUUID, modalContentDiv);
-				};
-				xmlHttp.send(null);
+				});
 			};
 		}else{
 			// Debut du formulaire 

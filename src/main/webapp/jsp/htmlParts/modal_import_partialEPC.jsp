@@ -119,7 +119,7 @@ limitations under the License.
 				<div id="import_partialEPC_FromDisk" class="container tab-pane"><br>
 					<div class="modal-body">
 						<label name="epcInputLabel">EPC file</label> 
-						<input id="import_partialEPC_FromDisk_inputFile" class="form-control-file border" type="file" name="epcInputURL">
+						<input id="import_partialEPC_FromDisk_inputFile" class="form-control-file border" type="file" name="epcInputURL" multiple>
 					</div>
 					<div class="modal-body" id="import_partialEPC_FromDisk_inputFile_content">
 					</div>

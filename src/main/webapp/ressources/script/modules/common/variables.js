@@ -164,6 +164,9 @@ export function set__RWS_ETP_PWD__(value){__RWS_ETP_PWD__ = value;}
 
 // Object Classes
 
+export const CLASS_HIGHLIGHT_EXISTING_OBJECT = "highlightIfExist";
+export const CLASS_HIGHLIGHT_EXISTING_OBJECT_ENABLED = CLASS_HIGHLIGHT_EXISTING_OBJECT + "_enable";
+
 export function getObjectTableCellClass(uuid){
     return uuid + "-tab";
 }

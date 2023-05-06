@@ -29,13 +29,13 @@ export function dochangeDorReference(){
     if(rootObjectUuid.replace(/ /g, '').length>0 && inputUuid.replace(/ /g, '').length>0 ){
         document.getElementById("changeDorReferenceSubmitBut").disabled = true;
         beginTask();
-        sendGetURL_Promise("EPCOperation?command=changereference&Root_UUID=" + rootObjectUuid+"&input=" + inputUuid).then(
+        fetch("EPCOperation?command=changereference&Root_UUID=" + rootObjectUuid + "&input=" + inputUuid).then(
             function(){
+                endTask();
                 document.getElementById("changeDorReferenceSubmitBut").disabled = false;
                 document.getElementById('closeBut_changeDorReference').click();
                 document.getElementById('changeDorReferenceFilePath_target').value = "";
                 document.getElementById('changeDorReferenceFilePath_root').value = "";
-                endTask();
             }
         ).catch(() => endTask());
     }

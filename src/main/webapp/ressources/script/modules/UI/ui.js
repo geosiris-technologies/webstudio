@@ -20,11 +20,16 @@ import {appendConsoleMessage} from "../logs/console.js"
 import {getAllOpendedObjects, deleteResqmlObject} from "../requests/uiRequest.js"
 import {sendGetWorkspaceObjectsList} from "../requests/requests.js"
 import {compare, copyOtherTableSortingParams, createTableFromData, highlightTableCellFromClass, highlightTableLineFromTdText, transformTab_AddColumn} from "./table.js"
-import {SEM_IS_LOADING_WORKSPACE, getObjectTableCellClass, setSEM_IS_LOADING_WORKSPACE} from "../common/variables.js"
 import {getAttribute} from "../common/utils.js"
 import {openResqmlObjectContentByUUID} from "../main.js"
 import {energymlRootTypes, savePreferences} from "../energyml/epcContentManager.js"
 import {JsonTableColumnizer_Checkbox, JsonTableColumnizer_Radio, JsonTableColumnizer_Icon, JsonTableColumnizer_DotAttrib, toTable} from "./jsonToTable.js"
+import {SEM_IS_LOADING_WORKSPACE,
+    getObjectTableCellClass,
+    setSEM_IS_LOADING_WORKSPACE,
+    CLASS_HIGHLIGHT_EXISTING_OBJECT,
+    CLASS_HIGHLIGHT_EXISTING_OBJECT_ENABLED
+} from "../common/variables.js"
 
 
 export var __USER_NAME__ = "";
@@ -280,37 +285,13 @@ export function initEditorContent(    idTable, idObjectList, idTabHeader, idTabC
                             idConsoleElt, classObjectContent, classObjectProperty, 
                             idFilterButton){
     return sendGetWorkspaceObjectsList().then( (jsonObjectList) => {
+        highlightExistingElt(jsonObjectList);
         createTable(jsonObjectList,
             idTable, idObjectList, idTabHeader, idConsoleElt,
             idTabContainer, classObjectContent, 
             classObjectProperty, 0, false, idFilterButton);
         return jsonObjectList;
     });
-
-    /*return new Promise(function (resolve, reject) {
-                            var xmlHttp = new XMLHttpRequest();
-                            beginTask();
-                            // On récupère la liste des objets de l'epc
-                            xmlHttp.open( "GET", "ResqmlObjectTree", true );
-
-                            //console.log("before loading");
-                            xmlHttp.onload = function (e) {
-                                endTask();
-                                var jsonObject = JSON.parse(xmlHttp.responseText);
-
-                                createTable(jsonObject,
-                                        idTable, idObjectList, idTabHeader, idConsoleElt,
-                                        idTabContainer, classObjectContent, 
-                                        classObjectProperty, 0, false, idFilterButton);
-
-                                resolve(xmlHttp.responseText);
-                            };
-                            xmlHttp.onerror = function (err) {
-                                endTask();
-                                reject(err);                    // Si erreur
-                            }
-                            xmlHttp.send( null );
-                        });*/
 }
 
 
@@ -326,23 +307,32 @@ export function refreshHighlightedOpenedObjects(){
 export function refreshExistingObjectInWorkspace(){
     const openedUUID = openedObjects.map(x => x.resqmlElt.rootUUID);
     Array.prototype.forEach.call(openedUUID, uuid =>
-            highlightTableCellFromClass(getObjectTableCellClass(uuid), true)
-            );
+        highlightTableCellFromClass(getObjectTableCellClass(uuid), true)
+    );
 }
-/*
-export function highlightTableCellFromClass(cellClass, enable){
-    //console.log("coloring cell "+ cellClass)
-    Array.prototype.forEach.call(
-        document.getElementsByClassName(cellClass),  
-        function(element) {
-            if(enable && !element.className.includes("openedObject"))
-                element.className += " openedObject";
-            else if(!enable)
-                element.className = element.className.replace(/openedObject/g,'');
-            
-        });
-}*/
 
+export function highlightExistingElt(jsonObjectList){
+    for(let itemToHighlight of document.getElementsByClassName(CLASS_HIGHLIGHT_EXISTING_OBJECT_ENABLED)){
+        itemToHighlight.className = itemToHighlight.className.replace(itemToHighlight, "");
+    }
+
+    var jsonObjectList_promise = null;
+    if (jsonObjectList == null){
+        jsonObjectList_promise = sendGetWorkspaceObjectsList();
+    }else{
+        jsonObjectList_promise = Promise.resolve(jsonObjectList);
+    }
+
+    jsonObjectList_promise.then( (objectList) => {
+        for(let itemToHighlight of document.getElementsByClassName(CLASS_HIGHLIGHT_EXISTING_OBJECT)){
+            objectList.forEach( elt => {
+                if(elt["uuid"] != null && elt["uuid"].length> 0 && itemToHighlight.className.includes(getObjectTableCellClass(elt["uuid"]))){
+                    itemToHighlight.className += " " + CLASS_HIGHLIGHT_EXISTING_OBJECT_ENABLED;
+                }
+            });
+        }
+    });
+}
 
 export function createTable(jsonList,
         idTable, idObjectList, idTabHeader, idConsoleElt,
@@ -543,7 +533,11 @@ export function getResqmlObjectTable(dataTableContent, dataTableColumn, oldTable
                     elt["title"]
                 );
             }
-        }
+        },
+        null,
+        (elt)=>elt["uuid"]+ "-tab",
+        null,
+        
     ));
 
     const attrib_list = dataTableColumn;

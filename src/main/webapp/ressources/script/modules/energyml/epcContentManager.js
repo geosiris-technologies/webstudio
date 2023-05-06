@@ -14,13 +14,14 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 import {sendGetURLAndReload, refreshWorkspace} from "../UI/eventHandler.js"
-import {__USER_NAME__, beginTask, endTask, getVueOrientation, setVueOrientation, initRootEltSelector} from "../UI/ui.js"
+import {__USER_NAME__, beginTask, endTask, getVueOrientation, setVueOrientation, initRootEltSelector, highlightExistingElt} from "../UI/ui.js"
 import {createCheck} from "../UI/htmlUtils.js"
 import {sendGetURL, sendGetURL_Promise, sendPostRequestJson, getJsonObjectFromServer} from "../requests/requests.js"
 import {appendConsoleMessage} from "../logs/console.js"
 import {__ENUM_CONSOLE_MSG_SEVERITY_INFO__, __ENUM_CONSOLE_MSG_SEVERITY_WARNING__, 
         __ENUM_CONSOLE_MSG_SEVERITY_ERROR__, __RWS_CLIENT_NAME__, __RWS_SERVER_NAME__, 
-        getSeverityEnum, REGEX_ENERGYML_FILE_NAME, getObjectTableCellClass} from "../common/variables.js"
+        getSeverityEnum, REGEX_ENERGYML_FILE_NAME, CLASS_HIGHLIGHT_EXISTING_OBJECT,
+        getObjectTableCellClass} from "../common/variables.js"
 
 /**********************************************************/
 /** Do not forget to access in map with LOWERCASE key !! **/
@@ -41,7 +42,6 @@ export function updateTypesMap(){
             mapResqmlTypeToSubtypes = jsonResponse;
         }catch(err){console.log(err);}
     });
-
 
     // Recuperation des types enum et de leurs valeurs possibles
     getJsonObjectFromServer("ResqmlAccessibleEnumAndValues").then( (jsonResponse) => {
@@ -289,21 +289,25 @@ export function energyml_file_to_json_simple(file_content, xslt){
 
 export function read_file(file, action_on_content_and_name, sub_path){
     if(file.name.toLowerCase().endsWith(".epc")){
-        JSZip.loadAsync(file)
+        return JSZip.loadAsync(file)
             .then(function(zip) {
+                var promiseList = []
                 if(sub_path != null){
-                    zip.files[sub_path].async('text').then((content) =>{
+                    promiseList.push(zip.files[sub_path].async('text').then((content) =>{
                         action_on_content_and_name(content, sub_path);
-                    })
+                        return [content, sub_path];
+                    }));
                 }else{
                     zip.forEach(async function (relativePath, zipEntry) {
                         if(zipEntry.name.match(REGEX_ENERGYML_FILE_NAME)){
-                            zipEntry.async("text").then( (file_content) => {
+                            promiseList.push(zipEntry.async("text").then( (file_content) => {
                                 action_on_content_and_name(file_content, zipEntry.name);
-                            });
+                                return [file_content, zipEntry.name];
+                            }));
                         }
                     });
                 }
+                return promiseList;
             }, function (e) {
                 result.appendChild(document.createTextNode( "Error reading " + f.name + ": " + e.message))
             });
@@ -312,11 +316,11 @@ export function read_file(file, action_on_content_and_name, sub_path){
         reader.addEventListener('load', (event) => {
             action_on_content_and_name(event.target.result, file.name);
         });
-        reader.readAsText(file);
+        return Promise.resolve(reader.readAsText(file));
         //reader.readAsDataURL(f);
     }
 }
-
+//highlightExistingElt
 export function epc_partial_importer(input_elt, parent, idConsoleElt, f_eraseWorkspace=()=>false){
     const attrib_list = ["title", "uuid", "type", "path"];
 
@@ -342,25 +346,24 @@ export function epc_partial_importer(input_elt, parent, idConsoleElt, f_eraseWor
 
         import_but.type = "button";
         import_but.onclick = function(event){
-          /*  $('input[name="' + name_id + '"]').filter(':checked').map(function(e, v) {
-                    return v.value;
-                }).get().forEach( (path) => {
-                    read_file(
-                        f,
-                        (content, name) => {importFileToWorkspace(content, name, idConsoleElt, f_eraseWorkspace())}, 
-                        path
-                    );
-                });
-*/
             Promise.all($('input[name="' + name_id + '"]').filter(':checked').map(function(e, v) {
                 return v.value;
             }).get().map( (path) => {
-                return JSZip.loadAsync(f)
-                    .then(function(zip) {
-                        return zip.files[path].async('text').then(content=> [content, path]);
-                    }, function (e) {
-                        console.log( "Error reading " + f.name + ": " + e.message);
-                    });
+                if(f.name.toLowerCase().endsWith(".epc")){
+                    return JSZip.loadAsync(f)
+                        .then(function(zip) {
+                            return zip.files[path].async('text').then(content=> [content, path]);
+                        }, function (e) {
+                            console.log( "Error reading " + f.name + ": " + e.message);
+                        });
+                }else{
+                    return new Promise((resolve, reject) => {
+                        var reader = new FileReader();  
+                        reader.onload = resolve;  // CHANGE to whatever function you want which would eventually call resolve
+                        reader.onerror = reject;
+                        reader.readAsText(f);
+                    }).then(event => [event.target.result, f.name]);
+                }
             })).then((contents) => importMultipleFilesToWorkspace(contents, idConsoleElt, f_eraseWorkspace()));
         }
 
@@ -405,11 +408,11 @@ export function epc_partial_importer(input_elt, parent, idConsoleElt, f_eraseWor
         });
 
         function addEntryLine(file_content, file_name){
-            var json_obj = energyml_file_to_json_simple(file_content, XSLT_XML_TO_SIMPLE_JSON);
+            const json_obj = energyml_file_to_json_simple(file_content, XSLT_XML_TO_SIMPLE_JSON);
             json_obj["path"] = file_name;
             var tr_elt = document.createElement("tr");
             t_body.appendChild(tr_elt);
-            tr_elt.className = getObjectTableCellClass(json_obj["uuid"]);
+            tr_elt.className = getObjectTableCellClass(json_obj["uuid"]) + " " + CLASS_HIGHLIGHT_EXISTING_OBJECT;
 
             var td_check_elt = document.createElement("td");
             tr_elt.appendChild(td_check_elt);
@@ -424,7 +427,9 @@ export function epc_partial_importer(input_elt, parent, idConsoleElt, f_eraseWor
             });
         }
 
-        read_file(f, addEntryLine);
+        read_file(f, addEntryLine).then((v) =>{
+            highlightExistingElt();
+        });
 
         file_div.appendChild(table);
         epc_importer_div.appendChild(file_div);
@@ -433,8 +438,6 @@ export function epc_partial_importer(input_elt, parent, idConsoleElt, f_eraseWor
 }
 
 export function importMultipleFilesToWorkspace(fileContentAndNameList, idConsoleElt, eraseWorkspace=false){
-    console.log("importMultipleFilesToWorkspace");
-    console.log(fileContentAndNameList.length);
     const f_n_list = fileContentAndNameList;
     var formData = new FormData();
 
@@ -452,7 +455,7 @@ export function importMultipleFilesToWorkspace(fileContentAndNameList, idConsole
             var blob = new Blob([file], { type: `text/${extension}` });
             file = new File([blob], fileName, {type: `text/${extension}`});
         }
-        
+
         formData.append("epcInputFile[]", file, fileName);
     });
     formData.append("import", !eraseWorkspace);

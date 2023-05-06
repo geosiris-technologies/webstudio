@@ -241,9 +241,9 @@ export async function sendPostRequestJson_Promise(str_url, dict, showRequestResu
 //        xhr.setRequestHeader("Sec-Fetch-Site", "cross-site");
 //        xhr.setRequestHeader("Sec-Fetch-Mode", "no-cors");
 
-        console.log("Sending");
+        /*console.log("Sending");
         console.log(dict);
-        console.log(xhr);
+        console.log(xhr);*/
         var data = JSON.stringify(dict);
         xhr.send(data);
     });

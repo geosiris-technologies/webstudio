@@ -14,7 +14,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-import {sendGetURL_Promise} from "../../requests/requests.js"
+import {getJsonObjectFromServer} from "../../requests/requests.js"
 import {openResqmlObjectContentByUUID} from "../../main.js"
 import {createCollapser} from "../htmlUtils.js"
 import {mapResqmlTypeToSubtypes} from "../../energyml/epcContentManager.js"
@@ -34,13 +34,11 @@ export function __initOrganizationType__(){
 }
 
 export function __getObjectCitation(objUUID){
-    sendGetURL_Promise("ResqmlObjectTree?uuid=" + objUUID + "&path=" + ".Citation").then(
-        responseText => {
-            //console.log(responseText)
+    getJsonObjectFromServer("ResqmlObjectTree?uuid=" + objUUID + "&path=" + ".Citation").then(
+        jsonPropertiesList => {
             try{
+                var props = jsonPropertiesList.properties;
                 var citationView = document.getElementById("modal_FIRPView_citationView");
-
-                var prop = JSON.parse(responseText).properties;
 
                 var citationContainer = document.createElement("div");
                 citationContainer.style.display = 'contents';
@@ -59,8 +57,8 @@ export function __getObjectCitation(objUUID){
                 var tableBody = document.createElement("tbody");
                 table.appendChild(tableBody);
 
-                for(var propertyIdx in prop){
-                    var property = prop[propertyIdx];
+                for(var propertyIdx in props){
+                    var property = props[propertyIdx];
                     var tableLine = document.createElement("tr");
                     var propTitle = document.createElement("td");
                     var propValue = document.createElement("td");
@@ -85,8 +83,7 @@ export function __getObjectCitation(objUUID){
             }catch(e){
                 console.log(e)
             }
-        }
-        );
+        });
 }
 
 export function isAnOrganizationtype(str_type){
@@ -336,19 +333,10 @@ export function updateFIRPView(){
     while (elt_ModelViewEPC_table.firstChild) {
         elt_ModelViewEPC_table.removeChild(elt_ModelViewEPC_table.firstChild);
     }
-       // console.log("updateFIRPView");
-       var xmlHttp = new XMLHttpRequest();
-    xmlHttp.open( "GET", "ResqmlEPCRelationship", true );
-
-    xmlHttp.onload = function(){
-        try{
-            const relations = JSON.parse(xmlHttp.responseText);
-            updateFIRPView_data(relations);
-            updateModelView_data(relations);
-        }catch(e){
-            console.log(e);
-        }
+       
+    getJsonObjectFromServer("ResqmlEPCRelationship").then(function(relations){
+        updateFIRPView_data(relations);
+        updateModelView_data(relations);
         document.getElementById("modal_FIRPView_progressBar").style.display = "None";
-    };
-    xmlHttp.send(null);
+    });
 }
