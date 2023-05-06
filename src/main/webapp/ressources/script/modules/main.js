@@ -38,8 +38,8 @@ export function initWebStudioView(){
     createSplitter("#cyGrapher","#graphElementChecked", 65, 30, null, 55, 16);
     try{setVueOrientation("right", false);}catch(err){console.log(err);}
     try{initSessionLogEventHandler(__ID_CONSOLE__);}catch(err){console.log(err);}
-    try{refreshPropertyDictVue();}catch(err){console.log(err);}
-    try{refreshWorkspaceDictVue();}catch(err){console.log(err);}
+    refreshPropertyDictVue().catch((error) => console.error(error));
+    refreshWorkspaceDictVue().catch((error) => console.error(error));
     try{updateTypesMap();}catch(err){console.log(err);}
     try{__initOrganizationType__();}catch(err){console.log(err);}
 
@@ -64,7 +64,7 @@ export function initWebStudioView(){
        
         getJsonObjectFromServer("ResqmlEPCRelationship").then(function(relations){
             updatePartialExportTableContent(relations);
-        });
+        }).catch((error) => console.error(error));
     });
 
     try{
@@ -72,7 +72,7 @@ export function initWebStudioView(){
             .then(loadResqmlData)
             .then(()=>{
                 enableWaitingUi(false);
-            });
+            }).catch((error) => console.error(error));
     }catch(err){console.log(err);}
     
     $("#visu-3D-iframe").on("load", function() {
@@ -115,7 +115,7 @@ export function initWebStudioView(){
             updateGetRelatedETPTableContent(relations);
             endETPRequest();
             update_etp_connexion_views();
-        });
+        }).catch((error) => console.error(error));
     });
 }
 

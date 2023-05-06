@@ -76,7 +76,7 @@ export function initSessionLogEventHandler(console_id){
             var decodedMsg = JSON.parse(window.atob(event.data));
             if(decodedMsg.severity != null && decodedMsg.severity == __ENUM_CONSOLE_MSG_SEVERITY_ACTION__){
                 if(decodedMsg.message && decodedMsg.message.toLowerCase() == "reload"){
-                    refreshWorkspace();
+                    refreshWorkspace().catch((error) => console.error(error));
                 }
             }else{
                 //console.log("Not an action '" + decodedMsg.severity + "' != '" + __ENUM_CONSOLE_MSG_SEVERITY_ACTION__ + "'")

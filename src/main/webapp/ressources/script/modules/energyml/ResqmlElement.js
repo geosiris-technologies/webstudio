@@ -1251,7 +1251,7 @@ export class ResqmlElement{
 					console.log("null parent for refresh");
 					console.log(constThis);
 				}
-			});
+			}).catch((error) => console.error(error));
 		}else{
 			if(this.htmlAttributeElt != null && this.htmlAttributeElt.parentNode != null){
 				//console.log("removing elt : " + this.name);

@@ -167,7 +167,7 @@ export function loadUrisIn3DVue(){
                 console.log(fileContent);
                 console.log(exception);
             }
-        });
+        }).catch((error) => console.error(error));
     }
 
 }
@@ -291,7 +291,7 @@ export function loadETPObjectList(eltId_objectList, eltId_formRequest){
         formSubmit_launch_activity.type = "button";
         formSubmit_launch_activity.className = "btn btn-info geosiris-btn-etp";
         formSubmit_launch_activity.onclick = function(){
-                                launchActivity(launch_select_id);
+                                launchActivity(launch_select_id).catch((error) => console.error(error));
                             }
 
         formSubmit_launch_activity.appendChild(document.createTextNode("Launch activity"));

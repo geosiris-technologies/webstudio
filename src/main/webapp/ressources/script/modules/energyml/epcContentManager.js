@@ -41,28 +41,28 @@ export function updateTypesMap(){
         try{
             mapResqmlTypeToSubtypes = jsonResponse;
         }catch(err){console.log(err);}
-    });
+    }).catch((error) => console.error(error));
 
     // Recuperation des types enum et de leurs valeurs possibles
     getJsonObjectFromServer("ResqmlAccessibleEnumAndValues").then( (jsonResponse) => {
         try{
             mapResqmlEnumToValues = jsonResponse;
         }catch(err){console.log(err);}
-    });
+    }).catch((error) => console.error(error));
 
     // Recuperation des commentaires des classes
     getJsonObjectFromServer("ResqmlTypesComments").then( (jsonResponse) => {
         try{
             mapResqmlTypesComment = jsonResponse;
         }catch(err){console.log(err);}
-    });
+    }).catch((error) => console.error(error));
 
     // Recuperation des groups de packages
     getJsonObjectFromServer("EPCExtTypesAttributes").then( (jsonResponse) => {
         try{
             extTypeAttributes = jsonResponse;
         }catch(err){console.log(err);}
-    });
+    }).catch((error) => console.error(error));
 
     // Recuperation des types racines
     getJsonObjectFromServer("ResqmlRootTypes").then( (jsonResponse) => {
@@ -70,7 +70,7 @@ export function updateTypesMap(){
             energymlRootTypes = jsonResponse;
             initRootEltSelector(document.getElementById("selectorCreateRootElt"));
         }catch(err){console.log(err);}
-    });
+    }).catch((error) => console.error(error));
 }
 
 export function openHDFViewAskH5Location(h5Path, subPath){
@@ -150,7 +150,7 @@ export function resquestValidation(idConsoleElt, rootUUID){
             }
             appendConsoleMessage(idConsoleElt, msgList);
         }
-    );
+    ).catch((error) => console.error(error));
 }
 
 

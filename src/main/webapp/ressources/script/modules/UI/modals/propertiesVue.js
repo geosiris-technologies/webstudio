@@ -61,7 +61,7 @@ export function refreshWorkspaceDictVue(){
                                     var deleteBut = createDeleteButton("", "Delete");
                                     deleteBut.onclick = function(){
                                         sendDeleteURL_Promise(url).then(resp => {
-                                            refreshWorkspaceDictVue();
+                                            refreshWorkspaceDictVue().catch((error) => console.error(error));
                                         });
                                     }
                                     deleteBut.style.marginLeft = "10px";
