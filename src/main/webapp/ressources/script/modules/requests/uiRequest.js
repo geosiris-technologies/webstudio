@@ -17,7 +17,7 @@ limitations under the License.
 import {createTabulation, openTabulation, saveAllResqmlObject_promise} from "../UI/tabulation.js"
 import {beginTask, endTask, refreshHighlightedOpenedObjects} from "../UI/ui.js"
 import {sendGetURLAndReload, sendPostFormAndReload} from "../UI/eventHandler.js"
-import {downloadGetURL_Promise, sendGetURL, sendGetURL_Promise} from "./requests.js"
+import {downloadGetURL_Promise, sendGetURL, sendGetURL_Promise, getJsonObjectFromServer} from "./requests.js"
 import {genObjectContentDivElementId, genObjectContentElementId, genObjectPropertyElementId, resquestCorrection, resquestObjectCopy, resquestValidation} from "../energyml/epcContentManager.js"
 import {ResqmlElement} from "../energyml/ResqmlElement.js"
 import {appendConsoleMessage} from "../logs/console.js"
@@ -38,19 +38,18 @@ export function saveAllResqmlObjectContent(){
         /*$("#modal_exportEPCAndClose").modal();
         console.log("all promises");*/
         //sendGetURLAndReload('FileReciever?close=true', false);
-    });
+    }).catch(() => endTask());
 }
 
 export function exportAndClose(fileName){
     console.log("exporting and closing file  " + fileName);
-    
     beginTask();
-    var promExport = downloadGetURL_Promise("ExportEPCFile?epcFilePath="+fileName, fileName);
-    return promExport.then(function (data) {
-                        console.log("closing file");
-                        endTask();
-                        sendGetURLAndReload('FileReciever?close=true', false);
-                    });
+    return downloadGetURL_Promise("ExportEPCFile?epcFilePath="+fileName, fileName).then(
+        function (data) {
+        console.log("closing file");
+        endTask();
+        sendGetURLAndReload('FileReciever?close=true', false);
+    }).catch(() => endTask());;
 
 }
 
@@ -61,209 +60,189 @@ export function openResqmlObjectContent(    uuid,
     //console.log('openTab ' + uuid);
     if(beginTask(true)){
         if(!openTabulation(uuid, idTabHeader)){ // Si la tabulation existe on n'en re-crée pas une
-    //        console.log("create tab");
             var xmlHttp = new XMLHttpRequest();
 
-            // On récupère la liste des objets de l'epc
-            xmlHttp.open( "GET", "ResqmlObjectTree?uuid="+uuid, true ); // false for synchronous request
-
-            xmlHttp.onload = function(){
-
+            getJsonObjectFromServer("ResqmlObjectTree?uuid=" + uuid).then(function(parsedJSON){
                 var objectProperty = document.createElement("div");
                 objectProperty.id  = genObjectPropertyElementId(uuid);
                 objectProperty.className = classObjectProperty;
-                try{
-                    const parsedJSON = JSON.parse(xmlHttp.responseText);
-                    
-                    //console.log(xmlHttp.responseText);
+                // ----------
+                var resqmlElt = new ResqmlElement(parsedJSON, uuid, objectProperty);
+                var content = resqmlElt.createView();
+                // ----------
 
-                    //var content = createCollapsableTreeFromJSON_NEW(parsedJSON, objectProperty, uuid);
+                content.id = genObjectContentElementId(uuid);
+                content.className += " " + classObjectContent;
 
-                    // ----------
-                    var resqmlElt = new ResqmlElement(parsedJSON, uuid, objectProperty);
-                    var content = resqmlElt.createView();
-                    // ----------
+                var divObjectContent = document.createElement("div");
+                divObjectContent.style.height = "100%";
+                divObjectContent.style.width  = "100%";
+                divObjectContent.style.padding= "0px";
+                divObjectContent.id= genObjectContentDivElementId();
 
-                    content.id = genObjectContentElementId(uuid);
-                    content.className += " " + classObjectContent;
+                var butExpandObject = document.createElement("span");
+                butExpandObject.title = "Expand tree";
+                butExpandObject.className += " treeExpander fas fa-angle-double-down";
+                butExpandObject.id = "but_Expand_" + uuid;
+                divObjectContent.appendChild(butExpandObject);
 
-                    var divObjectContent = document.createElement("div");
-                    divObjectContent.style.height = "100%";
-                    divObjectContent.style.width  = "100%";
-                    divObjectContent.style.padding= "0px";
-                    divObjectContent.id= genObjectContentDivElementId();
+                butExpandObject.onclick = function(){
+                    content.querySelectorAll('.resqmlCollapse').forEach( 
+                            function(element, index) {
+                                if(!element.className.includes("-down")){    // Si pas deja ouvert
+                                    element.click();
+                                }
+                            });
+                };
 
-                    var butExpandObject = document.createElement("span");
-                    butExpandObject.title = "Expand tree";
-                    butExpandObject.className += " treeExpander fas fa-angle-double-down";
-                    butExpandObject.id = "but_Expand_" + uuid;
-                    divObjectContent.appendChild(butExpandObject);
+                var butCollapseObject = document.createElement("span");
+                butCollapseObject.title = "Collapse tree";
+                butCollapseObject.className += " treeExpander fas fa-angle-double-up";
+                butCollapseObject.id = "but_Collapse_" + uuid;
+                divObjectContent.appendChild(butCollapseObject);
 
-                    butExpandObject.onclick = function(){
-                        content.querySelectorAll('.resqmlCollapse').forEach( 
-                                function(element, index) {
-                                    if(!element.className.includes("-down")){    // Si pas deja ouvert
-                                        element.click();
-                                    }
-                                });
-                    };
+                butCollapseObject.onclick = function(){
+                    content.querySelectorAll('.resqmlCollapse').forEach( 
+                            function(element, index) {
+                                if(element.className.includes("-down")){    // Si deja ouvert
+                                    element.click();
+                                }
+                            });
+                };
 
-                    var butCollapseObject = document.createElement("span");
-                    butCollapseObject.title = "Collapse tree";
-                    butCollapseObject.className += " treeExpander fas fa-angle-double-up";
-                    butCollapseObject.id = "but_Collapse_" + uuid;
-                    divObjectContent.appendChild(butCollapseObject);
+                var divBtnGrp = document.createElement("div");
+                divBtnGrp.className = "btn-group";
+                divObjectContent.appendChild(divBtnGrp);
 
-                    butCollapseObject.onclick = function(){
-                        content.querySelectorAll('.resqmlCollapse').forEach( 
-                                function(element, index) {
-                                    if(element.className.includes("-down")){    // Si deja ouvert
-                                        element.click();
-                                    }
-                                });
-                    };
+                var butValidateObject = document.createElement("button");
+                butValidateObject.appendChild(document.createTextNode("Validate"));
+                butValidateObject.className += " btn btn-outline-dark objButtonAction";
+                butValidateObject.id = "but_Validate_" + uuid;
+                divBtnGrp.appendChild(butValidateObject);
 
-                    var divBtnGrp = document.createElement("div");
-                    divBtnGrp.className = "btn-group";
-                    divObjectContent.appendChild(divBtnGrp);
+                butValidateObject.onclick = function(){
+                    resquestValidation(idConsoleElt, uuid);
+                };
 
-                    var butValidateObject = document.createElement("button");
-                    butValidateObject.appendChild(document.createTextNode("Validate"));
-                    butValidateObject.className += " btn btn-outline-dark objButtonAction";
-                    butValidateObject.id = "but_Validate_" + uuid;
-                    divBtnGrp.appendChild(butValidateObject);
+                var butRefresh = document.createElement("button");
+                butRefresh.appendChild(document.createTextNode("Refresh"));
+                butRefresh.className += " btn btn-outline-dark objButtonAction";
+                butRefresh.id = "but_AutoCorrect_" + uuid;
+                divBtnGrp.appendChild(butRefresh);
 
-                    butValidateObject.onclick = function(){
-                        resquestValidation(idConsoleElt, uuid);
-                    };
+                butRefresh.onclick = function(){
+                    resqmlElt.refresh();
+                };
 
-                    var butRefresh = document.createElement("button");
-                    butRefresh.appendChild(document.createTextNode("Refresh"));
-                    butRefresh.className += " btn btn-outline-dark objButtonAction";
-                    butRefresh.id = "but_AutoCorrect_" + uuid;
-                    divBtnGrp.appendChild(butRefresh);
+                /*var butPrintOSDU_Json = document.createElement("button");
+                var butPrintOSDU_Json = document.createElement("button");
+                butPrintOSDU_Json.appendChild(document.createTextNode("OSDU WKE"));
+                butPrintOSDU_Json.title = "OSDU Well Known Entities";
+                butPrintOSDU_Json.className += " btn btn-outline-success objButtonAction";
+                butPrintOSDU_Json.id = "but_PrintOSDU_Json_" + uuid;
+                divBtnGrp.appendChild(butPrintOSDU_Json);
 
-                    butRefresh.onclick = function(){
-                        resqmlElt.refresh();
-                    };
+                butPrintOSDU_Json.onclick = function(){
+                    window.open("/GetObjectAsJson?uuid=" + uuid, '_blank').focus()
+                };*/
 
-                    /*var butPrintOSDU_Json = document.createElement("button");
-                    var butPrintOSDU_Json = document.createElement("button");
-                    butPrintOSDU_Json.appendChild(document.createTextNode("OSDU WKE"));
-                    butPrintOSDU_Json.title = "OSDU Well Known Entities";
-                    butPrintOSDU_Json.className += " btn btn-outline-success objButtonAction";
-                    butPrintOSDU_Json.id = "but_PrintOSDU_Json_" + uuid;
-                    divBtnGrp.appendChild(butPrintOSDU_Json);
+                var butPrint_Json = document.createElement("button");
+                butPrint_Json.appendChild(document.createTextNode("Json"));
+                butPrint_Json.title = "Google Gson translation";
+                butPrint_Json.className += " btn btn-outline-success objButtonAction";
+                butPrint_Json.id = "but_Print_Json_" + uuid;
+                divBtnGrp.appendChild(butPrint_Json);
 
-                    butPrintOSDU_Json.onclick = function(){
-                        window.open("/GetObjectAsJson?uuid=" + uuid, '_blank').focus()
-                    };*/
+                butPrint_Json.onclick = function(){
+                    window.open("/GetObjectAsJson?uuid=" + uuid, '_blank').focus()
+                };
 
-                    var butPrint_Json = document.createElement("button");
-                    butPrint_Json.appendChild(document.createTextNode("Json"));
-                    butPrint_Json.title = "Google Gson translation";
-                    butPrint_Json.className += " btn btn-outline-success objButtonAction";
-                    butPrint_Json.id = "but_Print_Json_" + uuid;
-                    divBtnGrp.appendChild(butPrint_Json);
+                var butPrintXml = document.createElement("button");
+                butPrintXml.appendChild(document.createTextNode("Xml"));
+                butPrintXml.className += " btn btn-outline-success objButtonAction";
+                butPrintXml.id = "but_Print_xml_" + uuid;
+                divBtnGrp.appendChild(butPrintXml);
 
-                    butPrint_Json.onclick = function(){
-                        window.open("/GetObjectAsJson?uuid=" + uuid, '_blank').focus()
-                    };
+                butPrintXml.onclick = function(){
+                    window.open("/GetObjectAsXml?uuid=" + uuid, '_blank').focus()
+                };
 
-                    var butPrintXml = document.createElement("button");
-                    butPrintXml.appendChild(document.createTextNode("Xml"));
-                    butPrintXml.className += " btn btn-outline-success objButtonAction";
-                    butPrintXml.id = "but_Print_xml_" + uuid;
-                    divBtnGrp.appendChild(butPrintXml);
+                var butAutoCorrect = document.createElement("button");
+                butAutoCorrect.appendChild(document.createTextNode("Auto-correct"));
+                butAutoCorrect.className += " btn btn-outline-info objButtonAction";
+                butAutoCorrect.id = "but_AutoCorrect_" + uuid;
+                divBtnGrp.appendChild(butAutoCorrect);
 
-                    butPrintXml.onclick = function(){
-                        window.open("/GetObjectAsXml?uuid=" + uuid, '_blank').focus()
-                    };
+                butAutoCorrect.onclick = function(){
+                    resquestCorrection(idConsoleElt, uuid, "dor").then(function(){resqmlElt.refresh();});
+                };
 
-                    var butAutoCorrect = document.createElement("button");
-                    butAutoCorrect.appendChild(document.createTextNode("Auto-correct"));
-                    butAutoCorrect.className += " btn btn-outline-info objButtonAction";
-                    butAutoCorrect.id = "but_AutoCorrect_" + uuid;
-                    divBtnGrp.appendChild(butAutoCorrect);
-
-                    butAutoCorrect.onclick = function(){
-                        resquestCorrection(idConsoleElt, uuid, "dor").then(function(){resqmlElt.refresh();});
-                    };
-
-                    // Root uuid parameter
-                    var formValidator = document.createElement("input");
-                    formValidator.type = "submit";
-                    formValidator.value = "Save";
-                    formValidator.className += "tabulationSave btn btn-outline-danger objButtonAction";
-    //                formObjectModification.appendChild(formValidator); // on le met avant le form pour bypass la valdiation de form
-                    divBtnGrp.appendChild(formValidator);
+                // Root uuid parameter
+                var formValidator = document.createElement("input");
+                formValidator.type = "submit";
+                formValidator.value = "Save";
+                formValidator.className += "tabulationSave btn btn-outline-danger objButtonAction";
+//                formObjectModification.appendChild(formValidator); // on le met avant le form pour bypass la valdiation de form
+                divBtnGrp.appendChild(formValidator);
 
 
-                    /// AJOUTER * madatory element
-                    var mandatoryLabel = document.createElement("span");
-                    mandatoryLabel.appendChild(document.createTextNode("mandatory"));
-                    mandatoryLabel.className += "mandatoryElt mandatoryLabel";
-                    divObjectContent.appendChild(mandatoryLabel);
+                /// AJOUTER * madatory element
+                var mandatoryLabel = document.createElement("span");
+                mandatoryLabel.appendChild(document.createTextNode("mandatory"));
+                mandatoryLabel.className += "mandatoryElt mandatoryLabel";
+                divObjectContent.appendChild(mandatoryLabel);
 
-                    const formObjectModification = document.createElement("form");
-                    formObjectModification.name = "formModif";
-                    formObjectModification.acceptCharset = "UTF-8";
-                    formObjectModification.style.height = "100%";
-                    formObjectModification.style.width  = "100%";
-                    formObjectModification.style.padding= "0px";
-                    formObjectModification.method = "post";
-                    formObjectModification.action = "ObjectEdit";
-                    formObjectModification.acceptCharset = "UTF-8";
+                const formObjectModification = document.createElement("form");
+                formObjectModification.name = "formModif";
+                formObjectModification.acceptCharset = "UTF-8";
+                formObjectModification.style.height = "100%";
+                formObjectModification.style.width  = "100%";
+                formObjectModification.style.padding= "0px";
+                formObjectModification.method = "post";
+                formObjectModification.action = "ObjectEdit";
+                formObjectModification.acceptCharset = "UTF-8";
 
-                    // Root uuid parameter
-                    var rootUUIDinput = document.createElement("input");
-                    rootUUIDinput.name = "Root_UUID";
-                    rootUUIDinput.value = uuid;
-                    rootUUIDinput.hidden = "hidden";
-                    formObjectModification.appendChild(rootUUIDinput);
+                // Root uuid parameter
+                var rootUUIDinput = document.createElement("input");
+                rootUUIDinput.name = "Root_UUID";
+                rootUUIDinput.value = uuid;
+                rootUUIDinput.hidden = "hidden";
+                formObjectModification.appendChild(rootUUIDinput);
 
-                    
+                
 
-                    // ajout des inputs de l'objet au formulaire
-                    formObjectModification.appendChild(content);
-                    formObjectModification.appendChild(objectProperty);
+                // ajout des inputs de l'objet au formulaire
+                formObjectModification.appendChild(content);
+                formObjectModification.appendChild(objectProperty);
 
 
-                    formValidator.onclick = function(){
-                        sendPostFormAndReload(formObjectModification, "ObjectEdit", false, 
-                                                function(){
-                                                    resqmlElt.refresh();
-                                                });
-                    };
+                formValidator.onclick = function(){
+                    sendPostFormAndReload(formObjectModification, "ObjectEdit", false, 
+                                            function(){
+                                                resqmlElt.refresh();
+                                            });
+                };
 
-                    divObjectContent.appendChild(formObjectModification);
+                divObjectContent.appendChild(formObjectModification);
 
-                    
+                
 
-                    //console.log("#openResqmlObjectContent create tabulation")
-                    createTabulation(uuid, divObjectContent, idTabHeader, idTabContainer, resqmlElt);
+                //console.log("#openResqmlObjectContent create tabulation")
+                createTabulation(uuid, divObjectContent, idTabHeader, idTabContainer, resqmlElt);
 
-                    //console.log("#openResqmlObjectContent open tabulation")
-                    openTabulation(uuid, idTabHeader); // on l'ouvre
-                    
-                    call_after_DOM_updated(function () {
-                        // On crée le split a la fin car il faut que les elements soient déjà placé pour que ça fonctionne
-                        createSplitter("#"+content.id, "#"+objectProperty.id, 65, 30, "vertical", 55, 15);
-                    });
+                //console.log("#openResqmlObjectContent open tabulation")
+                openTabulation(uuid, idTabHeader); // on l'ouvre
+                
+                call_after_DOM_updated(function () {
+                    // On crée le split a la fin car il faut que les elements soient déjà placé pour que ça fonctionne
+                    createSplitter("#"+content.id, "#"+objectProperty.id, 65, 30, "vertical", 55, 15);
+                });
 
-                    // console.log("#openResqmlObjectContent call refreshHighlightedOpenedObjects")
-                    // refreshHighlightedOpenedObjects(); allready done in openTab
-                    // console.log("#openResqmlObjectContent END")
-                    endTask();
-
-                }catch(exceptionJSON){
-                    console.log("EXCEPT : ");console.log(exceptionJSON);
-                    console.log(xmlHttp.responseText);
-                    endTask();
-                }
-            };
-
-            xmlHttp.send( null );
+                // console.log("#openResqmlObjectContent call refreshHighlightedOpenedObjects")
+                // refreshHighlightedOpenedObjects(); allready done in openTab
+                // console.log("#openResqmlObjectContent END")
+                endTask();
+            });
         }else{
             endTask();
         }
@@ -327,14 +306,9 @@ export function deleteResqmlObject(uuid, type, title){
         inputUUID.value = uuid;
         formDelete.appendChild(inputUUID);
 
-        sendGetURL("ResqmlLinkedObjects?uuid=" + uuid, false, 
-                function(answer){
-                    //console.log("beforeDeletion");
-                    var objectList = [];
-                    try{
-                        objectList = JSON.parse(answer);
-                    }catch(exceptJson){console.log("Except " + exceptJson);}
-
+        getJsonObjectFromServer("ResqmlLinkedObjects?uuid=" + uuid).then( 
+                function(objectList){
+                    console.log(`ResqmlLinkedObjects ${objectList}`);
                     var resultAttributeToSearch = ["num", "type", "title", "uuid"];
                     var dataTableHeader = ["Num", "Type", "Title", "Uuid"];
 
@@ -424,7 +398,7 @@ export function deleteResqmlObject(uuid, type, title){
                     }
 
                 }
-        );
+        ).catch(() => endTask());
     }else{
         console.log('Delete while task allready running')
     }

@@ -29,14 +29,15 @@ export function dochangeDorReference(){
     if(rootObjectUuid.replace(/ /g, '').length>0 && inputUuid.replace(/ /g, '').length>0 ){
         document.getElementById("changeDorReferenceSubmitBut").disabled = true;
         beginTask();
-        var promchangeDorReference = sendGetURL_Promise("EPCOperation?command=changereference&Root_UUID=" + rootObjectUuid+"&input=" + inputUuid);
-        promchangeDorReference.then(function(){
-            document.getElementById("changeDorReferenceSubmitBut").disabled = false;
-            document.getElementById('closeBut_changeDorReference').click();
-            document.getElementById('changeDorReferenceFilePath_target').value = "";
-            document.getElementById('changeDorReferenceFilePath_root').value = "";
-            endTask();
-        })
+        fetch("EPCOperation?command=changereference&Root_UUID=" + rootObjectUuid + "&input=" + inputUuid).then(
+            function(){
+                endTask();
+                document.getElementById("changeDorReferenceSubmitBut").disabled = false;
+                document.getElementById('closeBut_changeDorReference').click();
+                document.getElementById('changeDorReferenceFilePath_target').value = "";
+                document.getElementById('changeDorReferenceFilePath_root').value = "";
+            }
+        ).catch(() => endTask());
     }
 }
 
@@ -48,7 +49,7 @@ export function closeActionNo(){
 
     sendGetURLAndReload('FileReciever?close=true', false).then(function(){
         endTask();
-    })
+    }).catch(() => endTask())
 }
 
 export function closeActionYes(){
@@ -58,7 +59,7 @@ export function closeActionYes(){
     Promise.all(promessesSave).then(function (data) {
         endTask();
         $("#modal_exportEPCAndClose").modal();
-    });
+    }).catch(() => endTask());
 }
 // --- 
 // --- CreateNewRootElement
@@ -73,17 +74,16 @@ export function createNewElt(idForm, modalId, rollingId){
 // ExportEpcFile
 export function doExportEPC(){
     document.getElementById("exportEpcSubmitBut").disabled = true;
-    beginTask();
     var epcFilePath = document.getElementById("exportEpcFilePath").value;
     if(epcFilePath.replace(/ /g, '').length>0){
-        var promExport = downloadGetURL_Promise("ExportEPCFile?epcFilePath="+epcFilePath+"&exportVersion=" + document.querySelector('input[name="exportVersion"]:checked').value);
-        promExport.then(function(){
-            document.getElementById("exportEpcSubmitBut").disabled = false;
-            document.getElementById('closeBut_export').click();
-            endTask();
-        })
-    }else{
-        endTask();
+        beginTask();
+        downloadGetURL_Promise("ExportEPCFile?epcFilePath="+epcFilePath+"&exportVersion=" + document.querySelector('input[name="exportVersion"]:checked').value).then(
+            function(){
+                document.getElementById("exportEpcSubmitBut").disabled = false;
+                document.getElementById('closeBut_export').click();
+                endTask();
+            }
+        ).catch(() => endTask());
     }
 }
 

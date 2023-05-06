@@ -13,12 +13,9 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 -->
-<%@ include file="/jsp/htmlParts/modal_loadEPCFile.jsp"%>
-<%@ include file="/jsp/htmlParts/modal_importEPCFile.jsp"%>
+<%@ include file="/jsp/htmlParts/modal_import_partialEPC.jsp"%>
 <%@ include file="/jsp/htmlParts/modal_closeEPCFile.jsp"%>
 <%@ include file="/jsp/htmlParts/modal_exportEPCFile.jsp"%>
-<%@ include file="/jsp/htmlParts/modal_exportEPCFile_AndClose.jsp"%>
-<%@ include file="/jsp/htmlParts/modal_exportPartialEPCFile.jsp"%>
 <%@ include file="/jsp/htmlParts/modal_createNewRootElement.jsp"%>
 <%@ include file="/jsp/htmlParts/modal_changeDorReference.jsp"%>
 <%@ include file="/jsp/htmlParts/modal_PropertiesDictVue.jsp"%>
@@ -70,10 +67,8 @@ limitations under the License.
 				role="button" data-toggle="dropdown" aria-haspopup="true"
 				aria-expanded="false"> File </a>
 				<div class="dropdown-menu" aria-labelledby="navbarDropdown">
-					<a class="dropdown-item" data-toggle="modal" data-target="#modal_loadEPC">Load EPC/XML (replace workspace content)</a> 
-					<a class="dropdown-item" data-toggle="modal" data-target="#modal_importEPC">Import EPC/XML</a>
-					<a class="dropdown-item" data-toggle="modal" data-target="#modal_exportEPC">Export workspace to EPC file (all elements)</a>
-					<a class="dropdown-item" data-toggle="modal" data-target="#modal_exportPartialEPC">Export workspace to EPC file (partial)</a>
+					<a class="dropdown-item" data-toggle="modal" data-target="#modal_import_partialEPC">Import file in workspace (EPC/XML/...)</a>
+					<a class="dropdown-item" data-toggle="modal" data-target="#modal_exportEPC">Export workspace to EPC file</a>
                 	<a class="dropdown-item" data-toggle="modal" data-target="#modal_WorkspaceDict">Show workspace tree</a>
 					
 					<div class="dropdown-divider"></div>
@@ -112,15 +107,13 @@ limitations under the License.
 			<li  class="nav-item">
 				<a data-toggle="collapse" class="nav-link" id="rws__CL_CONSOLE_TOGGLE_BUT"
 				data-target="#rws__ID_CONSOLE_MODAL__" 
-				onclick='if(this.textContent.includes("Hide")){this.textContent = "Show Console";}else{this.textContent = "Hide Console";}'>
-				Show Console
-			</a> 
-		</li>
-		<li  class="nav-item">
-			<a data-toggle="modal"  class="nav-link"
-			data-target="#modal_resqmlGraphView">EPC graph</a>
-		</li>
-	</ul>
+				onclick='if(this.textContent.includes("Hide")){this.textContent = "Show Console";}else{this.textContent = "Hide Console";}'>Show Console</a> 
+			</li>
+			<li  class="nav-item">
+				<a data-toggle="modal"  class="nav-link"
+				data-target="#modal_resqmlGraphView">EPC graph</a>
+			</li>
+		</ul>
         <ul class="navbar-nav ml-auto">
         	<li class="nav-item navbar-text" id="sessionCounter_item">
         		<span class="nav-link fas fa-users" style="display: none" id="sessionCounter" title="Other connected users count"></a>
@@ -152,8 +145,8 @@ limitations under the License.
         	<li class="nav-item">
 				<span class="navbar-text" id="ws_sessionMetrics"></span>
 			</li>
-	<!-- </ul>
-		<ul class="navbar-nav ml-auto"> -->
+		</ul>
+		<ul class="navbar-nav ml-auto">
 			<li class="nav-item dropdown" id="sessionInfo">
 				<a class="nav-link dropdown-toggle fas fa-user" href="#"
 				role="button" data-toggle="dropdown" aria-haspopup="true"

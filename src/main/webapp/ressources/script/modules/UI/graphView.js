@@ -19,7 +19,7 @@ import {getOpenObjectsUuid, openResqmlObjectContentByUUID} from "../main.js"
 import {sendGetURL_Promise} from "../requests/requests.js"
 
 
-import cytoscape from "./lib/cytoscape.esm.min.js"
+import cytoscape from "./lib/cytoscape/cytoscape.esm.min.js"
 cytoscapeFcose(cytoscape)
 
 var CY_DBL_LEFT_CLICK_DATE = new Date();

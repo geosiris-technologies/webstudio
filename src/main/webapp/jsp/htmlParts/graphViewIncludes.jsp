@@ -13,12 +13,10 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 -->
-<!-- <script src="ressources/script/modules/UI/lib/cytoscape.umd.js"></script>
-<script src="ressources/script/modules/UI/lib/cytoscape-fcose.js"></script> -->
 <script src="https://unpkg.com/numeric/numeric-1.2.6.js"></script>
 <script src="https://unpkg.com/layout-base/layout-base.js"></script>
 <script src="https://unpkg.com/cose-base/cose-base.js"></script>
-<script src="/ressources/script/modules/UI/lib/cytoscape-fcose.js"></script>
+<script src="/ressources/script/modules/UI/lib/cytoscape/cytoscape-fcose.js"></script>
 
 <style type="text/css">
 #cy {

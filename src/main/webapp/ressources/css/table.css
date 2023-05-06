@@ -14,6 +14,12 @@
   	border-spacing: 0;
 	white-space: nowrap;
 }
+.table-top-fixed td, .table-top-fixed th{
+	max-width: 400px;
+    overflow: hidden;
+    padding-left: 10px;
+    padding-right: 10px;
+}
 
 .colName_num{
 	text-align: right;
@@ -132,8 +138,37 @@ table{
 	color: antiquewhite!important;
 }
 .openedObject:hover td{
-	background: #004bcd!important;
+	background: #ff8383!important;
 	color: antiquewhite!important;
+}
+
+.highlightIfExist_enable{
+	background: #f6bc82!important;
+	color: black!important;
+	/*color: antiquewhite!important;*/
+}
+.highlightIfExist_enable:hover td{
+	background: #fb7542!important;
+	color: antiquewhite!important;
+}
+.highlightIfExist_enable:hover ::after {
+    content: "Already exists in workspace";
+    padding: 2px;
+	margin-top: 5px;
+    display: none;
+    position: absolute;
+	left: 100px;
+    text-align: center;
+    background-color: #f6bc82;
+    border: 1px solid #0e2a8b;
+    -moz-border-radius: 2px;
+    -webkit-border-radius: 2px;
+    -ms-border-radius: 2px;
+    border-radius: 2px;
+    color: black;
+}
+.highlightIfExist_enable:hover td:hover::after {
+  display: block;
 }
 
 .table-hover tbody tr:hover td, .table-hover tbody tr:hover th {

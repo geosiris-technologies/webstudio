@@ -119,12 +119,15 @@ body{
 }
 
 #rws__EPC_TABS_CONTAINER__ {
-    width: 100%;
+  width: 100%;
 	height: calc(100% - 50px);
 	padding-bottom:1px; 
 	padding-left: 10px;
 }
 
+#createRootEltForm > input{
+	margin-top: 10px;
+}
 
 #tableFilter{
 	width:50%;
@@ -135,17 +138,22 @@ body{
 	display : block;
 }
 
-
 /* Style de la colonne du numero d'element resqml */
 .colName_num {
 	text-align: right;
 	font-weight: bold;
 }
 
-.dropdown-menu{
-	/*max-height:400px;*/
-	/*overflow-y:auto;*/
+.dropdown-menu-energyml-elt{
 	background-color: #f8f9fa;
+  overflow: auto;
+  max-height: 500px;
+  border: 2px solid #cfcfcf;
+  box-shadow: 3px 3px 3px #666262;
+}
+
+.dropdown-item:hover{
+	background-color:#2983d2;
 }
 
 .dropright {

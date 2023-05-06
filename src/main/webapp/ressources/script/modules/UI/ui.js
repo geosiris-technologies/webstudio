@@ -17,11 +17,19 @@ limitations under the License.
 import {call_after_DOM_updated, createDeleteResqmlButton, createDropDownDivider, createRadio, createSplitter} from "./htmlUtils.js"
 import {hasBeenDisconnected, refreshWorkspace, rws_addEventListeners} from "./eventHandler.js"
 import {appendConsoleMessage} from "../logs/console.js"
-import {getAllOpendedObjects} from "../requests/uiRequest.js"
+import {getAllOpendedObjects, deleteResqmlObject} from "../requests/uiRequest.js"
+import {sendGetWorkspaceObjectsList} from "../requests/requests.js"
 import {compare, copyOtherTableSortingParams, createTableFromData, highlightTableCellFromClass, highlightTableLineFromTdText, transformTab_AddColumn} from "./table.js"
-import {SEM_IS_LOADING_WORKSPACE, getObjectTableCellClass, setSEM_IS_LOADING_WORKSPACE} from "../common/variables.js"
+import {getAttribute} from "../common/utils.js"
 import {openResqmlObjectContentByUUID} from "../main.js"
 import {energymlRootTypes, savePreferences} from "../energyml/epcContentManager.js"
+import {JsonTableColumnizer_Checkbox, JsonTableColumnizer_Radio, JsonTableColumnizer_Icon, JsonTableColumnizer_DotAttrib, toTable} from "./jsonToTable.js"
+import {SEM_IS_LOADING_WORKSPACE,
+    getObjectTableCellClass,
+    setSEM_IS_LOADING_WORKSPACE,
+    CLASS_HIGHLIGHT_EXISTING_OBJECT,
+    CLASS_HIGHLIGHT_EXISTING_OBJECT_ENABLED
+} from "../common/variables.js"
 
 
 export var __USER_NAME__ = "";
@@ -29,6 +37,7 @@ export var __USER_NAME__ = "";
 var NB_TASK = 0;
 
 export function beginTask(exclusiv){
+    // console.trace();
     if(NB_TASK == 0 || exclusiv==null || exclusiv==false){
         try{
             NB_TASK++;
@@ -36,13 +45,16 @@ export function beginTask(exclusiv){
         }catch(e){}
 
         // Cursor wait
+        // console.log(`BeginTask ${NB_TASK}`);
         return true;
     }
     document.body.style.cursor = 'progress';
+    // console.log(`BeginTask ${NB_TASK}`);
     return false;
 }
 
 export function endTask(){
+    // console.trace();
     try{
         NB_TASK--;
         if(NB_TASK<=0){
@@ -56,6 +68,7 @@ export function endTask(){
             );
         }
     }catch(e){}
+    // console.log(`EndTask ${NB_TASK}`);
     return NB_TASK;
 }
 
@@ -119,12 +132,10 @@ export function setUserName(userName, usrGrp, spanSessionCounter_id){
     loadWorkspaceBut.className = "dropdown-item ";
     loadWorkspaceBut.innerHTML = "Load workspace";
     loadWorkspaceBut.onclick = function(){
-        beginTask();
         call_after_DOM_updated(
             function(){
                 refreshWorkspace();
             });
-        endTask();
     }
 
     sessionInfoMenu.appendChild(loadWorkspaceBut);
@@ -272,33 +283,15 @@ export function initSessionCounter(spanSessionCounter_id){
 
 export function initEditorContent(    idTable, idObjectList, idTabHeader, idTabContainer,
                             idConsoleElt, classObjectContent, classObjectProperty, 
-                            idFilterButton){    
-
-    return new Promise(function (resolve, reject) {
-                            var xmlHttp = new XMLHttpRequest();
-                            beginTask();
-                            // On récupère la liste des objets de l'epc
-                            xmlHttp.open( "GET", "ResqmlObjectTree", true );
-
-                            //console.log("before loading");
-                            xmlHttp.onload = function (e) {
-                                endTask();
-                                var jsonResqmlObjectList = document.createTextNode(xmlHttp.responseText);
-                                var jsonObject = JSON.parse(xmlHttp.responseText);
-
-                                createTable(jsonObject,
-                                        idTable, idObjectList, idTabHeader, idConsoleElt,
-                                        idTabContainer, classObjectContent, 
-                                        classObjectProperty, 0, false, idFilterButton);
-
-                                resolve(xmlHttp.responseText);
-                            };
-                            xmlHttp.onerror = function (err) {
-                                endTask();
-                                reject(err);                    // Si erreur
-                            }
-                            xmlHttp.send( null );
-                        });
+                            idFilterButton){
+    return sendGetWorkspaceObjectsList().then( (jsonObjectList) => {
+        highlightExistingElt(jsonObjectList);
+        createTable(jsonObjectList,
+            idTable, idObjectList, idTabHeader, idConsoleElt,
+            idTabContainer, classObjectContent, 
+            classObjectProperty, 0, false, idFilterButton);
+        return jsonObjectList;
+    });
 }
 
 
@@ -311,6 +304,35 @@ export function refreshHighlightedOpenedObjects(){
             );
 }
 
+export function refreshExistingObjectInWorkspace(){
+    const openedUUID = openedObjects.map(x => x.resqmlElt.rootUUID);
+    Array.prototype.forEach.call(openedUUID, uuid =>
+        highlightTableCellFromClass(getObjectTableCellClass(uuid), true)
+    );
+}
+
+export function highlightExistingElt(jsonObjectList){
+    for(let itemToHighlight of document.getElementsByClassName(CLASS_HIGHLIGHT_EXISTING_OBJECT_ENABLED)){
+        itemToHighlight.className = itemToHighlight.className.replace(itemToHighlight, "");
+    }
+
+    var jsonObjectList_promise = null;
+    if (jsonObjectList == null){
+        jsonObjectList_promise = sendGetWorkspaceObjectsList();
+    }else{
+        jsonObjectList_promise = Promise.resolve(jsonObjectList);
+    }
+
+    jsonObjectList_promise.then( (objectList) => {
+        for(let itemToHighlight of document.getElementsByClassName(CLASS_HIGHLIGHT_EXISTING_OBJECT)){
+            objectList.forEach( elt => {
+                if(elt["uuid"] != null && elt["uuid"].length> 0 && itemToHighlight.className.includes(getObjectTableCellClass(elt["uuid"]))){
+                    itemToHighlight.className += " " + CLASS_HIGHLIGHT_EXISTING_OBJECT_ENABLED;
+                }
+            });
+        }
+    });
+}
 
 export function createTable(jsonList,
         idTable, idObjectList, idTabHeader, idConsoleElt,
@@ -319,7 +341,6 @@ export function createTable(jsonList,
         sortColumnNum, sortReverse, 
         idFilterButton){
 
-    //console.log("createTable ")
     if(!SEM_IS_LOADING_WORKSPACE){
         setSEM_IS_LOADING_WORKSPACE(true);
         beginTask();
@@ -486,7 +507,7 @@ export function initRootEltSelector(typeSelector){
 }
 
 export function getResqmlObjectTable(dataTableContent, dataTableColumn, oldTable){
-    var dataTableHeader = dataTableColumn.map(title => title[0].toUpperCase() + title.substring(1));
+    /*var dataTableHeader = dataTableColumn.map(title => title[0].toUpperCase() + title.substring(1));
     var table = createTableFromData(dataTableContent, dataTableColumn, dataTableHeader, 
                                     dataTableContent.map(elt => [ function(){openResqmlObjectContentByUUID(elt['uuid'])} ]), 
                                     null,
@@ -494,7 +515,55 @@ export function getResqmlObjectTable(dataTableContent, dataTableColumn, oldTable
                                         // On met le oldTable à null ici pour trier seulement apres l'ajout de la nouvelle colonne,
                                         // sinon les boutons de suppressions ne seront pas en face des bons elements.
 
-    transformTab_AddColumn(table, "", 0, dataTableContent.map(elt => createDeleteResqmlButton(elt)), "colName_delete", "");
+    transformTab_AddColumn(table, "", 0, dataTableContent.map(elt => createDeleteResqmlButton(elt)), "colName_delete", "");*/
+
+    /*-----------------*/
+    const f_cols = []
+    
+    /*f_cols.push(new JsonTableColumnizer_Checkbox("sample_check", (obj) => getAttribute(obj, "uuid")));*/
+    /*f_cols.push(new JsonTableColumnizer_Radio("sample_radio", (obj) => getAttribute(obj, "uuid")));*/
+    f_cols.push(new JsonTableColumnizer_Icon(
+        "far fa-trash-alt deleteButton", 
+        "fas fa-trash-alt deleteButton",
+        function(event, elt){
+            if(event.type == "click"){
+                deleteResqmlObject(
+                    elt["uuid"], 
+                    elt["type"], 
+                    elt["title"]
+                );
+            }
+        },
+        null,
+        (elt)=>elt["uuid"]+ "-tab",
+        null,
+        
+    ));
+
+    const attrib_list = dataTableColumn;
+    attrib_list.forEach(
+        (attrib) => {
+            f_cols.push(
+                new JsonTableColumnizer_DotAttrib(
+                    attrib.substring(0, 1).toUpperCase() + attrib.substring(1),
+                    attrib,
+                    function(event, elt){
+                        if(event.type == "click"){
+                            openResqmlObjectContentByUUID(elt['uuid']);
+                        }
+                    },
+                    null,
+                    (elt)=>elt["uuid"]+ "-tab",
+                    null,
+                    "pointer"
+                )
+            );
+        }
+    );
+
+    var table = toTable(dataTableContent, f_cols);
+    table.className += " table-striped table-bordered table-hover table-fixed table-top-fixed";
+    /*-----------------*/
     copyOtherTableSortingParams(table, oldTable, dataTableColumn);
 
     return table;

@@ -81,6 +81,11 @@ export const REGEX_ETP_URI = /^eml:\/\/\/(?:dataspace\('(?<dataspace>[^']*?(?:''
 export const UUID_REGEX_str = '^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$';
 export const UUID_REGEX_raw = /(\b[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}\b)/g;
 export const UUID_REGEX = /^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$/g;
+
+export const REGEX_ENERGYML_FILE_NAME = /^(.*\/)?(((?<type>[\w]+)_[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12})|([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}\.(?<objectVersion>\d+(\.\d+)*)))\.xml$/g;
+
+
+
 /*
  _    _____    ____  _______    ____  __    ___________       __   _______   ____  ____  ________
 | |  / /   |  / __ \/  _/   |  / __ )/ /   / ____/ ___/     _/_/  / ____/ | / / / / /  |/  / ___/
@@ -158,6 +163,9 @@ export function set__RWS_ETP_LOGIN__(value){__RWS_ETP_LOGIN__ = value;}
 export function set__RWS_ETP_PWD__(value){__RWS_ETP_PWD__ = value;}
 
 // Object Classes
+
+export const CLASS_HIGHLIGHT_EXISTING_OBJECT = "highlightIfExist";
+export const CLASS_HIGHLIGHT_EXISTING_OBJECT_ENABLED = CLASS_HIGHLIGHT_EXISTING_OBJECT + "_enable";
 
 export function getObjectTableCellClass(uuid){
     return uuid + "-tab";

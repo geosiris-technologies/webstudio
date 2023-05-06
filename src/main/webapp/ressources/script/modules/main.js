@@ -26,6 +26,7 @@ import {rws_addConsoleMessageFilter} from "./logs/console.js"
 import {updatePartialExportTableContent} from "./UI/modals/exportEPC.js"
 import {createSplitter} from "./UI/htmlUtils.js"
 import {openResqmlObjectContent} from "./requests/uiRequest.js"
+import {getJsonObjectFromServer} from "./requests/requests.js"
 import {closeTabulation, getOpenObjectsUuid_GivingTabHeader, saveResqmlObject_promise} from "./UI/tabulation.js"
 import {__ID_CONSOLE__, __ID_EPC_TABLE_DIV__, __ID_EPC_TABS_CONTAINER__, __ID_EPC_TABS_HEADER__} from "./common/variables.js"
 
@@ -37,8 +38,8 @@ export function initWebStudioView(){
     createSplitter("#cyGrapher","#graphElementChecked", 65, 30, null, 55, 16);
     try{setVueOrientation("right", false);}catch(err){console.log(err);}
     try{initSessionLogEventHandler(__ID_CONSOLE__);}catch(err){console.log(err);}
-    try{refreshPropertyDictVue();}catch(err){console.log(err);}
-    try{refreshWorkspaceDictVue();}catch(err){console.log(err);}
+    refreshPropertyDictVue().catch((error) => console.error(error));
+    refreshWorkspaceDictVue().catch((error) => console.error(error));
     try{updateTypesMap();}catch(err){console.log(err);}
     try{__initOrganizationType__();}catch(err){console.log(err);}
 
@@ -52,28 +53,18 @@ export function initWebStudioView(){
         rws_addConsoleMessageFilter(__ID_CONSOLE__);
     });
 
-    $("#modal_exportPartialEPC").on('show.bs.modal', function(){
+    $("#modal_exportEPC").on('show.bs.modal', function(){
            // OnModalShow
            // On met a jour le tableau
         document.getElementById("exportParial_progressBar").style.display = "";
         const elt_partialExportEPC_table = document.getElementById("partialExportEPC_table");
         while (elt_partialExportEPC_table.firstChild) {
-            //elt_partialExportEPC_table.removeChild(elt_partialExportEPC_table.firstChild);
             elt_partialExportEPC_table.firstChild.remove();
         }
        
-           var xmlHttp = new XMLHttpRequest();
-        xmlHttp.open( "GET", "ResqmlEPCRelationship", true );
-
-        xmlHttp.onload = function(){
-            try{
-                const relations = JSON.parse(xmlHttp.responseText);
-                updatePartialExportTableContent(relations);
-            }catch(e){
-                console.log(e);
-            }
-        };
-        xmlHttp.send(null);
+        getJsonObjectFromServer("ResqmlEPCRelationship").then(function(relations){
+            updatePartialExportTableContent(relations);
+        }).catch((error) => console.error(error));
     });
 
     try{
@@ -81,7 +72,7 @@ export function initWebStudioView(){
             .then(loadResqmlData)
             .then(()=>{
                 enableWaitingUi(false);
-            });
+            }).catch((error) => console.error(error));
     }catch(err){console.log(err);}
     
     $("#visu-3D-iframe").on("load", function() {
@@ -119,28 +110,13 @@ export function initWebStudioView(){
        // OnModalShow
        // On met a jour le tableau
        beginETPRequest();
-       var xmlHttp = new XMLHttpRequest();
-       xmlHttp.open( "GET", "ResqmlEPCRelationship", true );
-
-       xmlHttp.onload = function(){
-            try{
-                const relations = JSON.parse(xmlHttp.responseText);
-                updateExportToETPTableContent(relations);
-                updateGetRelatedETPTableContent(relations);
-            }catch(e){
-                console.log(e);
-            }
+       getJsonObjectFromServer("ResqmlEPCRelationship").then(function(relations){;
+            updateExportToETPTableContent(relations);
+            updateGetRelatedETPTableContent(relations);
             endETPRequest();
             update_etp_connexion_views();
-       };
-       xmlHttp.onerror = function(){
-           endETPRequest();
-       };
-       xmlHttp.send(null);
+        }).catch((error) => console.error(error));
     });
-
-    //console.log('#initWebStudioView')
-
 }
 
 

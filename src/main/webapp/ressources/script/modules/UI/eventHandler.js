@@ -76,7 +76,7 @@ export function initSessionLogEventHandler(console_id){
             var decodedMsg = JSON.parse(window.atob(event.data));
             if(decodedMsg.severity != null && decodedMsg.severity == __ENUM_CONSOLE_MSG_SEVERITY_ACTION__){
                 if(decodedMsg.message && decodedMsg.message.toLowerCase() == "reload"){
-                    refreshWorkspace();
+                    refreshWorkspace().catch((error) => console.error(error));
                 }
             }else{
                 //console.log("Not an action '" + decodedMsg.severity + "' != '" + __ENUM_CONSOLE_MSG_SEVERITY_ACTION__ + "'")
@@ -120,8 +120,9 @@ export function initSessionMetrics(spanSessionMetrics_id){
 export function refreshWorkspace(){
     beginTask();
     console.log("refreshing workspace")
-    return loadResqmlData().then( 
+    return loadResqmlData().then(
         function(){
+            endTask();
             const openedObjects = getAllOpendedObjects();
             // On remet a jour le tableau après la sauvegarde au cas
             // où le nom d'un element aurait changé
@@ -154,9 +155,9 @@ export function sendGetURLAndReload(url, showRequestResult){
 }
 
 export function sendPostFormAndReload(form, url, showRequestResult, functAfterReload){
-    beginTask();
     const openedObjects = getAllOpendedObjects();
 
+    beginTask();
     return sendPostForm_Promise(form, url, showRequestResult).then(
         function(){
             endTask();
@@ -179,5 +180,5 @@ export function sendPostFormAndReload(form, url, showRequestResult, functAfterRe
                     }
                     refreshHighlightedOpenedObjects();
                 });
-        });
+        }).catch(() => endTask());
 }

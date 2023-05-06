@@ -42,6 +42,20 @@ export function getHtmlEltIdxInParent(elt_html){
 		chIdx++;
 	return chIdx;
 }
+export function getResqmlEltCitationTitle(resqmlElt){
+	try{
+		var citation = null;
+		try{
+			citation = Array.from(resqmlElt.attributes).filter(att => att.name.includes(".Citation"))[0];
+		}catch(exceptCitation){}
+		var title = "";
+		try{
+			title = Array.from(citation.properties).filter(att => att.name.startsWith(".Citation.Title"))[0].value;
+		}catch(exceptTitle){}
+		return title;
+	}catch(except){console.log(except);console.log(resqmlElt);}
+	return "";
+}
 
 export function getResqmlEltTitleText(resqmlElt){
 	var tabulatioHeaderText = resqmlElt.rootUUID;
@@ -55,14 +69,7 @@ export function getResqmlEltTitleText(resqmlElt){
 		// on enlève les lettre non majuscules du type
 		type = "[" + type.replace(regexTypeReplace, '') + "] ";
 
-		var citation = null;
-		try{
-			citation = Array.from(resqmlElt.attributes).filter(att => att.name.includes(".Citation"))[0];
-		}catch(exceptCitation){}
-		var title = "";
-		try{
-			title = Array.from(citation.properties).filter(att => att.name.startsWith(".Citation.Title"))[0].value;
-		}catch(exceptTitle){}
+		var title = getResqmlEltCitationTitle(resqmlElt);
 		tabulatioHeaderText = type + title + "(" + resqmlElt.rootUUID + ")";
 
 	}catch(except){console.log(except);console.log(resqmlElt);}
@@ -734,7 +741,11 @@ export class ResqmlElement{
 						typeInTitle = typeInTitle.replace( /[a-z]/g, '' )
 						showTypeAsTooltip = true;
 					}
-				}else{
+				}else{ // the Top title
+					var title = getResqmlEltCitationTitle(this);
+					if (title != null && title.length > 0){
+						typeInTitle += " '" + title + "'";
+					}
 					typeInTitle += " " + this.rootUUID;
 				}
 
@@ -880,7 +891,6 @@ export class ResqmlElement{
 						//butOpenHDFView.appendChild(document.createTextNode("[[HDFView]]"));
 						//butOpenHDFView.appendChild(document.createTextNode(""));
 						butOpenHDFView.onclick = 	function(){
-														//sendGetURL("GeosirisHDFView://D:\\Geosiris\\CLOUD\\GTM\\data\\OK_01_ALWYN_DEPTH\\ALWYN-RESQML.h5", false, null);
 														//console.log(constThis);
 														var pathInHDF = "";
 														for(var propIdx=0; propIdx<constThis.properties.length; propIdx++){
@@ -1231,19 +1241,17 @@ export class ResqmlElement{
 						+ "&command=delete"
 						+ "&path=" + this.name;
 			//console.log("remove and request server : " + this.name + " URL : " + url);
-			sendGetURL(	url,
-						true, 
-						function(){
-							if(constThis.parentElt != null){
-								/*console.log("fini delete");
-								console.log("refresh parent : ");
-								console.log(constThis.parentElt);*/
-								constThis.parentElt.refresh();
-							}else{
-								console.log("null parent for refresh");
-								console.log(constThis);
-							}
-						});
+			fetch(url).then(function(){
+				if(constThis.parentElt != null){
+					/*console.log("fini delete");
+					console.log("refresh parent : ");
+					console.log(constThis.parentElt);*/
+					constThis.parentElt.refresh();
+				}else{
+					console.log("null parent for refresh");
+					console.log(constThis);
+				}
+			}).catch((error) => console.error(error));
 		}else{
 			if(this.htmlAttributeElt != null && this.htmlAttributeElt.parentNode != null){
 				//console.log("removing elt : " + this.name);
@@ -1321,7 +1329,7 @@ export class ResqmlElement{
 			}
 		}
 		if(tabSubAttElt.length>0){
-			var dropDown = createDropDownButton(tabSubAttElt, "subAttributeCreatorList_"+this.name);
+			var dropDown = createDropDownButton(tabSubAttElt, "subAttributeCreatorList_"+this.name, "dropdown-menu-energyml-elt");
 			dropDown.title = "Create sub element";
 			dropDown.className += " dropDownCreateSubAttribute";
 			return dropDown;
@@ -1362,11 +1370,7 @@ export class ResqmlElement{
 		if(enableFilter && (subEltType.includes("DataObjectReference") || subEltType.includes("ContactElement")) ){
 			link.onclick = function(){
 
-				var xmlHttp = new XMLHttpRequest();
-				//console.log('getting ResqmlAccessibleDOR '); console.log(constThis);
-				xmlHttp.open( "GET", "ResqmlAccessibleDOR?uuid="+constThis.rootUUID+"&subParamPath="+constThis.name+"&subParamName="+currentName, true ); 
-
-				xmlHttp.onload = function(){
+				getJsonObjectFromServer("ResqmlAccessibleDOR?uuid="+constThis.rootUUID+"&subParamPath="+constThis.name+"&subParamName="+currentName).then(function(jsonContent){
 					const modalID = "modalDOR_" + constThis.rootUUID; // modal window id to open
 
 					// Debut du formulaire 
@@ -1436,9 +1440,6 @@ export class ResqmlElement{
 					inputRootUUID.hidden = "hidden";
 					formCreate.appendChild(inputRootUUID);
 
-					//console.log(">> createSubAttribAddingElt ");
-					//console.log(xmlHttp.responseText);
-					var jsonContent = JSON.parse(xmlHttp.responseText);
 					var tableDOR = createTableFromData(
 							jsonContent, 
 							["num", "type", "title", "uuid", "schemaVersion"], 
@@ -1497,8 +1498,7 @@ export class ResqmlElement{
 					modalContentDiv.appendChild(inputSubmit);
 
 					openModal(modalID, "Creating DOR for " + constThis.rootUUID, modalContentDiv);
-				};
-				xmlHttp.send(null);
+				});
 			};
 		}else{
 			// Debut du formulaire 
