@@ -27,8 +27,9 @@ import {updatePartialExportTableContent} from "./UI/modals/exportEPC.js"
 import {createSplitter} from "./UI/htmlUtils.js"
 import {openResqmlObjectContent} from "./requests/uiRequest.js"
 import {getJsonObjectFromServer} from "./requests/requests.js"
-import {closeTabulation, getOpenObjectsUuid_GivingTabHeader, saveResqmlObject_promise} from "./UI/tabulation.js"
+import {closeTabulation, getOpenObjectsUuid_GivingTabHeader, saveResqmlObject_promise, saveAllResqmlObject_promise} from "./UI/tabulation.js"
 import {__ID_CONSOLE__, __ID_EPC_TABLE_DIV__, __ID_EPC_TABS_CONTAINER__, __ID_EPC_TABS_HEADER__} from "./common/variables.js"
+import {createSnackBar} from "./UI/snackbar.js"
 
 import {GeoThreeJS, fun_import_surface} from "./UI/lib/geo-threejs/geo-threejs.js";
 
@@ -116,6 +117,25 @@ export function initWebStudioView(){
             endETPRequest();
             update_etp_connexion_views();
         }).catch((error) => console.error(error));
+    });
+
+    /* Other actions */
+
+    document.addEventListener('keydown', e => {
+        //console.log(e);
+        if (e.ctrlKey && e.key == 's') {
+            // Prevent the Save dialog to open
+            e.preventDefault();
+            // Place your code here
+            createSnackBar("Saving all opened objects");
+            saveAllResqmlObject_promise();
+        }else if(e.ctrlKey && e.key == 'e') {
+            e.preventDefault();
+            $("#modal_exportEPC").modal();
+        }else if(e.ctrlKey && (e.key == 'i' || e.key == 'o')) {
+            e.preventDefault();
+            $("#modal_import_partialEPC").modal();
+        }
     });
 }
 

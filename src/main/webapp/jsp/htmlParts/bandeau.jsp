@@ -21,6 +21,7 @@ limitations under the License.
 <%@ include file="/jsp/htmlParts/modal_PropertiesDictVue.jsp"%>
 <%@ include file="/jsp/htmlParts/modal_WorkspaceDictVue.jsp"%>
 <%@ include file="/jsp/htmlParts/resqmlGraphView.jsp"%>
+<%@ include file="/jsp/htmlParts/modal_bugReport.jsp"%>
 
 <%@ include file="/jsp/htmlParts/modal_FIRPView.jsp"%>	
 <%@ include file="/jsp/htmlParts/modal_ETP.jsp"%>
@@ -67,14 +68,14 @@ limitations under the License.
 				role="button" data-toggle="dropdown" aria-haspopup="true"
 				aria-expanded="false"> File </a>
 				<div class="dropdown-menu" aria-labelledby="navbarDropdown">
-					<a class="dropdown-item" data-toggle="modal" data-target="#modal_import_partialEPC">Import file in workspace (EPC/XML/...)</a>
-					<a class="dropdown-item" data-toggle="modal" data-target="#modal_exportEPC">Export workspace to EPC file</a>
-                	<a class="dropdown-item" data-toggle="modal" data-target="#modal_WorkspaceDict">Show workspace tree</a>
+					<a class="dropdown-item" data-toggle="modal" data-target="#modal_import_partialEPC">Import file in workspace (EPC/XML/...) [ctrl + i]</a>
+					<a class="dropdown-item" data-toggle="modal" data-target="#modal_exportEPC">Export workspace to EPC file [ctrl + e]</a>
+          <a class="dropdown-item" data-toggle="modal" data-target="#modal_WorkspaceDict">Show workspace tree</a>
 					
 					<div class="dropdown-divider"></div>
 
 					<a class="dropdown-item" id="but_validate_workspace" onclick="">Validate workspace</a>
-					<a class="dropdown-item" id="but_save_all_Open_Objects">Save all open elements</a>
+					<a class="dropdown-item" id="but_save_all_Open_Objects">Save all open elements [ctrl + s]</a>
 					<a class="dropdown-item" data-toggle="modal" data-target="#modal_closeEPC">Clear workspace</a>
 
 					<div class="dropdown-divider"></div>
@@ -145,9 +146,10 @@ limitations under the License.
         	<li class="nav-item">
 				<span class="navbar-text" id="ws_sessionMetrics"></span>
 			</li>
-		</ul>
-		<ul class="navbar-nav ml-auto">
-			<li class="nav-item dropdown" id="sessionInfo">
+          
+			<a class="nav-link" data-toggle="modal" data-target="#modal_bug_report"><span class="fas fa-bug"></span> Report bug</a>
+			
+      <li class="nav-item dropdown" id="sessionInfo">
 				<a class="nav-link dropdown-toggle fas fa-user" href="#"
 				role="button" data-toggle="dropdown" aria-haspopup="true"
 				aria-expanded="false"

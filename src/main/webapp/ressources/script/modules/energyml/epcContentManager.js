@@ -16,7 +16,9 @@ limitations under the License.
 import {sendGetURLAndReload, refreshWorkspace} from "../UI/eventHandler.js"
 import {__USER_NAME__, beginTask, endTask, getVueOrientation, setVueOrientation, initRootEltSelector, highlightExistingElt} from "../UI/ui.js"
 import {createCheck} from "../UI/htmlUtils.js"
-import {sendGetURL, sendGetURL_Promise, sendPostRequestJson, getJsonObjectFromServer} from "../requests/requests.js"
+import {closeResqmlObjectContentByUUID} from "../main.js"
+import {sendGetURL, getJsonObjectFromServer, sendPostRequestJson} from "../requests/requests.js"
+import {getAllOpendedObjects} from "../requests/uiRequest.js"
 import {appendConsoleMessage} from "../logs/console.js"
 import {__ENUM_CONSOLE_MSG_SEVERITY_INFO__, __ENUM_CONSOLE_MSG_SEVERITY_WARNING__, 
         __ENUM_CONSOLE_MSG_SEVERITY_ERROR__, __RWS_CLIENT_NAME__, __RWS_SERVER_NAME__, 
@@ -162,43 +164,42 @@ export function resquestCorrection(idConsoleElt, rootUUID, correctionType){
         url += "&uuid=" + rootUUID;
     }
 
-    //console.log("correction request at url " + url);
-    beginTask();
-    
-    return sendGetURL_Promise(url).then(
-            function(responseText){
-                //console.log("Response is : " + responseText)
-                try{
-                    var correctionJSON = JSON.parse(responseText);
+    const openedObjects = getAllOpendedObjects();
 
-                    var msgList = [];
+    return getJsonObjectFromServer(url).then(
+            function(correctionJSON){
+                var msgList = [];
+                msgList.push(
+                    { 
+                        severity: __ENUM_CONSOLE_MSG_SEVERITY_INFO__,
+                        originator: __RWS_CLIENT_NAME__,
+                        message: "CORRECTIONS : " + correctionJSON.length + "\n"
+                    });
+
+                for(var validMsgIdx=0; validMsgIdx<correctionJSON.length; validMsgIdx++){
+                    var msgCorrect = correctionJSON[validMsgIdx];
+                    var msgContent = msgCorrect.date + " : " + msgCorrect.title 
+                                    + " for " +  msgCorrect.rootType 
+                                    + " with uuid " + msgCorrect.rootUUID 
+                                    + " and title " + msgCorrect.rootTitle
+                                    + "\n";
+                    msgContent += "\t" + msgCorrect.msg +"\n";
                     msgList.push(
                         { 
-                            severity: __ENUM_CONSOLE_MSG_SEVERITY_INFO__,
-                            originator: __RWS_CLIENT_NAME__,
-                            message: "CORRECTIONS : " + correctionJSON.length + "\n"
+                            severity: __ENUM_CONSOLE_MSG_SEVERITY_WARNING__,
+                            originator: __RWS_SERVER_NAME__,
+                            message: msgContent
                         });
-
-                    for(var validMsgIdx=0; validMsgIdx<correctionJSON.length; validMsgIdx++){
-                        var msgCorrect = correctionJSON[validMsgIdx];
-                        var msgContent = msgCorrect.date + " : " + msgCorrect.title 
-                                        + " for " +  msgCorrect.rootType 
-                                        + " with uuid " + msgCorrect.rootUUID 
-                                        + " and title " + msgCorrect.rootTitle
-                                        + "\n";
-                        msgContent += "\t" + msgCorrect.msg +"\n";
-                        msgList.push(
-                            { 
-                                severity: __ENUM_CONSOLE_MSG_SEVERITY_WARNING__,
-                                originator: __RWS_SERVER_NAME__,
-                                message: msgContent
-                            });
+                }
+                appendConsoleMessage(idConsoleElt, msgList);
+                beginTask();
+                for(var i=0; i<openedObjects.length; i++){
+                    const currentObj = openedObjects[i];
+                    try{
+                        currentObj.resqmlElt.refresh().catch(err => closeResqmlObjectContentByUUID(currentObj.resqmlElt.rootUUID));
+                    }catch(exep_notRefreshed){
+                        closeResqmlObjectContentByUUID(currentObj.resqmlElt.rootUUID);
                     }
-                    appendConsoleMessage(idConsoleElt, msgList);
-                }catch(exceptResponse){
-                    console.log(exceptResponse);
-                    console.log("no jsonable text : ");
-                    console.log(responseText);
                 }
                 endTask();
             }

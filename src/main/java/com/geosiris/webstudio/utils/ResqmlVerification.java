@@ -521,7 +521,7 @@ public class ResqmlVerification {
                     if(dorType == null || dorType.compareTo(targetType) != 0){
                         modificationOccured = true;
                         try {
-                            ObjectController.editObjectAttribute(dor, "ContentType", EPCGenericManager.getObjectContentType(dorTarget));
+                            ObjectController.editObjectAttribute(dor, "ContentType", EPCGenericManager.getObjectContentType(dorTarget, false));
                         } catch (Exception e) {logger.debug(e.getMessage(), e);}
                     }
                 }
@@ -531,7 +531,7 @@ public class ResqmlVerification {
                     if(dorType == null || dorType.compareTo(targetType) != 0){
                         modificationOccured = true;
                         try {
-                            ObjectController.editObjectAttribute(dor, "QualifiedType", EPCGenericManager.getObjectQualifiedType(dorTarget));
+                            ObjectController.editObjectAttribute(dor, "QualifiedType", EPCGenericManager.getObjectQualifiedType(dorTarget, false));
                         } catch (Exception e) {logger.debug(e.getMessage(), e);}
                     }
                 }
