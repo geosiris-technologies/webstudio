@@ -14,7 +14,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-import {sendGetURL, sendGetURL_Promise, sendPostForm_Func} from "../requests/requests.js"
+import {sendGetURL, sendGetURL_Promise, sendPostForm_Func, getJsonObjectFromServer} from "../requests/requests.js"
 import {createDeleteButton, createDropDownButton, createHoverableHtmlContent, createInputGroup, geosiris_createEditableSelector, getPopoverOpenUUID} from "../UI/htmlUtils.js"
 import {openResqmlObjectContentByUUID, saveResqmlObjectByUUID} from "../main.js"
 import {generateUUID, isResqmlListType, isUUID} from "../common/utils.js"
@@ -1113,24 +1113,16 @@ export class ResqmlElement{
 					}
 				}
 				try{
-					var obj_version_num = "";
-					var obj_pkg = "";
-					var obj_type = "";
+					var match = null;
 					if(contentType != null){
-						const regex_version = /version=([0-9]+(\.[0-9]+))/i;
-						const regex_pkg = /\/x-([a-zA-Z]+)/i;
-						const regex_type = /type=([a-zA-Z_]+)/i;
-						obj_version_num = contentType.match(regex_version)[1];
-						obj_pkg = contentType.match(regex_pkg)[1];
-						obj_type = contentType.match(regex_type)[1];
+						match = contentType.match(/application\/x-(?<pkgName>\w+)\+xml;version=(?<version>[\w\.]+);type=(?<objecType>\w+)/mi);
 					}else if(qualifiedtype != null){
-						const regex_qualified = /(?<pkgName>\w+)(?<version>[\d][\d])\.(?<objecType>\w+)/mi;
-						const match = qualifiedtype.match(regex_qualified);
-						obj_version_num = match.groups["version"];
-						obj_pkg = match.groups["pkgName"];
-						obj_type = match.groups["objecType"];
+						match = qualifiedtype.match(/(?<pkgName>\w+)(?<version>[\w\.]+)\.(?<objecType>\w+)/mi);
 					}
-					const generated_uri = "eml:///" + obj_pkg + obj_version_num.replace(".", "") + "." + obj_type + "(" + contentUUID + ")";
+					var obj_version_num = match.groups["version"];
+					var obj_pkg = match.groups["pkgName"];
+					var obj_type = match.groups["objecType"];
+					const generated_uri = "eml:///" + obj_pkg + (obj_version_num != null ? obj_version_num.replace(".", "") : "") + "." + obj_type + "(" + contentUUID + ")";
 
 					const col1_uri = document.createElement("td");
 					const col1_uri_text = document.createElement("input");
@@ -1143,6 +1135,7 @@ export class ResqmlElement{
 					propTable.appendChild(line);
 				}catch(Except){
 					console.log("unable to generate URI");
+					//console.log(Except);
 				}
 
 			}catch(Except){
