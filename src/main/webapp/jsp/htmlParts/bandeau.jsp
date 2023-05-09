@@ -70,7 +70,7 @@ limitations under the License.
 				<div class="dropdown-menu" aria-labelledby="navbarDropdown">
 					<a class="dropdown-item" data-toggle="modal" data-target="#modal_import_partialEPC">Import file in workspace (EPC/XML/...) [ctrl + i]</a>
 					<a class="dropdown-item" data-toggle="modal" data-target="#modal_exportEPC">Export workspace to EPC file [ctrl + e]</a>
-                	<a class="dropdown-item" data-toggle="modal" data-target="#modal_WorkspaceDict">Show workspace tree</a>
+          <a class="dropdown-item" data-toggle="modal" data-target="#modal_WorkspaceDict">Show workspace tree</a>
 					
 					<div class="dropdown-divider"></div>
 
@@ -146,10 +146,10 @@ limitations under the License.
         	<li class="nav-item">
 				<span class="navbar-text" id="ws_sessionMetrics"></span>
 			</li>
-
+          
 			<a class="nav-link" data-toggle="modal" data-target="#modal_bug_report"><span class="fas fa-bug"></span> Report bug</a>
 			
-			<li class="nav-item dropdown" id="sessionInfo">
+      <li class="nav-item dropdown" id="sessionInfo">
 				<a class="nav-link dropdown-toggle fas fa-user" href="#"
 				role="button" data-toggle="dropdown" aria-haspopup="true"
 				aria-expanded="false"
