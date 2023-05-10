@@ -13,6 +13,7 @@ The WebStudio is a web application that allows to manipulate energyml file (such
 - Generate EPC files
 - Validation of EPC file content
 - Graph and tree visualisation of energyml data
+- 3D data visualization
 
 ## Requirements
 
@@ -24,10 +25,17 @@ The WebStudio is a web application that allows to manipulate energyml file (such
 
 ## Version History
 
-- 1.0.1: 
+- 1.0.1:
     - Initial working Release
-- 1.0.2: 
+- 1.0.2:
     - ETP connexion bug fix
+- 1.0.9:
+    - Better Ui
+    - Possibility to import only some element from an EPC file
+    - 3D vue to visualise some elements from an ETP server. Supported elements : 
+      - TriangualtedSetRepresentation
+      - PolylineSetRepresentation
+      - PointSetRepresentation
 
 ## License
 

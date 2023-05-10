@@ -13,10 +13,7 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 */
-import {SurfaceLoader} from "./surfaceLoader.js";
-
-const __xyz_point_rgx__ = "[-+]?([0-9]*[.])?[0-9]+([eE][-+]?\\d+)?";
-const __xyz_point_regexp__ = new RegExp("\\s*(?<x>"+__xyz_point_rgx__ + ")\\s+(?<y>"+__xyz_point_rgx__ + ")\\s+(?<z>"+__xyz_point_rgx__ + ")\\s*", "");
+import {SurfaceLoader, __XYZ_POINT_REGEXP__} from "./surfaceLoader.js";
 
 export class XYZLoader extends SurfaceLoader{
     constructor(xyzFileContent) {
@@ -38,10 +35,10 @@ export class XYZLoader extends SurfaceLoader{
             if(line.length > 0){
                 if(!sizeFound){
                     console.log(line)
-                    sizeFound = __xyz_point_regexp__.exec(line) != null;
+                    sizeFound = __XYZ_POINT_REGEXP__.exec(line) != null;
                     // console.log(sizeFound)
                 }else{
-                    var matchPoints = __xyz_point_regexp__.exec(line);
+                    var matchPoints = __XYZ_POINT_REGEXP__.exec(line);
                     // TODO : ça marche pas pour les points !
                     if(!(pointsFinished) && matchPoints != null){
                         pointsStart = true;

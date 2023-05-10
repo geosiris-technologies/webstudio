@@ -22,11 +22,11 @@ import { createCube, centerCamera, getPointRayIntersection, createSphere } from 
 import { GeoObject, GeoScene, GeoSceneUi } from './geoScene.js';
 
 // Loaders
-import { OffLoader } from './offLoader.js';
-import { ObjLoader } from './objLoader.js';
-import { XYZLoader } from './xyzLoader.js';
-import { MeshLoader } from './meshLoader.js';
-import { PolylineLoader } from './polylineLoader.js';
+import { OffLoader } from './loaders/offLoader.js';
+import { ObjLoader } from './loaders/objLoader.js';
+import { XYZLoader } from './loaders/xyzLoader.js';
+import { MeshLoader } from './loaders/meshLoader.js';
+import { PolylineLoader } from './loaders/polylineLoader.js';
 
 export function fun_import_surface(geotjs, fileContent, file_name=""){
     if(file_name.endsWith(".off")){
