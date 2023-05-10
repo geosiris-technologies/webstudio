@@ -1,6 +1,21 @@
+/*
+Copyright 2019 GEOSIRIS
+
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+
+    http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+*/
 import * as THREE from 'three';
 import {createToggler, createRadio, createScaler} from "./uiUtils.js";
-import { createMesh, createSegments, createPointCloud, randomColor, centerCamera } from './utils.js';
+import { createMesh, createSegments, createPointCloud, randomColor, centerCamera, centerCameraOnBbox } from './utils.js';
 
 class GeoObject{
 
@@ -29,7 +44,7 @@ class GeoObject{
         if(this.surface_loader.triangles != null && this.surface_loader.triangles.length > 0)
             this.faces = createMesh(this.surface_loader.triangles);
         else
-            this.lines = null;
+            this.faces = null;
 
         this.updateBbox(null);
     }
@@ -153,6 +168,14 @@ class GeoObject{
                 maxZ = pointArray[2];
             }
         });
+
+
+        this.minX = minX;
+        this.minY = minY;
+        this.minZ = minZ;
+        this.maxX = maxX;
+        this.maxY = maxY;
+        this.maxZ = maxZ;
 
 
         return [
@@ -327,6 +350,14 @@ class GeoObject{
     }
 
     lookAtMe(controls){
+        centerCameraOnBbox(
+            controls, 
+            [this.minX, this.minY, this.minZ], 
+            [this.maxX, this.maxY, this.maxZ]
+        );
+    }
+
+    lookAtMeReBBox(controls){
         var bb = new THREE.Box3()
         bb.setFromObject(this.points);
         //console.log(bb.getCenter(controls.target));
@@ -351,6 +382,7 @@ class GeoScene{
 
     // add a GeoObject in the scene
     addObject(geo_object){
+        var recenterCam = this._objectList.length == 0;
         this._objectList.push(geo_object);
         geo_object.scaleX(this.scaleFactors[0]);
         geo_object.scaleY(this.scaleFactors[1]);
@@ -362,6 +394,11 @@ class GeoScene{
                                                             obj: geo_object
                                                         }
         }));
+
+        if(recenterCam && this._objectList.length > 0){
+            this._objectList[0].lookAtMe(this._controls)
+            //this._objectList[0].lookAtMeBarycenter(this._controls)
+        }
     }
 
     removeObject(geo_object){
@@ -385,8 +422,6 @@ class GeoScene{
         }else{
             console.log("not found ")
         }
-
-        
     }
 
     togglePoints(enable = true){
@@ -416,7 +451,7 @@ class GeoScene{
     moveWorld(point_array){
         centerCamera(this._controls, [0,0,0]);
         this._objectList.forEach(obj => {
-            console.log(point_array)
+            //console.log(point_array)
             obj.move(point_array);
         });
     }
@@ -592,7 +627,6 @@ class GeoSceneUi {
             new GeoObjectUi(element, const_this.geo_scene, const_this.sceneObj_list, "li");
         });
     }
-
 }
 
 
