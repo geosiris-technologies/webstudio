@@ -1,3 +1,18 @@
+/*
+Copyright 2019 GEOSIRIS
+
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+
+    http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+*/
 import * as THREE from 'three';
 
 const v3 = THREE.Vector3;
@@ -11,7 +26,7 @@ export function createPointCloud(array, col_mat = randomColor(), material = null
         material = new THREE.PointsMaterial( { color: col_mat, size : point_size } );
     const geometry = new THREE.BufferGeometry().setFromPoints( array.map(parray => new v3(parray[0], parray[1], parray[2])) );
     const pointCloud = new THREE.Points( geometry, material );
-    return pointCloud
+    return pointCloud;
 }
 
 export function createSegments(array, col_mat = randomColor(), material = null, line_width = 1.0){
@@ -19,7 +34,7 @@ export function createSegments(array, col_mat = randomColor(), material = null, 
         material = new THREE.LineBasicMaterial( { color: col_mat, linewidth: line_width } );
     const geometry = new THREE.BufferGeometry().setFromPoints( array.map(parray => new v3(parray[0], parray[1], parray[2])));
     const segments = new THREE.LineSegments( geometry, material );
-    return segments
+    return segments;
 }
 
 
@@ -44,7 +59,7 @@ export function createLineTable(vArray, col_mat){
 
     const geometry = new THREE.BufferGeometry().setFromPoints( vArray );
     const line = new THREE.Line( geometry, material );
-    return line
+    return line;
 }
 
 export function createCube(){
@@ -101,8 +116,19 @@ export function getPointRayIntersection(mouseX, mouseY, camera, obj_list){
 }
 
 export function centerCamera(controls, point_array){
+    //console.log(controls);
     controls.object.position.set( point_array[0], point_array[1], point_array[2] + 10 );
     controls.target.set( point_array[0], point_array[1], point_array[2] );
+    controls.update();
+}
+
+export function centerCameraOnBbox(controls, p_min, p_max){
+    // Center is done on the larger side of the bbox (X or Y)
+    if((p_max[1] - p_min[1]) < (p_max[0] - p_min[0]))
+        controls.object.position.set( (p_min[0] + p_max[0]) * 0.5, p_min[1] + (p_max[1] - p_min[1]) * 2, (p_min[2] + p_max[2]) * 0.5);
+    else
+        controls.object.position.set( p_min[0] + (p_max[0] - p_min[0]) * 2, (p_min[1] + p_max[1]) * 0.5, (p_min[2] + p_max[2]) * 0.5);
+    controls.target.set( (p_min[0] + p_max[0]) * 0.5, (p_min[1] + p_max[1]) * 0.5, (p_min[2] + p_max[2]) * 0.5 );
     controls.update();
 }
 

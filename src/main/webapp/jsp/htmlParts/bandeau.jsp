@@ -22,6 +22,7 @@ limitations under the License.
 <%@ include file="/jsp/htmlParts/modal_WorkspaceDictVue.jsp"%>
 <%@ include file="/jsp/htmlParts/resqmlGraphView.jsp"%>
 <%@ include file="/jsp/htmlParts/modal_bugReport.jsp"%>
+<%@ include file="/jsp/htmlParts/modal_wellcome.jsp"%>
 
 <%@ include file="/jsp/htmlParts/modal_FIRPView.jsp"%>	
 <%@ include file="/jsp/htmlParts/modal_ETP.jsp"%>
@@ -39,6 +40,7 @@ limitations under the License.
 	import {resquestCorrection, resquestValidation} from "/ressources/script/modules/energyml/epcContentManager.js";
 	import {saveAllResqmlObjectContent} from "/ressources/script/modules/requests/uiRequest.js";
 	import {reverseVueOrientation} from "/ressources/script/modules/UI/ui.js";
+	import {refreshWorkspace} from "/ressources/script/modules/UI/eventHandler.js"
 
 	document.getElementById("action-correction-dor").onclick = function(){
 		resquestCorrection(__ID_CONSOLE__, null, 'dor');
@@ -57,6 +59,17 @@ limitations under the License.
 	}
 	document.getElementById("but_validate_workspace").onclick = function(){
 		resquestValidation(__ID_CONSOLE__, null);
+	}
+	document.getElementById("action-load-sample-epc").onclick = function(){
+		const formData  = new FormData();
+		formData.append("loadDefault", "true");
+		fetch("FileReciever", {
+			method: 'POST',
+			body: formData
+		}).then( (response) => {
+			console.log(response);
+			refreshWorkspace();
+		});
 	}
 </script>
 
@@ -99,6 +112,9 @@ limitations under the License.
 					<a class="dropdown-item" id="action-correction-dor">Auto-correct DOR informations</a>
 					<a class="dropdown-item" id="action-correction-versionString">Remove VersionString</a>
 					<a class="dropdown-item" id="action-correction-schemaVersion">Correct SchemaVersion</a>
+					
+					<div class="dropdown-divider"></div>
+					<a class="dropdown-item" id="action-load-sample-epc">Load sample EPC file</a>
 				</div>
 			</li>
             <!-- <li> <button onclick="testFun()">Test</button> </li> -->

@@ -1,7 +1,20 @@
-import {SurfaceLoader} from "./surfaceLoader.js";
+/*
+Copyright 2019 GEOSIRIS
 
-const __off_point_rgx__ = "[-+]?([0-9]*[.])?[0-9]+([eE][-+]?\\d+)?";
-const __off_point_regexp__ = new RegExp("\\s*(?<x>"+__off_point_rgx__ + ")\\s+(?<y>"+__off_point_rgx__ + ")\\s+(?<z>"+__off_point_rgx__ + ")\\s*", "");
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+
+    http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+*/
+import {SurfaceLoader, __XYZ_POINT_REGEXP__} from "./surfaceLoader.js";
+
 const __off_tr_regexp__ = new RegExp("\\s*(?<nbPoints>\\d+)\\s+(?<p0>\\d+)\\s+(?<p1>\\d+)\\s+(?<p2>\\d+).*", "");
 
 export class OffLoader extends SurfaceLoader{
@@ -24,14 +37,14 @@ export class OffLoader extends SurfaceLoader{
             var line = fileContentArray[lineIdx];
             if(line.length > 0){
                 if(!sizeFound){
-                    var sizesMatch = __off_point_regexp__.exec(line);
+                    var sizesMatch = __XYZ_POINT_REGEXP__.exec(line);
                     if(sizesMatch != null){
                         sizeFound = true;
                         // console.log(sizeFound)
                         nbPoints = sizesMatch.groups["x"];
                     }
                 }else{
-                    var matchPoints = __off_point_regexp__.exec(line);
+                    var matchPoints = __XYZ_POINT_REGEXP__.exec(line);
                     // TODO : ça marche pas pour les points !
                     if(!(pointsFinished) && matchPoints != null && nbPoints > this.points.length){
                         pointsStart = true;
@@ -45,7 +58,7 @@ export class OffLoader extends SurfaceLoader{
                         }else{
                             /*console.log("|"+line+"| ");
                             console.log(__off_tr_regexp__.exec(line));
-                            console.log(__off_point_regexp__.exec(line));*/
+                            console.log(__XYZ_POINT_REGEXP__.exec(line));*/
                         }
                     }else{
                         /*console.log("===");

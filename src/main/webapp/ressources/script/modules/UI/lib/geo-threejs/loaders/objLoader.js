@@ -1,7 +1,21 @@
-import {SurfaceLoader} from "./surfaceLoader.js";
+/*
+Copyright 2019 GEOSIRIS
 
-const __obj_point_rgx__ = "[-+]?([0-9]*[.])?[0-9]+([eE][-+]?\\d+)?";
-const __obj_point_regexp__ = new RegExp("\\s*[vV]\\s+(?<x>"+__obj_point_rgx__ + ")\\s+(?<y>"+__obj_point_rgx__ + ")\\s+(?<z>"+__obj_point_rgx__ + ")\\s*", "");
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+
+    http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+*/
+import {SurfaceLoader, __XYZ_COORD_RGX__} from "./surfaceLoader.js";
+
+const __obj_point_regexp__ = new RegExp("\\s*[vV]\\s+(?<x>"+__XYZ_COORD_RGX__ + ")\\s+(?<y>"+__XYZ_COORD_RGX__ + ")\\s+(?<z>"+__XYZ_COORD_RGX__ + ")\\s*", "");
 const __obj_tr_point_rgx__ = "\\d+(/\\d+)*";
 const __obj_tr_regexp__ = new RegExp("\\s*f\\s+(?<p0>"+__obj_tr_point_rgx__+")\\s+(?<p1>"+__obj_tr_point_rgx__+")\\s+(?<p2>"+__obj_tr_point_rgx__+")\\s*", "");
 

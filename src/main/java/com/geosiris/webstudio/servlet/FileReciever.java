@@ -462,6 +462,20 @@ public class FileReciever extends HttpServlet {
                             // We close the epc and remove all data
                             closeEPC(session);
                         }
+                    } else if (item.getFieldName().compareTo("loadDefault") == 0) {
+                        String fieldValue = Streams.asString(stream);
+                            System.out.println("Loading url EPC default : fieldValue == " + fieldValue);
+                        if (fieldValue.toLowerCase().compareTo("true") == 0) {
+                            System.out.println("Loading url EPC default : " + SessionUtility.wsProperties.getDefaultDataEPCUrl());
+                            try {
+                                URL epcURL = new URL(SessionUtility.wsProperties.getDefaultDataEPCUrl());
+                                InputStream epcFile = new BufferedInputStream(epcURL.openStream());
+                                WorkspaceContent currentFile = readFile(session, epcFile, "");
+                                loadedEPC.putAll(currentFile);
+                            } catch (Exception e) {
+                                logger.error(e.getMessage(), e);
+                            }
+                        }
                     } else {
                         logger.error("FileReciever : not readable parameter : '" + item.getFieldName()
                                 + "' for file " + item.getName());

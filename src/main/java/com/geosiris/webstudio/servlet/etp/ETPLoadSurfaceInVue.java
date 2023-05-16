@@ -108,7 +108,7 @@ public class ETPLoadSurfaceInVue extends HttpServlet {
         List<Map<String, String>> surfaces = new ArrayList<>();
         for(ETPUri etpUri: mapUri.values()) {
             try {
-                surfaces.add( ETPUtils.getOffFile(etpClient, etpUri.toString(), false));
+                surfaces.add( ETPUtils.get3DFileFromETP(etpClient, etpUri.toString(), false));
             } catch (JAXBException e) {
                 logger.error(e.getMessage(), e);
             }

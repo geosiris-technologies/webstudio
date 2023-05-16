@@ -1,15 +1,32 @@
+/*
+Copyright 2019 GEOSIRIS
+
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+
+    http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+*/
 import * as THREE from 'three';
 
 import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
+import { TrackballControls } from 'three/addons/controls/TrackballControls.js';
 
 import { createCube, centerCamera, getPointRayIntersection, createSphere } from './utils.js';
 import { GeoObject, GeoScene, GeoSceneUi } from './geoScene.js';
 
 // Loaders
-import { OffLoader } from './offLoader.js';
-import { ObjLoader } from './objLoader.js';
-import { XYZLoader } from './xyzLoader.js';
-import { MeshLoader } from './meshLoader.js';
+import { OffLoader } from './loaders/offLoader.js';
+import { ObjLoader } from './loaders/objLoader.js';
+import { XYZLoader } from './loaders/xyzLoader.js';
+import { MeshLoader } from './loaders/meshLoader.js';
+import { PolylineLoader } from './loaders/polylineLoader.js';
 
 export function fun_import_surface(geotjs, fileContent, file_name=""){
     if(file_name.endsWith(".off")){
@@ -21,6 +38,9 @@ export function fun_import_surface(geotjs, fileContent, file_name=""){
     }else if(file_name.endsWith(".mesh")){
         console.log("reading mesh");
         geotjs.geoScene.addObject(new GeoObject(new MeshLoader(fileContent), file_name));
+    }else if(file_name.endsWith(".polyline")){
+        console.log("reading polyline");
+        geotjs.geoScene.addObject(new GeoObject(new PolylineLoader(fileContent), file_name));
     }else{
         console.log("reading obj");
         geotjs.geoScene.addObject(new GeoObject(new ObjLoader(fileContent), file_name));
@@ -94,7 +114,7 @@ export class GeoThreeJS{
     setupControls(){
         if(this.controls != null)
             this.controls.dispose();
-
+        //this.controls = new TrackballControls(this.camera, this.renderer.domElement);
         this.controls = new OrbitControls (this.camera, this.renderer.domElement);
         this.controls.mouseButtons = {
             LEFT: THREE.MOUSE.ROTATE,
@@ -108,7 +128,7 @@ export class GeoThreeJS{
         this.isAnimated = true;
         const const_this = this;
         try{
-            requestAnimationFrame( function(){const_this.animate()} );
+            requestAnimationFrame( () => const_this.animate() );
             this.controls.update();
             if(this.DO_ANIMATE){
                 this.renderer.render( this.scene, this.camera );

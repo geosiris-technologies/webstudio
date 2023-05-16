@@ -40,10 +40,7 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.eclipse.jetty.http.HttpURI;
 
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -150,7 +147,9 @@ public class ETPUtils {
         return establishConnexionForClient(session, host, userName, password, false);
     }
 
-    public static Map<String, String> getOffFile(ETPClient etpClient, String uri, Boolean normalizePosition) throws JAXBException {
+    public static Map<String, String> get3DFileFromETP(ETPClient etpClient, String uri, Boolean normalizePosition) throws JAXBException {
+        Map<String, String> surfMap = new HashMap<>();
+
         String fileContent = ETPHelper.sendGetDataObjects_pretty(etpClient, Arrays.asList(new String[]{uri}), "xml", 50000).get(0);
         Object resqmlObj = Editor.pkgManager.unmarshal(fileContent).getValue();
 
@@ -179,7 +178,13 @@ public class ETPUtils {
 
                 for (int patchPart_idx = 0; patchPart_idx < pointsExtArray.size(); patchPart_idx++) {
                     String pathInExternalFile_point = (String) ObjectController.getObjectAttributeValue(pointsExtArray.get(patchPart_idx), "PathInExternalFile");
+                    if(pathInExternalFile_point == null){
+                        pathInExternalFile_point = (String) ObjectController.getObjectAttributeValue(trianglesExtArray.get(patchPart_idx), "PathInHdfFile");
+                    }
                     String pathInExternalFile_triangles = (String) ObjectController.getObjectAttributeValue(trianglesExtArray.get(patchPart_idx), "PathInExternalFile");
+                    if(pathInExternalFile_triangles == null){
+                        pathInExternalFile_triangles = (String) ObjectController.getObjectAttributeValue(trianglesExtArray.get(patchPart_idx), "PathInHdfFile");
+                    }
 
                     List<Number> allpoints = ETPHelper.sendGetDataArray_prettier(etpClient, uri, pathInExternalFile_point, 5000, true);
                     List<Number> alltriangles = ETPHelper.sendGetDataArray_prettier(etpClient, uri, pathInExternalFile_triangles, 5000, true);
@@ -201,22 +206,70 @@ public class ETPUtils {
                     offsetPoints += allpoints.size() / 3;
                 }
             }
+
+            StringBuilder result = new StringBuilder();
+            result.append("OFF\n\n");
+            result.append(nbPoints).append(" ").append(nbfaces).append(" ").append("0\n");
+            result.append(off_points).append("\n");
+            result.append(off_triangles);
+
+            surfMap.put("data", result.toString());
+            surfMap.put("fileType", "off");
+            surfMap.put("type", resqmlObj.getClass().getSimpleName());
+            surfMap.put("uuid", uuid);
+            surfMap.put("title", title);
         } else if(resqmlObj.getClass().getSimpleName().compareToIgnoreCase("PolylineSetRepresentation") == 0)  {
+            StringBuilder result = new StringBuilder();
+
             List<Object> patchs = (List<Object>) ObjectController.getObjectAttributeValue(resqmlObj, "linePatch");
             for (Object patch : patchs) {
                 List<Object> pointsExtArray = ObjectController.findSubObjects(ObjectController.getObjectAttributeValue(patch, "geometry"), "ExternalDataArrayPart", true);
+                List<Object> nodeCountExtArray = ObjectController.findSubObjects(ObjectController.getObjectAttributeValue(patch, "NodeCountPerPolyline"), "ExternalDataArrayPart", true);
                 assert pointsExtArray.size() > 0;
+
+                List<List<Number>> pointPerElt = new ArrayList<>();
                 for (Object patchPart : pointsExtArray) {
                     String pathInExternalFile_point = (String) ObjectController.getObjectAttributeValue(patchPart, "PathInExternalFile");
-                    List<Number> allpoints = ETPHelper.sendGetDataArray_prettier(etpClient, uri, pathInExternalFile_point, 5000, true);
-                    for (int p_idx = 0; p_idx < allpoints.size() - 2; p_idx += 3) {
-                        off_points.append(allpoints.get(p_idx).floatValue()).append(" ");
-                        off_points.append(allpoints.get(p_idx + 1).floatValue()).append(" ");
-                        off_points.append(allpoints.get(p_idx + 2).floatValue()).append("\n");
-                        nbPoints++;
+                    if(pathInExternalFile_point == null){
+                        pathInExternalFile_point = (String) ObjectController.getObjectAttributeValue(patchPart, "PathInHdfFile");
+                    }
+                    pointPerElt.add(ETPHelper.sendGetDataArray_prettier(etpClient, uri, pathInExternalFile_point, 5000, true));
+//                    for(Number n: pointPerElt.get(pointPerElt.size()-1)){
+//                        logger.debug(n);
+//                    }
+                    logger.debug("pointPerElt size" + pointPerElt.get(0).size());
+                }
+
+                for (int nc_i=0; nc_i<nodeCountExtArray.size(); nc_i++) {
+                    Object nodeCountExt = nodeCountExtArray.get(nc_i);
+                    String pathInExternalFile_point = (String) ObjectController.getObjectAttributeValue(nodeCountExt, "PathInExternalFile");
+                    if(pathInExternalFile_point == null){
+                        pathInExternalFile_point = (String) ObjectController.getObjectAttributeValue(nodeCountExt, "PathInHdfFile");
+                    }
+                    List<Number> nodeCounts = ETPHelper.sendGetDataArray_prettier(etpClient, uri, pathInExternalFile_point, 5000, true);
+                    for(Number n: nodeCounts){
+                        logger.debug(n);
+                    }
+                    int idx = 0;
+                    for(Number size: nodeCounts){
+                        try {
+                            for (int i=0; i < size.intValue(); i++) {
+                                result.append(pointPerElt.get(nc_i).get(idx * 3).floatValue()).append(" ");
+                                result.append(pointPerElt.get(nc_i).get(idx * 3 + 1).floatValue()).append(" ");
+                                result.append(pointPerElt.get(nc_i).get(idx * 3 + 2).floatValue()).append(" ");
+                                idx++;
+                            }
+                            result.append("\n");
+                        }catch (Exception e){logger.error(e);}
                     }
                 }
             }
+
+            surfMap.put("data", result.toString());
+            surfMap.put("fileType", "polyline");
+            surfMap.put("type", resqmlObj.getClass().getSimpleName());
+            surfMap.put("uuid", uuid);
+            surfMap.put("title", title);
         } else if(resqmlObj.getClass().getSimpleName().compareToIgnoreCase("PointSetRepresentation") == 0)  {
             List<Object> patchs = (List<Object>) ObjectController.getObjectAttributeValue(resqmlObj, "NodePatchGeometry");
             for (Object patch : patchs) {
@@ -224,6 +277,9 @@ public class ETPUtils {
                 assert pointsExtArray.size() > 0;
                 for (Object patchPart : pointsExtArray) {
                     String pathInExternalFile_point = (String) ObjectController.getObjectAttributeValue(patchPart, "PathInExternalFile");
+                    if(pathInExternalFile_point == null){
+                        pathInExternalFile_point = (String) ObjectController.getObjectAttributeValue(patchPart, "PathInHdfFile");
+                    }
                     List<Number> allpoints = ETPHelper.sendGetDataArray_prettier(etpClient, uri, pathInExternalFile_point, 5000, true);
                     for (int p_idx = 0; p_idx < allpoints.size() - 2; p_idx += 3) {
                         off_points.append(allpoints.get(p_idx).floatValue()).append(" ");
@@ -233,20 +289,19 @@ public class ETPUtils {
                     }
                 }
             }
+
+            StringBuilder result = new StringBuilder();
+            result.append("OFF\n\n");
+            result.append(nbPoints).append(" ").append(nbfaces).append(" ").append("0\n");
+            result.append(off_points).append("\n");
+            result.append(off_triangles);
+
+            surfMap.put("data", result.toString());
+            surfMap.put("fileType", "off");
+            surfMap.put("type", resqmlObj.getClass().getSimpleName());
+            surfMap.put("uuid", uuid);
+            surfMap.put("title", title);
         }
-
-        StringBuilder result = new StringBuilder();
-        result.append("OFF\n\n");
-        result.append(nbPoints).append(" ").append(nbfaces).append(" ").append("0\n");
-        result.append(off_points).append("\n");
-        result.append(off_triangles);
-
-        Map<String, String> surfMap = new HashMap<>();
-        surfMap.put("data", result.toString());
-        surfMap.put("fileType", "off");
-        surfMap.put("type", resqmlObj.getClass().getSimpleName());
-        surfMap.put("uuid", uuid);
-        surfMap.put("title", title);
         return surfMap;
     }
 
