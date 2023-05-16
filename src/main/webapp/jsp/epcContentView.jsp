@@ -20,7 +20,6 @@ limitations under the License.
 <% 
 	String userName = (String) request.getAttribute("login");
 	String userGrp  = (String) request.getAttribute("user_grp");
-	String GEOSIRIS_ENV_PRODUCTION_TYPE = (String) request.getAttribute("GEOSIRIS_ENV_PRODUCTION_TYPE");
 	String GEOSIRIS_ENV_CONFIG_TYPE = (String) request.getAttribute("GEOSIRIS_ENV_CONFIG_TYPE");
 %>
 
@@ -51,7 +50,10 @@ public Boolean restrictedExperiment(String prod_type){
 
 <% 
 	// TODO : changer pour faire des fichiers specifiques pour les tests plutot que mettre cette variable
-	out.print("<script>var GEOSIRIS_ENV_PRODUCTION_TYPE='"+GEOSIRIS_ENV_PRODUCTION_TYPE+"';</script>");
+	String GEOSIRIS_ENV_PRODUCTION_TYPE = (String) request.getAttribute("GEOSIRIS_ENV_PRODUCTION_TYPE");
+	out.print("<script>const GEOSIRIS_ENV_PRODUCTION_TYPE='"+GEOSIRIS_ENV_PRODUCTION_TYPE+"';</script>");
+	String GEOSIRIS_ENV_WEBSTUDIO_SESSION_CREATION_DATE = (String) request.getAttribute("GEOSIRIS_ENV_WEBSTUDIO_SESSION_CREATION_DATE");
+	out.print("<script>const GEOSIRIS_ENV_WEBSTUDIO_SESSION_CREATION_DATE='" + GEOSIRIS_ENV_WEBSTUDIO_SESSION_CREATION_DATE + "';</script>");
 %>
 
 <script type="module">

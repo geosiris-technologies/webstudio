@@ -36,6 +36,9 @@ import {GeoThreeJS, fun_import_surface} from "./UI/lib/geo-threejs/geo-threejs.j
 export let geo3DVue = null;
 
 export function initWebStudioView(){
+
+    welcomeMessage();
+
     createSplitter("#cyGrapher","#graphElementChecked", 65, 30, null, 55, 16);
     try{setVueOrientation("right", false);}catch(err){console.log(err);}
     try{initSessionLogEventHandler(__ID_CONSOLE__);}catch(err){console.log(err);}
@@ -137,6 +140,17 @@ export function initWebStudioView(){
             $("#modal_import_partialEPC").modal();
         }
     });
+}
+
+
+export function welcomeMessage(){
+    try{
+        if(parseInt(Date.now()) - parseInt(GEOSIRIS_ENV_WEBSTUDIO_SESSION_CREATION_DATE) < 10000){
+            $("#modal_welcome").modal();
+        }
+    }catch(e){
+        console.log(e);
+    }
 }
 
 

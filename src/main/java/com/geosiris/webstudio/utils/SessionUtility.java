@@ -71,6 +71,7 @@ public class SessionUtility {
             return false;
         }
         HttpSession session = request.getSession(false);
+        request.setAttribute("GEOSIRIS_ENV_WEBSTUDIO_SESSION_CREATION_DATE", session.getCreationTime() + "");
 
         String userName = (String) session.getAttribute(SESSION_USER_NAME);
         if(userName == null){

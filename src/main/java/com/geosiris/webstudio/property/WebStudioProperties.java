@@ -34,6 +34,8 @@ public class WebStudioProperties extends Properties {
     protected String fpathToAccessibleDORMapping;
     protected String dirPathToComments;
     protected String dirPathToExtTypes;
+    
+    protected String defaultDataEPCUrl;
 
     protected String pluginsDirPath;
 
@@ -135,6 +137,14 @@ public class WebStudioProperties extends Properties {
 
     public void setDirPathToExtTypes(String dirPathToExtTypes) {
         this.dirPathToExtTypes = dirPathToExtTypes;
+    }
+
+    public String getDefaultDataEPCUrl() {
+        return defaultDataEPCUrl != null ?defaultDataEPCUrl : "http://geosiris.com/wp-content/uploads/2023/05/Volve_Horizons_and_Faults_Depth_originEQN_Plus_fix.epc";
+    }
+
+    public void setDefaultDataEPCUrl(String defaultDataEPCUrl) {
+        this.defaultDataEPCUrl = defaultDataEPCUrl;
     }
 
     public Map<String, String> getXSDFilePaths(){

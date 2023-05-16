@@ -120,6 +120,7 @@ limitations under the License.
 					<div class="modal-body">
 						<label name="epcInputLabel">EPC file</label> 
 						<input id="import_partialEPC_FromDisk_inputFile" class="form-control-file border" type="file" name="epcInputURL" multiple>
+						<p>Element highlighted are already present in your workspace</p>
 					</div>
 					<div class="modal-body" id="import_partialEPC_FromDisk_inputFile_content">
 					</div>
