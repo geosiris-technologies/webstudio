@@ -157,7 +157,16 @@ export function loadUrisIn3DVue(){
                 console.log("3D vue is Loading " + jsonValueList.length + " entities");
                 jsonValueList.forEach(obj =>{
                     try{
-                        geo3DVue.importSurface(obj["data"], obj["type"] + "_" + obj["uuid"] + "[" + obj["title"] + "]." + obj["fileType"]);
+                        geo3DVue.importSurface(
+                          obj["data"],
+                          obj["fileType"],
+                          obj["type"],
+                          obj["uuid"],
+                          obj["title"],
+                          obj["pointColor"],
+                          obj["lineColor"],
+                          obj["faceColor"]
+                        );
                     }catch(exception){
                         console.log(fileContent);
                         console.log(exception);

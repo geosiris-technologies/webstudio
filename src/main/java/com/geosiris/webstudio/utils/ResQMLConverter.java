@@ -18,6 +18,7 @@ package com.geosiris.webstudio.utils;
 import com.geosiris.energyml.utils.ObjectController;
 import com.geosiris.webstudio.servlet.Editor;
 import com.geosiris.webstudio.utils.ResqmlObjectControler.ModficationType;
+import jakarta.servlet.http.HttpSession;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -26,7 +27,7 @@ import java.util.Map;
 public class ResQMLConverter {
     public static Logger logger = LogManager.getLogger(ResQMLConverter.class);
 
-	public static Object getCopy(final Object resqmlObject, final Map<String, Object> epcObjects) {
+	public static Object getCopy(HttpSession session, final Object resqmlObject, final Map<String, Object> epcObjects) {
 		if(resqmlObject!=null) {
 			Object target = null;
 			try {
@@ -41,7 +42,7 @@ public class ResQMLConverter {
 					String path = tree.getName().toLowerCase();
 					if(path.compareTo(".schemaversion") != 0 // On ne copie pas le schema version
 						&& path.compareTo(".uuid") != 0)	
-						copyValue(tree, targetF, resqmlObject, epcObjects);
+						copyValue(session, tree, targetF, resqmlObject, epcObjects);
 				}), true, true);
 				return targetF;
 			}
@@ -49,7 +50,7 @@ public class ResQMLConverter {
 		return null;
 	}
 
-	private static void copyValue(ObjectTree source, Object target, final Object sourceObject, Map<String, Object> epcObjects) {
+	private static void copyValue(HttpSession session, ObjectTree source, Object target, final Object sourceObject, Map<String, Object> epcObjects) {
 		if(source.getName().length()>0 //(source.getProperties()==null || source.getProperties().size()==0)
 				&& target != null
 				) {
@@ -67,7 +68,7 @@ public class ResQMLConverter {
 				if(source.getData()!=null && !source.getData().getClass().getName().contains("energyml")) {
 					logger.error("Editing copy value : " + source.getName() + " '" + oldValue +"' new val '"+source.getData()+"'");
 					try {
-						ResqmlObjectControler.modifyResqmlObjectFromParameter(target, source.getName(), 
+						ResqmlObjectControler.modifyResqmlObjectFromParameter(session, target, source.getName(),
 								ModficationType.EDITION, 
 								source.getData(), 
 								epcObjects);

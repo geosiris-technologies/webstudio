@@ -28,22 +28,37 @@ import { XYZLoader } from './loaders/xyzLoader.js';
 import { MeshLoader } from './loaders/meshLoader.js';
 import { PolylineLoader } from './loaders/polylineLoader.js';
 
-export function fun_import_surface(geotjs, fileContent, file_name=""){
-    if(file_name.endsWith(".off")){
+export function fun_import_surface(
+  geotjs,
+  data,
+  fileType,
+  type=null,
+  uuid=null,
+  title=null,
+  pointColor=null,
+  lineColor=null,
+  faceColor=null,
+){
+    var name = fileType;
+    if(type != null && uuid != null && title != null){
+      name = type + "_" + uuid + "[" + title + "]";
+    }
+
+    if(fileType.endsWith("off")){
         console.log("reading off");
-        geotjs.geoScene.addObject(new GeoObject(new OffLoader(fileContent), file_name));
-    }else if(file_name.endsWith(".xyz")){
+        geotjs.geoScene.addObject(new GeoObject(new OffLoader(data), name, pointColor, lineColor, faceColor));
+    }else if(fileType.endsWith("xyz")){
         console.log("reading xyz");
-        geotjs.geoScene.addObject(new GeoObject(new XYZLoader(fileContent), file_name));
-    }else if(file_name.endsWith(".mesh")){
+        geotjs.geoScene.addObject(new GeoObject(new XYZLoader(data), name, pointColor, lineColor, faceColor));
+    }else if(fileType.endsWith("mesh")){
         console.log("reading mesh");
-        geotjs.geoScene.addObject(new GeoObject(new MeshLoader(fileContent), file_name));
-    }else if(file_name.endsWith(".polyline")){
+        geotjs.geoScene.addObject(new GeoObject(new MeshLoader(data), name, pointColor, lineColor, faceColor));
+    }else if(fileType.endsWith("polyline")){
         console.log("reading polyline");
-        geotjs.geoScene.addObject(new GeoObject(new PolylineLoader(fileContent), file_name));
+        geotjs.geoScene.addObject(new GeoObject(new PolylineLoader(data), name, pointColor, lineColor, faceColor));
     }else{
         console.log("reading obj");
-        geotjs.geoScene.addObject(new GeoObject(new ObjLoader(fileContent), file_name));
+        geotjs.geoScene.addObject(new GeoObject(new ObjLoader(data), name, pointColor, lineColor, faceColor));
     }
     geotjs.animate();
 }
@@ -144,7 +159,7 @@ export class GeoThreeJS{
         this.setupControls();
 
         if(this.createSceneUi){
-            this.geoScene = new GeoScene(this.scene, this.controls);
+            this.geoScene = new GeoScene(this.scene, this.controls, this);
             this.geoUi = new GeoSceneUi(this.geoScene, this.sceneUIElt);
             this.sceneUIElt.addEventListener(GeoScene.EVT_RESET_CONTROLS, (e) => {
                 const_this.setupControls();
@@ -155,7 +170,15 @@ export class GeoThreeJS{
         return this.domElt;
     }
 
-    importSurface(fileContent, fileName){
-        fun_import_surface(this, fileContent, fileName);
+    importSurface(
+      data,
+      fileType,
+      type=null,
+      uuid=null,
+      title=null,
+      pointColor=null,
+      lineColor=null,
+      faceColor=null){
+        fun_import_surface(this, data, fileType, type, uuid, title, pointColor, lineColor, faceColor);
     }
 }

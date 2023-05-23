@@ -119,7 +119,10 @@ export function initWebStudioView(){
             updateGetRelatedETPTableContent(relations);
             endETPRequest();
             update_etp_connexion_views();
-        }).catch((error) => console.error(error));
+        }).catch((error) => {
+          console.error(error);
+          endETPRequest();
+        });
     });
 
     /* Other actions */

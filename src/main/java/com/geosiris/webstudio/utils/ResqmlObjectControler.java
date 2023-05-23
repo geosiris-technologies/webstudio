@@ -17,8 +17,11 @@ package com.geosiris.webstudio.utils;
 
 import com.geosiris.energyml.utils.EPCGenericManager;
 import com.geosiris.energyml.utils.ObjectController;
+import com.geosiris.etp.utils.ETPUri;
+import com.geosiris.webstudio.property.ConfigurationType;
 import com.geosiris.webstudio.servlet.Editor;
 import com.geosiris.webstudio.servlet.global.ResqmlAccessibleTypes;
+import jakarta.servlet.http.HttpSession;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -35,14 +38,14 @@ public class ResqmlObjectControler {
     public static Logger logger = LogManager.getLogger(ResqmlObjectControler.class);
 
 
-    public static void modifyResqmlObjectFromParameter(Object resqmlObj, String paramPath,
+    public static void modifyResqmlObjectFromParameter(HttpSession session, Object resqmlObj, String paramPath,
                                                        ModficationType modifType, Object value,
                                                        Map<String, Object> epcObjects
     ) throws Exception {
-        modifyResqmlObjectFromParameter(resqmlObj, paramPath, modifType, value, epcObjects, paramPath, resqmlObj);
+        modifyResqmlObjectFromParameter(session, resqmlObj, paramPath, modifType, value, epcObjects, paramPath, resqmlObj);
     }
 
-    public static void modifyResqmlObjectFromParameter(Object resqmlObj, String paramPath,
+    public static void modifyResqmlObjectFromParameter(HttpSession session, Object resqmlObj, String paramPath,
                                                        ModficationType modifType, Object value,
                                                        Map<String, Object> epcObjects,
                                                        String completePath,
@@ -165,7 +168,7 @@ public class ResqmlObjectControler {
                         }
                     }
                     //logger.error("new assignable : " + listObjectContent);
-                    modifyResqmlObjectFromParameter(listObjectContent,
+                    modifyResqmlObjectFromParameter(session, listObjectContent,
                             paramPath.substring(paramPath.indexOf(".")), modifType, value,
                             epcObjects, completePath, rootObject);
                 }
@@ -228,7 +231,15 @@ public class ResqmlObjectControler {
                             } else {    // si on tombe sur un String alors que ce n'est pas ce qui est attendu par 'paramClass' c'est que
                                 // l'objet final va etre cree en parsant le string (e.g. DataObjectReference)
                                 try {
-                                    valueToAssign = Editor.pkgManager.createInstance(paramClass.getName(), epcObjects, value);
+                                    ETPUri uri = ETPUri.parse(value + "");
+                                    if (SessionUtility.configIsMoreVerborseThan(ConfigurationType.debug))
+                                        logger.debug("Creating elt " + paramClass.getName() + " from string : '" + value + "'");
+                                    if(paramClass.getName().toLowerCase().endsWith("reference") && uri.getUuid() != null){
+                                        // If we want to create a dor from an ETP uri
+                                        valueToAssign = ETPUtils.createDORFromUri(session, paramClass.getName(), uri);
+                                    }else {
+                                        valueToAssign = Editor.pkgManager.createInstance(paramClass.getName(), epcObjects, value);
+                                    }
                                 } catch (Exception exceptEditMethodParamFail) {
                                     logger.error("Err in @modifyResqmlObjectFromParameter could not get edit method parameter class for object " + objClass
                                             + " and method is " + editMethod);
@@ -280,24 +291,26 @@ public class ResqmlObjectControler {
                         // elements qu'il faut
 //                        logger.info("DOR uuid compare ["+simplePath+"]" + ObjectController.getObjectAttributeValue(resqmlObj, simplePath + ".uuid") + " =?= " + value);
                         if(("" + ObjectController.getObjectAttributeValue(resqmlObj, simplePath + ".uuid")).compareTo(""+value) != 0){
-                            ResqmlObjectControler.modifyResqmlObjectFromParameter(resqmlObj, simplePath,
+                            ResqmlObjectControler.modifyResqmlObjectFromParameter(session, resqmlObj, simplePath,
                                     ModficationType.EDITION,
                                     null,
                                     epcObjects);
                             logger.info("removing DOR to replace it '" + simplePath + "' " + paramVal);
-                            modifyResqmlObjectFromParameter(resqmlObj, paramPath.substring(0, paramPath.indexOf(".")), modifType, value, epcObjects, completePath, rootObject);
+                            modifyResqmlObjectFromParameter(session, resqmlObj, paramPath.substring(0, paramPath.indexOf(".")), modifType, value, epcObjects, completePath, rootObject);
                             return;// On sort apres avoir modifie le DOR car on ne fait pas de modification, il sera
                             // cree par l'uuid
                         }
+                    }else{
+                        logger.debug("Modification not specific for : " + paramPath + " - " + value);
                     }
-                    modifyResqmlObjectFromParameter(paramVal, paramPath.substring(paramPath.indexOf(".")), modifType, value, epcObjects, completePath, rootObject);
+                    modifyResqmlObjectFromParameter(session, paramVal, paramPath.substring(paramPath.indexOf(".")), modifType, value, epcObjects, completePath, rootObject);
                 }
             }
         }
     }
 
 
-    public static void prefillActivityFromTemplate(Object activityTemplate, Object activity) {
+    public static void prefillActivityFromTemplate(HttpSession session, Object activityTemplate, Object activity) {
         List<Object> paramListA = (List<Object>) ObjectController.getObjectAttributeValue(activity, ".Parameter");
         if (paramListA.size() <= 0) {
             List<Object> paramListTempl = (List<Object>) ObjectController.getObjectAttributeValue(activityTemplate, ".Parameter");
@@ -349,12 +362,12 @@ public class ResqmlObjectControler {
                             } else {
                                 logger.info("taking default value " + defaultValue);
                                 // If there is a default value, we copy it and add it to the activity parameter list
-                                defaultValue = ResQMLConverter.getCopy(defaultValue, new HashMap<>());
+                                defaultValue = ResQMLConverter.getCopy(session, defaultValue, new HashMap<>());
                             }
-                            ResqmlObjectControler.modifyResqmlObjectFromParameter(defaultValue, "Title",
+                            ResqmlObjectControler.modifyResqmlObjectFromParameter(session, defaultValue, "Title",
                                     ModficationType.EDITION,
                                     title, new HashMap<>());
-                            ResqmlObjectControler.modifyResqmlObjectFromParameter(defaultValue, "Index",
+                            ResqmlObjectControler.modifyResqmlObjectFromParameter(session, defaultValue, "Index",
                                     ModficationType.EDITION,
                                     "" + cpt, new HashMap<>());
 

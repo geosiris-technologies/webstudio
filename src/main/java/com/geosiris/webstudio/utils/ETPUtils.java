@@ -15,7 +15,11 @@ limitations under the License.
 */
 package com.geosiris.webstudio.utils;
 
+import Energistics.Etp.v12.Datatypes.Object.ContextScopeKind;
+import Energistics.Etp.v12.Datatypes.Object.Resource;
 import Energistics.Etp.v12.Datatypes.ServerCapabilities;
+import Energistics.Etp.v12.Protocol.Discovery.GetResources;
+import Energistics.Etp.v12.Protocol.Discovery.GetResourcesResponse;
 import com.geosiris.energyml.utils.ObjectController;
 import com.geosiris.etp.communication.ClientInfo;
 import com.geosiris.etp.communication.ConnectionType;
@@ -27,11 +31,13 @@ import com.geosiris.etp.protocols.handlers.DataArrayHandler;
 import com.geosiris.etp.protocols.handlers.DataspaceHandler;
 import com.geosiris.etp.protocols.handlers.DiscoveryHandler;
 import com.geosiris.etp.protocols.handlers.StoreHandler;
+import com.geosiris.etp.utils.ETPDefaultProtocolBuilder;
 import com.geosiris.etp.utils.ETPHelper;
 import com.geosiris.etp.utils.ETPUri;
 import com.geosiris.etp.websocket.ETPClient;
 import com.geosiris.webstudio.etp.*;
 import com.geosiris.webstudio.logs.ServerLogMessage;
+import com.geosiris.webstudio.model.ETP3DObject;
 import com.geosiris.webstudio.servlet.Editor;
 import jakarta.servlet.http.HttpSession;
 import jakarta.xml.bind.JAXBException;
@@ -88,8 +94,8 @@ public class ETPUtils {
                                              Boolean askConnection) {
 
         SessionUtility.log(session, new ServerLogMessage( ServerLogMessage.MessageType.TOAST,
-                    "(ETP) trying to establish connexion with '" + host + "'",
-                    SessionUtility.EDITOR_NAME));
+                "(ETP) trying to establish connexion with '" + host + "'",
+                SessionUtility.EDITOR_NAME));
         if (askConnection) {
             ETPClient etpClient = establishConnexionForClient(session, host, userName, password);
             if (etpClient != null) {
@@ -120,6 +126,30 @@ public class ETPUtils {
         return false;
     }
 
+    public static List<Resource> getResources(HttpSession session, String dataspace){
+        List<Resource> result = new ArrayList<>();
+        ETPClient etpClient = (ETPClient) session.getAttribute(SessionUtility.SESSION_ETP_CLIENT_ID);
+
+        boolean isConnected = etpClient != null && etpClient.isConnected();
+        if (isConnected) {
+            GetResources getRess = ETPDefaultProtocolBuilder.buildGetResources(new ETPUri(dataspace).toString(),
+                    ContextScopeKind.self, new ArrayList<>());
+
+            List<Message> ressResp_l = ETPUtils.sendETPRequest(session, etpClient, getRess, false,
+                    ETPUtils.waitingForResponseTime);
+
+            for(Message ressResp : ressResp_l) {
+                if (ressResp != null) {
+                    GetResourcesResponse objResp = (GetResourcesResponse) ressResp.getBody();
+                    if (objResp.getResources() != null) {
+                        result.addAll(objResp.getResources());
+                    }
+                }
+            }
+        }
+        return result;
+    }
+
 
     private static ETPClient establishConnexionForClient(HttpSession session, HttpURI host, String userName, String password, boolean useDefaultHandler) {
         ClientInfo clientInfo = new ClientInfo(host, 4000, 4000);
@@ -147,8 +177,8 @@ public class ETPUtils {
         return establishConnexionForClient(session, host, userName, password, false);
     }
 
-    public static Map<String, String> get3DFileFromETP(ETPClient etpClient, String uri, Boolean normalizePosition) throws JAXBException {
-        Map<String, String> surfMap = new HashMap<>();
+    public static ETP3DObject get3DFileFromETP(ETPClient etpClient, String uri, Boolean normalizePosition) throws JAXBException {
+        ETP3DObject obj3D = null;
 
         String fileContent = ETPHelper.sendGetDataObjects_pretty(etpClient, Arrays.asList(new String[]{uri}), "xml", 50000).get(0);
         Object resqmlObj = Editor.pkgManager.unmarshal(fileContent).getValue();
@@ -213,11 +243,7 @@ public class ETPUtils {
             result.append(off_points).append("\n");
             result.append(off_triangles);
 
-            surfMap.put("data", result.toString());
-            surfMap.put("fileType", "off");
-            surfMap.put("type", resqmlObj.getClass().getSimpleName());
-            surfMap.put("uuid", uuid);
-            surfMap.put("title", title);
+            obj3D = new ETP3DObject(result.toString(), "off", resqmlObj.getClass().getSimpleName(), uuid, title, null, null, null);
         } else if(resqmlObj.getClass().getSimpleName().compareToIgnoreCase("PolylineSetRepresentation") == 0)  {
             StringBuilder result = new StringBuilder();
 
@@ -265,11 +291,7 @@ public class ETPUtils {
                 }
             }
 
-            surfMap.put("data", result.toString());
-            surfMap.put("fileType", "polyline");
-            surfMap.put("type", resqmlObj.getClass().getSimpleName());
-            surfMap.put("uuid", uuid);
-            surfMap.put("title", title);
+            obj3D = new ETP3DObject(result.toString(), "polyline", resqmlObj.getClass().getSimpleName(), uuid, title, null, null, null);
         } else if(resqmlObj.getClass().getSimpleName().compareToIgnoreCase("PointSetRepresentation") == 0)  {
             List<Object> patchs = (List<Object>) ObjectController.getObjectAttributeValue(resqmlObj, "NodePatchGeometry");
             for (Object patch : patchs) {
@@ -296,13 +318,9 @@ public class ETPUtils {
             result.append(off_points).append("\n");
             result.append(off_triangles);
 
-            surfMap.put("data", result.toString());
-            surfMap.put("fileType", "off");
-            surfMap.put("type", resqmlObj.getClass().getSimpleName());
-            surfMap.put("uuid", uuid);
-            surfMap.put("title", title);
+            obj3D = new ETP3DObject(result.toString(), "off", resqmlObj.getClass().getSimpleName(), uuid, title, null, null, null);
         }
-        return surfMap;
+        return obj3D;
     }
 
     private static final Pattern pat_contentType = Pattern.compile("application/x-(?<domain>[\\w]+)\\+xml;version=(?<domainVersion>[\\d\\.]+);type=(?<type>[\\w\\d_]+)");
@@ -341,5 +359,22 @@ public class ETPUtils {
         return new ETPUri(dataspace, domain, domainVersion, type,
                 (String) ObjectController.getObjectAttributeValue(dor, "uuid"),
                 "");
+    }
+
+    public static Object createDORFromUri(HttpSession session, String dorClassName, ETPUri uri){
+        try {
+            ETPClient etpClient = (ETPClient) session.getAttribute(SessionUtility.SESSION_ETP_CLIENT_ID);
+            String fileContent = ETPHelper.sendGetDataObjects_pretty(etpClient, Arrays.asList(new String[]{uri.toString()}), "xml", 50000).get(0);
+            Object resqmlObj = Editor.pkgManager.unmarshal(fileContent).getValue();
+            Map<String, Object> objList = new HashMap<>();
+            objList.put((String) ObjectController.getObjectAttributeValue(resqmlObj, "uuid"), resqmlObj);
+
+            Object dor = Editor.pkgManager.createInstance(dorClassName, objList, uri.getUuid());
+            ObjectController.editObjectAttribute(dor, "EnergisticsUri", uri.toString());
+            return dor;
+        }catch (Exception e){
+            logger.error(e);
+        }
+        return null;
     }
 }

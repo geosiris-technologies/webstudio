@@ -18,6 +18,7 @@ package com.geosiris.webstudio.servlet.etp;
 import com.geosiris.etp.utils.ETPUri;
 import com.geosiris.etp.websocket.ETPClient;
 import com.geosiris.webstudio.logs.ServerLogMessage;
+import com.geosiris.webstudio.model.ETP3DObject;
 import com.geosiris.webstudio.utils.ETPUtils;
 import com.geosiris.webstudio.utils.SessionUtility;
 import com.google.gson.Gson;
@@ -105,10 +106,10 @@ public class ETPLoadSurfaceInVue extends HttpServlet {
 
         ETPClient etpClient = (ETPClient) session.getAttribute(SessionUtility.SESSION_ETP_CLIENT_ID);
 
-        List<Map<String, String>> surfaces = new ArrayList<>();
+        List<ETP3DObject> surfaces = new ArrayList<>();
         for(ETPUri etpUri: mapUri.values()) {
             try {
-                surfaces.add( ETPUtils.get3DFileFromETP(etpClient, etpUri.toString(), false));
+                surfaces.add(ETPUtils.get3DFileFromETP(etpClient, etpUri.toString(), false));
             } catch (JAXBException e) {
                 logger.error(e.getMessage(), e);
             }
