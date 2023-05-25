@@ -57,6 +57,7 @@ class GeoObject{
         if(this.surface_loader.triangles != null && this.surface_loader.triangles.length > 0){
             console.log("faceColor '" + faceColor + "'")
             this.faces = createMesh(this.surface_loader.triangles);
+
           if(faceColor != null && faceColor.length > 0){
             this.faces.material.color = new THREE.Color(faceColor);
           }

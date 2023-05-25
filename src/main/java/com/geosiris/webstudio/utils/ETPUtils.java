@@ -214,7 +214,6 @@ public class ETPUtils {
         return establishConnexionForClient(session, host, userName, password, false);
     }
 
-
     public static Map<String, Object> getGraphical(HttpSession session, ETPUri representationUri){
         Map<String, Object> graphicalElements = new HashMap<>();
 
