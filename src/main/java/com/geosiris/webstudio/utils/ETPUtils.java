@@ -15,7 +15,10 @@ limitations under the License.
 */
 package com.geosiris.webstudio.utils;
 
+import Energistics.Etp.v12.Datatypes.Object.*;
 import Energistics.Etp.v12.Datatypes.ServerCapabilities;
+import Energistics.Etp.v12.Protocol.Discovery.GetResources;
+import Energistics.Etp.v12.Protocol.Discovery.GetResourcesResponse;
 import com.geosiris.energyml.utils.ObjectController;
 import com.geosiris.etp.communication.ClientInfo;
 import com.geosiris.etp.communication.ConnectionType;
@@ -27,12 +30,20 @@ import com.geosiris.etp.protocols.handlers.DataArrayHandler;
 import com.geosiris.etp.protocols.handlers.DataspaceHandler;
 import com.geosiris.etp.protocols.handlers.DiscoveryHandler;
 import com.geosiris.etp.protocols.handlers.StoreHandler;
+import com.geosiris.etp.utils.ETPDefaultProtocolBuilder;
 import com.geosiris.etp.utils.ETPHelper;
 import com.geosiris.etp.utils.ETPUri;
 import com.geosiris.etp.websocket.ETPClient;
 import com.geosiris.webstudio.etp.*;
 import com.geosiris.webstudio.logs.ServerLogMessage;
+import com.geosiris.webstudio.model.ETP3DObject;
 import com.geosiris.webstudio.servlet.Editor;
+import energyml.common2_0.ProjectedCrsEpsgCode;
+import energyml.common2_3.GraphicalInformationSet;
+import energyml.resqml2_2.HsvColor;
+import energyml.resqml_dev3x_2_2.ColorInformation;
+import energyml.resqml_dev3x_2_2.ColorMapDictionary;
+import energyml.resqml_dev3x_2_2.LocalDepth3DCrs;
 import jakarta.servlet.http.HttpSession;
 import jakarta.xml.bind.JAXBException;
 import org.apache.avro.specific.SpecificRecordBase;
@@ -88,8 +99,8 @@ public class ETPUtils {
                                              Boolean askConnection) {
 
         SessionUtility.log(session, new ServerLogMessage( ServerLogMessage.MessageType.TOAST,
-                    "(ETP) trying to establish connexion with '" + host + "'",
-                    SessionUtility.EDITOR_NAME));
+                "(ETP) trying to establish connexion with '" + host + "'",
+                SessionUtility.EDITOR_NAME));
         if (askConnection) {
             ETPClient etpClient = establishConnexionForClient(session, host, userName, password);
             if (etpClient != null) {
@@ -120,6 +131,62 @@ public class ETPUtils {
         return false;
     }
 
+    public static List<Resource> getResources(HttpSession session, String dataspace){
+        List<Resource> result = new ArrayList<>();
+        ETPClient etpClient = (ETPClient) session.getAttribute(SessionUtility.SESSION_ETP_CLIENT_ID);
+
+        boolean isConnected = etpClient != null && etpClient.isConnected();
+        if (isConnected) {
+            GetResources getRess = ETPDefaultProtocolBuilder.buildGetResources(new ETPUri(dataspace).toString(),
+                    ContextScopeKind.self, new ArrayList<>());
+
+            List<Message> ressResp_l = ETPUtils.sendETPRequest(session, etpClient, getRess, false,
+                    ETPUtils.waitingForResponseTime);
+
+            for(Message ressResp : ressResp_l) {
+                if (ressResp != null) {
+                    GetResourcesResponse objResp = (GetResourcesResponse) ressResp.getBody();
+                    if (objResp.getResources() != null) {
+                        result.addAll(objResp.getResources());
+                    }
+                }
+            }
+        }
+        return result;
+    }
+
+
+    public static String getDataObjectFromUuid(HttpSession session, String dataspace, String uuid){
+        String result = null;
+        ETPClient etpClient = (ETPClient) session.getAttribute(SessionUtility.SESSION_ETP_CLIENT_ID);
+        boolean isConnected = etpClient != null && etpClient.isConnected();
+        if (isConnected) {
+            GetResources getRess = ETPDefaultProtocolBuilder.buildGetResources(new ETPUri(dataspace).toString(),
+                    ContextScopeKind.self, new ArrayList<>());
+
+            List<Message> ressResp_l = ETPUtils.sendETPRequest(session, etpClient, getRess, false,
+                    ETPUtils.waitingForResponseTime);
+
+            for(Message ressResp : ressResp_l) {
+                if (ressResp != null) {
+                    GetResourcesResponse objResp = (GetResourcesResponse) ressResp.getBody();
+                    if (objResp.getResources() != null) {
+                        for(Resource r: objResp.getResources()){
+                            ETPUri uri = ETPUri.parse(r.getUri() + "");
+                            if(!uri.hasDataspace()) {
+                                uri.setDataspace(dataspace);
+                            }
+                            if(uri.getUuid().compareTo(uuid) == 0){
+                                result = ETPHelper.sendGetDataObjects_pretty(etpClient, Arrays.asList(new String[]{uri + ""}), "xml", 50000).get(0);
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        return result;
+    }
+
 
     private static ETPClient establishConnexionForClient(HttpSession session, HttpURI host, String userName, String password, boolean useDefaultHandler) {
         ClientInfo clientInfo = new ClientInfo(host, 4000, 4000);
@@ -147,16 +214,157 @@ public class ETPUtils {
         return establishConnexionForClient(session, host, userName, password, false);
     }
 
-    public static Map<String, String> get3DFileFromETP(ETPClient etpClient, String uri, Boolean normalizePosition) throws JAXBException {
-        Map<String, String> surfMap = new HashMap<>();
+    public static Map<String, Object> getGraphical(HttpSession session, ETPUri representationUri){
+        Map<String, Object> graphicalElements = new HashMap<>();
+
+        ETPClient etpClient = (ETPClient) session.getAttribute(SessionUtility.SESSION_ETP_CLIENT_ID);
+        boolean isConnected = etpClient != null && etpClient.isConnected();
+        if (isConnected) {
+            GetResources getResources = GetResources.newBuilder()
+                    .setContext(ContextInfo.newBuilder()
+                            .setDepth(1)
+                            .setUri(representationUri.toString())
+                            .setDataObjectTypes(new ArrayList<>())
+                            .setIncludeSecondarySources(false)
+                            .setIncludeSecondaryTargets(false)
+                            .setNavigableEdges(RelationshipKind.Primary)
+                            .build()
+                    ).setScope(ContextScopeKind.sources)
+                    .setStoreLastWriteFilter(null)
+                    .setActiveStatusFilter(null)
+                    .setCountObjects(true)
+                    .setIncludeEdges(false)
+                    .build();
+
+            logger.debug("\tgraphical_info : sending " );
+            List<Message> msgs = ETPUtils.sendETPRequest(session, etpClient, getResources, false, 5000);
+            logger.debug("\tgraphical_info : msgs " + msgs.size());
+            for(Message msg: msgs){
+                if(msg.getBody() instanceof GetResourcesResponse){
+                    GetResourcesResponse resp = (GetResourcesResponse) msg.getBody();
+                    resp.getResources().stream().forEach(resource ->{
+                        ETPUri uri = ETPUri.parse(resource.getUri() + "");
+                        if(!uri.hasDataspace()){
+                            uri.setDataspace(representationUri.getDataspace());
+                        }
+                        logger.debug("\tgraphical_info : uri " + uri + " -- " + uri.getObjectType());
+                        if(uri.getObjectType().toLowerCase().contains("graphical")
+                                || uri.getObjectType().toLowerCase().contains("colormap")){
+                            try{
+                                String fileContent = ETPHelper.sendGetDataObjects_pretty(etpClient, Arrays.asList(new String[]{uri + ""}), "xml", 50000).get(0);
+                                Object graphicalObject = Editor.pkgManager.unmarshal(fileContent).getValue();
+                                graphicalElements.put(ObjectController.getObjectAttributeValue(graphicalObject, "uuid") + "", graphicalObject);
+                            }catch (Exception e){
+                                logger.error(e);
+                            }
+                        }
+                    });
+                }else{
+                    logger.debug(msg);
+                }
+            }
+        }
+        return graphicalElements;
+    }
+
+    public static ETP3DObject get3DFileFromETP(HttpSession session, String uri, Boolean normalizePosition) throws JAXBException {
+        ETP3DObject obj3D = null;
+
+        ETPClient etpClient = (ETPClient) session.getAttribute(SessionUtility.SESSION_ETP_CLIENT_ID);
+        ETPUri etpUri = ETPUri.parse(uri);
 
         String fileContent = ETPHelper.sendGetDataObjects_pretty(etpClient, Arrays.asList(new String[]{uri}), "xml", 50000).get(0);
         Object resqmlObj = Editor.pkgManager.unmarshal(fileContent).getValue();
 
+
+        /* --- CRS start --- */
+        String epsgCode = null;
+//        Map<String, Object> dors = ObjectController.findSubObjectsAndPath(resqmlObj, "DataObjectReference");
+//        for(Map.Entry<String, Object> dor: dors.entrySet()){
+//            if(dor.getKey().toLowerCase().endsWith("crs")){
+//                String crsUuid = (String) ObjectController.getObjectAttributeValue(dor.getValue(), "uuid");
+//                logger.debug("CRs : " + crsUuid + " ==> ");
+//                if(crsUuid != null) {
+//                    String crsFileContent = getDataObjectFromUuid(session, etpUri.getDataspace(), crsUuid);
+//                    Object crsObj = Editor.pkgManager.unmarshal(crsFileContent).getValue();
+//                    Object epsg = ObjectController.getObjectAttributeValue(crsObj, "ProjectedCrs.EpsgCode");
+//                    logger.debug("epsg : " + epsg );
+//                    if(epsg != null) {
+//                        epsgCode = epsg + "";
+//                        break;
+//                    }
+//                }
+//            }
+//        }
+        /* --- CRS  end  --- */
+        /* --- Color  start  --- */
+        logger.debug("graphical_info start");
+        Map<String, Object> graphicals = new HashMap<>();
+
+//        try{
+        graphicals = getGraphical(session, etpUri);
+        logger.debug("graphical size " + graphicals.size());
+//        }catch (Exception e){
+//            logger.error(e);
+//        }
+
+        String pointColor=null, lineColor=null, faceColor=null;
+        Iterator<Object> graphicalValuesIt = graphicals.values().iterator();
+        while(graphicalValuesIt.hasNext()
+                && ( pointColor == null
+                || lineColor == null
+                || faceColor == null)
+        ){
+            Object g = graphicalValuesIt.next();
+
+            List<?> g_info = (List<?>) ObjectController.getObjectAttributeValue(g, "GraphicalInformation");
+//            logger.debug("g_info " + g_info.size());
+            for (Object info: g_info) {
+                if ( pointColor == null
+                        || lineColor == null
+                        || faceColor == null) {
+                    String colorMapUuid = (String) ObjectController.getObjectAttributeValue(info, "ColorMap.uuid");
+
+                    String colorMapXml = getDataObjectFromUuid(session, etpUri.getDataspace(), colorMapUuid);
+//                    logger.debug("colorMapXml " + colorMapXml);
+                    if (colorMapUuid != null && colorMapXml != null) {
+                        Object colorMap = Editor.pkgManager.unmarshal(colorMapXml).getValue();
+//                        logger.debug("colorMap " + colorMap);
+                        List<Object> targets = ObjectController.findSubObjects(info, "DataObjectReference", true);
+//                        logger.debug("targets " + targets.size());
+                        for (Object dor : targets) {
+                            if (etpUri.getUuid().compareTo((String) ObjectController.getObjectAttributeValue(dor, "uuid")) == 0) {
+                                try {
+                                    int valueVectorIndex = Integer.parseInt(ObjectController.getObjectAttributeValue(info, "ValueVectorIndex") + "");
+                                    Object hsvColorEntry = ObjectController.getObjectAttributeValue(colorMap, "Entry." + valueVectorIndex + ".hsv");
+                                    String rgbHexColor = hsvToRgb(
+                                            Float.parseFloat("" + ObjectController.getObjectAttributeValue(hsvColorEntry, "Hue")),
+                                            Float.parseFloat("" + ObjectController.getObjectAttributeValue(hsvColorEntry, "Saturation")),
+                                            Float.parseFloat("" + ObjectController.getObjectAttributeValue(hsvColorEntry, "Value"))
+                                    );
+                                    pointColor = rgbHexColor;
+                                    lineColor = rgbHexColor;
+                                    faceColor = rgbHexColor;
+                                    break;
+                                } catch (Exception e) {
+                                    logger.error(e);
+                                }
+                            }
+                        }
+                    }
+                }else{
+                    break;
+                }
+            }
+        }
+
+        logger.debug("Colors found : " + pointColor + " " + lineColor + " " + faceColor);
+        /* --- Color  end  --- */
+
         String title = (String) ObjectController.getObjectAttributeValue(resqmlObj, "citation.Title");
         String uuid = (String) ObjectController.getObjectAttributeValue(resqmlObj, "uuid");
 
-        System.out.println("Title : " + ObjectController.getObjectAttributeValue(resqmlObj, "citation.Title") + "\n" + resqmlObj);
+        logger.debug("Title : " + ObjectController.getObjectAttributeValue(resqmlObj, "citation.Title") + "\n" + resqmlObj);
 
         long offsetPoints = 0;
 
@@ -168,7 +376,7 @@ public class ETPUtils {
 
         if(resqmlObj.getClass().getSimpleName().compareToIgnoreCase("TriangulatedSetRepresentation") == 0) {
             List<Object> trianglePatch = (List<Object>) ObjectController.getObjectAttributeValue(resqmlObj, "trianglePatch");
-            System.out.println("patchs : " + trianglePatch.size() + "\n\t" + (trianglePatch.size() > 0 ? trianglePatch.get(0) : "NONE"));
+            logger.debug("patchs : " + trianglePatch.size() + "\n\t" + (trianglePatch.size() > 0 ? trianglePatch.get(0) : "NONE"));
             for (Object patch : trianglePatch) {
                 List<Object> pointsExtArray = ObjectController.findSubObjects(ObjectController.getObjectAttributeValue(patch, "geometry"), "ExternalDataArrayPart", true);
                 List<Object> trianglesExtArray = ObjectController.findSubObjects(ObjectController.getObjectAttributeValue(patch, "triangles"), "ExternalDataArrayPart", true);
@@ -213,11 +421,7 @@ public class ETPUtils {
             result.append(off_points).append("\n");
             result.append(off_triangles);
 
-            surfMap.put("data", result.toString());
-            surfMap.put("fileType", "off");
-            surfMap.put("type", resqmlObj.getClass().getSimpleName());
-            surfMap.put("uuid", uuid);
-            surfMap.put("title", title);
+            obj3D = new ETP3DObject(result.toString(), "off", resqmlObj.getClass().getSimpleName(), uuid, title, "#000000", "#000000", faceColor, epsgCode);
         } else if(resqmlObj.getClass().getSimpleName().compareToIgnoreCase("PolylineSetRepresentation") == 0)  {
             StringBuilder result = new StringBuilder();
 
@@ -265,11 +469,7 @@ public class ETPUtils {
                 }
             }
 
-            surfMap.put("data", result.toString());
-            surfMap.put("fileType", "polyline");
-            surfMap.put("type", resqmlObj.getClass().getSimpleName());
-            surfMap.put("uuid", uuid);
-            surfMap.put("title", title);
+            obj3D = new ETP3DObject(result.toString(), "polyline", resqmlObj.getClass().getSimpleName(), uuid, title, "#000000", lineColor, faceColor, epsgCode);
         } else if(resqmlObj.getClass().getSimpleName().compareToIgnoreCase("PointSetRepresentation") == 0)  {
             List<Object> patchs = (List<Object>) ObjectController.getObjectAttributeValue(resqmlObj, "NodePatchGeometry");
             for (Object patch : patchs) {
@@ -296,14 +496,11 @@ public class ETPUtils {
             result.append(off_points).append("\n");
             result.append(off_triangles);
 
-            surfMap.put("data", result.toString());
-            surfMap.put("fileType", "off");
-            surfMap.put("type", resqmlObj.getClass().getSimpleName());
-            surfMap.put("uuid", uuid);
-            surfMap.put("title", title);
+            obj3D = new ETP3DObject(result.toString(), "off", resqmlObj.getClass().getSimpleName(), uuid, title, pointColor, lineColor, faceColor, epsgCode);
         }
-        return surfMap;
+        return obj3D;
     }
+
 
     private static final Pattern pat_contentType = Pattern.compile("application/x-(?<domain>[\\w]+)\\+xml;version=(?<domainVersion>[\\d\\.]+);type=(?<type>[\\w\\d_]+)");
     private static final Pattern pat_qualifiedType = Pattern.compile("(?<domain>[a-zA-Z]+)(?<domainVersion>[\\d]+)\\.(?<type>[\\w_]+)");
@@ -341,5 +538,70 @@ public class ETPUtils {
         return new ETPUri(dataspace, domain, domainVersion, type,
                 (String) ObjectController.getObjectAttributeValue(dor, "uuid"),
                 "");
+    }
+
+    public static Object createDORFromUri(HttpSession session, String dorClassName, ETPUri uri){
+        try {
+            ETPClient etpClient = (ETPClient) session.getAttribute(SessionUtility.SESSION_ETP_CLIENT_ID);
+            String fileContent = ETPHelper.sendGetDataObjects_pretty(etpClient, Arrays.asList(new String[]{uri.toString()}), "xml", 50000).get(0);
+            Object resqmlObj = Editor.pkgManager.unmarshal(fileContent).getValue();
+            Map<String, Object> objList = new HashMap<>();
+            objList.put((String) ObjectController.getObjectAttributeValue(resqmlObj, "uuid"), resqmlObj);
+
+            Object dor = Editor.pkgManager.createInstance(dorClassName, objList, uri.getUuid());
+            ObjectController.editObjectAttribute(dor, "EnergisticsUri", uri.toString());
+            return dor;
+        }catch (Exception e){
+            logger.error(e);
+        }
+        return null;
+    }
+
+    public static String hsvToRgb(float hue, float saturation, float value) {
+        // Hue must be [0;360]
+        if(saturation > 1) // [0;1] or [0;100]
+            saturation = saturation * 0.01f;
+        if(value > 1) // [0;1] or [0;100]
+            value = value * 0.01f;
+
+        float h = (hue / 60);
+        float C = value * saturation;
+        float X = C * (1.f - Math.abs((h % 2) - 1.f));
+
+        float m = value - C;
+
+        if(h<1)
+            return rgbToString(C + m, X + m, 0 + m);
+        else if(h<2)
+            return rgbToString(X + m, C + m, 0 + m);
+        else if(h<3)
+            return rgbToString(0 + m, C + m, X + m);
+        else if(h<4)
+            return rgbToString(0 + m, X + m, C + m);
+        else if(h<5)
+            return rgbToString(X + m, 0 + m, C + m);
+        else
+            return rgbToString(C + m, 0 + m, X + m);
+    }
+
+    public static String rgbToString(float r, float g, float b) {
+        String rs = Integer.toHexString((int)(r * 255));
+        String gs = Integer.toHexString((int)(g * 255));
+        String bs = Integer.toHexString((int)(b * 255));
+
+        if(rs.length() < 2){
+            rs = "0" + rs;
+        }
+        if(gs.length() < 2){
+            gs = "0" + gs;
+        }
+        if(bs.length() < 2){
+            bs = "0" + bs;
+        }
+        return "#" + rs + gs + bs;
+    }
+
+    public static void main(String[] argv){
+        System.out.println(hsvToRgb(180.0f, 33.0f, 100.0f));
     }
 }

@@ -174,7 +174,7 @@ public class ObjectEdit extends HttpServlet {
                             try {
                                 if (SessionUtility.configIsMoreVerborseThan(ConfigurationType.debug))
                                     logger.debug(p_k_i + ") parameter " + key);
-                                ResqmlObjectControler.modifyResqmlObjectFromParameter(resqmlObj, key,
+                                ResqmlObjectControler.modifyResqmlObjectFromParameter(session, resqmlObj, key,
                                         ModficationType.EDITION, parameterMap.get(key)[p_k_i], map);
                                 if (SessionUtility.configIsMoreVerborseThan(ConfigurationType.debug))
                                     logger.debug(resqmlObj.getClass().getName() + " - "
@@ -186,7 +186,7 @@ public class ObjectEdit extends HttpServlet {
                                 if (resqmlObj.getClass().getName().toLowerCase().endsWith("activity")
                                         && key.toLowerCase().endsWith("activitydescriptor")) {
                                     Object activityTemplate = map.get(parameterMap.get(key)[p_k_i]);
-                                    ResqmlObjectControler.prefillActivityFromTemplate(activityTemplate, resqmlObj);
+                                    ResqmlObjectControler.prefillActivityFromTemplate(session, activityTemplate, resqmlObj);
                                 }
                             } catch (Exception e) {
                                 logger.error(e.getMessage(), e);
@@ -199,7 +199,7 @@ public class ObjectEdit extends HttpServlet {
                 }
                 response = "Object edited : '" + rootUUID + "'";
                 try {
-                    ResqmlObjectControler.modifyResqmlObjectFromParameter(resqmlObj, ".Citation.LastUpdate",
+                    ResqmlObjectControler.modifyResqmlObjectFromParameter(session, resqmlObj, ".Citation.LastUpdate",
                             ModficationType.EDITION, now.toString(), map);
                 } catch (Exception e) {
                     logger.error(e.getMessage(), e);
@@ -259,7 +259,7 @@ public class ObjectEdit extends HttpServlet {
             logger.debug("trying copy with schemaVersion '" + copyVersion + "'");
             if (resqmlObj != null) {
                 try {
-                    Object copyObj = ResQMLConverter.getCopy(resqmlObj, map);
+                    Object copyObj = ResQMLConverter.getCopy(session, resqmlObj, map);
                     String copyUuid = ObjectController.getObjectAttributeValue(copyObj, "Uuid") + "";
                     if (copyObj != null) {
                         map.put(copyUuid, copyObj);
@@ -286,7 +286,7 @@ public class ObjectEdit extends HttpServlet {
                 try {
                     if (SessionUtility.configIsMoreVerborseThan(ConfigurationType.debug))
                         logger.debug("#suppression subpath : " + subPath);
-                    ResqmlObjectControler.modifyResqmlObjectFromParameter(resqmlObj, subPath, ModficationType.EDITION,
+                    ResqmlObjectControler.modifyResqmlObjectFromParameter(session, resqmlObj, subPath, ModficationType.EDITION,
                             null, map);
                     // logger.debug("#new object json : " + ObjectTree.createTree(resqmlObj).toJSON());
                 } catch (Exception e) {

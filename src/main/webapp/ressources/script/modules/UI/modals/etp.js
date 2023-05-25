@@ -156,8 +156,19 @@ export function loadUrisIn3DVue(){
                 var jsonValueList = JSON.parse(fileContent);
                 console.log("3D vue is Loading " + jsonValueList.length + " entities");
                 jsonValueList.forEach(obj =>{
+                  console.log("EPSG : " + obj["epsgCode"]);
                     try{
-                        geo3DVue.importSurface(obj["data"], obj["type"] + "_" + obj["uuid"] + "[" + obj["title"] + "]." + obj["fileType"]);
+                        geo3DVue.importSurface(
+                          obj["data"],
+                          obj["fileType"],
+                          obj["type"],
+                          obj["uuid"],
+                          obj["title"],
+                          obj["pointColor"],
+                          obj["lineColor"],
+                          obj["faceColor"],
+                          obj["epsgCode"]
+                        );
                     }catch(exception){
                         console.log(fileContent);
                         console.log(exception);

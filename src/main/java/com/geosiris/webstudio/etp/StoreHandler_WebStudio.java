@@ -78,12 +78,14 @@ public class StoreHandler_WebStudio extends StoreHandler{
                 filesToImport.add(new String(msg.getDataObjects().get(dr).getData().array(), StandardCharsets.UTF_8));
             }
         }
-        String res = FileReciever.loadFiles_Unnamed(session, filesToImport, false, true, true);
+        if(filesToImport.size() > 0) {
+            String res = FileReciever.loadFiles_Unnamed(session, filesToImport, false, true, true);
 
-        SessionUtility.log(session, new ServerLogMessage(ServerLogMessage.MessageType.LOG, res, SessionUtility.EDITOR_NAME));
-        SessionUtility.log(session, new ServerLogMessage(ServerLogMessage.MessageType.TOAST,"ETP : " + filesToImport.size()
-                + " imported objects. If they not appear in the table view, refresh the page. ",SessionUtility.EDITOR_NAME));
-        SessionUtility.log(session, new ServerLogMessage(ServerLogMessage.MessageType.ACTION, "reload", SessionUtility.EDITOR_NAME));
+            SessionUtility.log(session, new ServerLogMessage(ServerLogMessage.MessageType.LOG, res, SessionUtility.EDITOR_NAME));
+            SessionUtility.log(session, new ServerLogMessage(ServerLogMessage.MessageType.TOAST, "ETP : " + filesToImport.size()
+                    + " imported objects. If they not appear in the table view, refresh the page. ", SessionUtility.EDITOR_NAME));
+            SessionUtility.log(session, new ServerLogMessage(ServerLogMessage.MessageType.ACTION, "reload", SessionUtility.EDITOR_NAME));
+        }
         return new ArrayList<>();
     }
 

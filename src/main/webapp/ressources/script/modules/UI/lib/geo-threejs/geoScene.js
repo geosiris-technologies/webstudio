@@ -16,6 +16,8 @@ limitations under the License.
 import * as THREE from 'three';
 import {createToggler, createRadio, createScaler} from "./uiUtils.js";
 import { createMesh, createSegments, createPointCloud, randomColor, centerCamera, centerCameraOnBbox } from './utils.js';
+import {__ENUM_CONSOLE_MSG_SEVERITY_TOAST__, __ID_CONSOLE__} from "../../../common/variables.js";
+import {appendConsoleMessage} from "../../../logs/console.js";
 
 class GeoObject{
 
@@ -29,22 +31,39 @@ class GeoObject{
     static EVT_OBJ_REMOVED  = "evt_geo_object_removed";
 
 
-    constructor(surface_loader, name="unkown surface"){
+    constructor(surface_loader, name="unkown surface", pointColor=null, lineColor=null, faceColor=null, epsgCode=null){
         this.name = name;
         this.surface_loader = surface_loader;
+        this.epsgCode = epsgCode;
 
         this.rawPoints = this.surface_loader.points;
 
         this.points = createPointCloud(this.surface_loader.points);
-        if(this.surface_loader.lines != null && this.surface_loader.lines.length > 0)
-            this.lines = createSegments(this.surface_loader.lines);
-        else
-            this.lines = null;
+        if(pointColor != null && pointColor.length > 0){
+          console.log("pointColor '" + pointColor + "'")
+          this.points.material.color = new THREE.Color(pointColor);
+        }
 
-        if(this.surface_loader.triangles != null && this.surface_loader.triangles.length > 0)
+        if(this.surface_loader.lines != null && this.surface_loader.lines.length > 0){
+            console.log("lineColor '" + lineColor + "'")
+            this.lines = createSegments(this.surface_loader.lines);
+          if(lineColor != null && lineColor.length > 0){
+            this.lines.material.color = new THREE.Color(lineColor);
+          }
+        }else{
+          this.lines = null;
+        }
+
+        if(this.surface_loader.triangles != null && this.surface_loader.triangles.length > 0){
+            console.log("faceColor '" + faceColor + "'")
             this.faces = createMesh(this.surface_loader.triangles);
-        else
-            this.faces = null;
+
+          if(faceColor != null && faceColor.length > 0){
+            this.faces.material.color = new THREE.Color(faceColor);
+          }
+        }else{
+          this.faces = null;
+        }
 
         this.updateBbox(null);
     }
@@ -364,6 +383,30 @@ class GeoObject{
         centerCamera(controls, bb.getCenter(controls.target).toArray());
         //centerCamera(controls, this.surface_loader.points[0]);
     }
+
+    reverseColors(scene){
+      this.points.material.color = new THREE.Color(this.points.material.color.getHex() ^ 0xFFFFFF);
+      if (this.lines != null)
+        this.lines.material.color = new THREE.Color(this.lines.material.color.getHex() ^ 0xFFFFFF);
+      if (this.faces != null)
+        this.faces.material.color = new THREE.Color(this.faces.material.color.getHex() ^ 0xFFFFFF);
+      scene._geoThreeJS.animate();
+    }
+
+    blink(scene, nbLoop=6, timeMS=300){
+      const const_this = this;
+      const const_scene = scene;
+
+      for (var i = 0; i < nbLoop; i++) {
+        setTimeout(function () {
+          const_this.reverseColors(const_scene);
+        }, ( 2 * i) * timeMS);
+        setTimeout(function () {
+          const_this.reverseColors(const_scene);
+        }, ( 2 * i + 1) * timeMS);
+      }
+    }
+
 }
 
 class GeoScene{
@@ -373,10 +416,11 @@ class GeoScene{
     static EVT_CLEAR = "evt_geo_scene_clear";
     static EVT_RESET_CONTROLS = "evt_geo_reset_controls";
 
-    constructor(threejs_scene, controls) {
+    constructor(threejs_scene, controls, geoThreeJS) {
         this._objectList = [];
         this._theejs_scene = threejs_scene;
         this._controls = controls;
+        this._geoThreeJS = geoThreeJS;
         this.scaleFactors = [1.0, 1.0, 1.0]
     }
 
@@ -398,6 +442,23 @@ class GeoScene{
         if(recenterCam && this._objectList.length > 0){
             this._objectList[0].lookAtMe(this._controls)
             //this._objectList[0].lookAtMeBarycenter(this._controls)
+        }
+
+        var epsgCode = null;
+        for(var t in this._objectList){
+            var obj = this._objectList[t];
+            if(obj.epsgCode != null){
+                if(epsgCode != null && obj.epsgCode.localeCompare(epsgCode) != 0){
+                    appendConsoleMessage(__ID_CONSOLE__, { 
+                        severity: __ENUM_CONSOLE_MSG_SEVERITY_TOAST__,
+                        originator: "3D Vue",
+                        message: "/!\\ Objects in the 3D vue have different EPSGCode ('" + epsgCode + "' and '" + obj.epsgCode + "')"
+                    });
+                    break;
+                }else if (obj.epsgCode != null && obj.epsgCode.length > 0){
+                    epsgCode = obj.epsgCode;
+                }
+            }
         }
     }
 
@@ -651,7 +712,6 @@ class GeoObjectUi{
             this.div.firstChild.remove();
         }
 
-
         const sub_part_elt = document.createElement("ul");
         sub_part_elt.style.display = "none";
         const sub_part_toggler = createToggler("fas fa-chevron-circle-right", "blue", "blue", 
@@ -669,6 +729,18 @@ class GeoObjectUi{
 
         var nameElt = document.createTextNode(this.obj.name);
         this.div.appendChild(nameElt);
+
+
+
+        var blink = document.createElement("i");
+        blink.className = "fas fa-star";
+        blink.title = "Blink";
+        blink.style.cursor = 'pointer';
+        blink.style.margin = "2px";
+        blink.onclick = function(){
+            const_this.obj.blink(const_this.geo_scene);
+        };
+        this.div.appendChild(blink);
 
 
 

@@ -36,6 +36,9 @@ The WebStudio is a web application that allows to manipulate energyml file (such
       - TriangualtedSetRepresentation
       - PolylineSetRepresentation
       - PointSetRepresentation
+- 1.0.11:
+    - 3D visu : 
+        - *ColorInformation* in a *GraphicalInformationSet* can be used if it references an **HSV color** in a *DiscreteColorMap*
 
 ## License
 

@@ -170,6 +170,8 @@ public class LoadWorkspace extends HttpServlet {
             }catch (Exception e){
                 logger.error(e.getMessage(), e);
             }
+        }else{
+            return SessionUtility.removeNotEnergymlObject(session, filePath);
         }
         return false;
     }

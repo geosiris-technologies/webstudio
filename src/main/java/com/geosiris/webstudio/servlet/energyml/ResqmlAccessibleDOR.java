@@ -15,9 +15,12 @@ limitations under the License.
 */
 package com.geosiris.webstudio.servlet.energyml;
 
+import Energistics.Etp.v12.Datatypes.Object.Resource;
 import com.geosiris.energyml.utils.EPCGenericManager;
 import com.geosiris.energyml.utils.ObjectController;
+import com.geosiris.etp.utils.ETPUri;
 import com.geosiris.webstudio.servlet.Editor;
+import com.geosiris.webstudio.utils.ETPUtils;
 import com.geosiris.webstudio.utils.SessionUtility;
 import com.geosiris.webstudio.utils.Utility;
 import jakarta.servlet.ServletException;
@@ -41,19 +44,19 @@ import java.util.Map;
 @WebServlet("/ResqmlAccessibleDOR")
 public class ResqmlAccessibleDOR extends HttpServlet {
 	private static final long serialVersionUID = 1L;
-    public static Logger logger = LogManager.getLogger(ResqmlAccessibleDOR.class);
-    
-	public static final HashMap<String, List<String>> mapAccessibleDORTypes = Editor.pkgManager.getAccessibleDORTypes();
-	
-	
-    /**
-     * @see HttpServlet#HttpServlet()
-     */
-    public ResqmlAccessibleDOR() {
-        super();
-    }
+	public static Logger logger = LogManager.getLogger(ResqmlAccessibleDOR.class);
 
-    
+	public static final HashMap<String, List<String>> mapAccessibleDORTypes = Editor.pkgManager.getAccessibleDORTypes();
+
+
+	/**
+	 * @see HttpServlet#HttpServlet()
+	 */
+	public ResqmlAccessibleDOR() {
+		super();
+	}
+
+
 	/**
 	 * @see HttpServlet#doGet(HttpServletRequest request, HttpServletResponse response)
 	 */
@@ -62,15 +65,15 @@ public class ResqmlAccessibleDOR extends HttpServlet {
 			return;
 		}
 		HttpSession session = request.getSession(false);
-		
+
 		String uuid = request.getParameter("uuid"); // Get the uuid of the object that want to references a DOR
 
 		String subParamPath = request.getParameter("subParamPath"); // Get the uuid of the object that want to references a DOR
-		
+
 		String subParamName = request.getParameter("subParamName");
-		
+
 		//logger.error("subparam Path : " + subParamPath);
-		String answer = "{}";
+		StringBuilder answer = new StringBuilder("{}");
 		if(uuid!=null) {
 			Map<String, Object> map = SessionUtility.getResqmlObjects(session);
 			if(map.containsKey(uuid)) {
@@ -80,15 +83,47 @@ public class ResqmlAccessibleDOR extends HttpServlet {
 					subParam = ObjectController.getObjectAttributeValue(resqmlObj, subParamPath);
 				}
 				List<Object> dorable = EPCGenericManager.getAccessibleDORs(resqmlObj, subParam, subParamName, map.values(), mapAccessibleDORTypes);
-				answer = Utility.getEPCContentAsJSON(dorable);
+
+				answer = new StringBuilder("{ \"workspace\": ");
+				answer.append(Utility.getEPCContentAsJSON(dorable));
+				answer.append(", \"etp\": [");
+				try {
+					String dataspace = request.getParameter("dataspace");
+					int cpt = 0;
+					for(Resource r: ETPUtils.getResources(session, dataspace)){
+						ETPUri uri = ETPUri.parse(r.getUri().toString());
+						if(!uri.hasDataspace() && dataspace != null && dataspace.length() > 0){
+							uri.setDataspace(dataspace);
+						}
+
+						answer.append("{ ");
+						answer.append("\"num\" : \"").append(cpt).append("\", ");
+						answer.append("\"title\" : \"").append(r.getName()).append("\", ");
+						answer.append("\"type\" : \"").append(uri.getObjectType()).append("\", ");
+						answer.append("\"uuid\" : \"").append(uri.getUuid()).append("\", ");
+						answer.append("\"schemaVersion\" : \"").append(uri.getDomainVersion()).append("\", ");
+						answer.append("\"package\" : \"").append(uri.getDomain()).append("\", ");
+						answer.append("\"uri\" : \"").append(uri.toString()).append("\"");
+						answer.append("},");
+						cpt++;
+					}
+					if(answer.toString().endsWith(",")){
+						answer.replace(answer.length()-1, answer.length(), "");
+					}
+
+				}catch (Exception e){
+					logger.error(e);
+				}
+				answer.append("]");
+				answer.append("}");
 			}
 		}
 
 		PrintWriter out = response.getWriter();
-        response.setContentType("application/json");
-        response.setCharacterEncoding("UTF-8");
-        out.write(answer);
-        out.flush();
+		response.setContentType("application/json");
+		response.setCharacterEncoding("UTF-8");
+		out.write(answer.toString());
+		out.flush();
 	}
 
 	/**

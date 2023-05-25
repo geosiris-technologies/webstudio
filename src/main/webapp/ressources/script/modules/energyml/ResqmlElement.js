@@ -215,6 +215,9 @@ export class ResqmlElement{
 			        this.attributes[cur_idx].subAttribCollapserElt.click();
 			    }catch(exceptionVisible){
 			        console.log(exceptionVisible);
+              console.log(this.attributes);
+              console.log(cur_idx);
+              console.log(visibleIdx);
 			    }
 			}
 		}else{ 								// Si on met à jour un arbre existant
@@ -1362,136 +1365,164 @@ export class ResqmlElement{
 
 		if(enableFilter && (subEltType.includes("DataObjectReference") || subEltType.includes("ContactElement")) ){
 			link.onclick = function(){
+                var etp_dataspace = null;
+                try{
+                    etp_dataspace = document.getElementsByClassName("etp_select_dataspace")[0].value;
+                }catch(e){console.log(e);}
+				getJsonObjectFromServer("ResqmlAccessibleDOR?uuid=" + constThis.rootUUID
+				    + "&subParamPath=" + constThis.name
+				    + "&subParamName=" + currentName
+                    + ( (etp_dataspace != null && etp_dataspace.length > 0 ) ? "&dataspace=" + etp_dataspace : "" )
+				).then(
+				    function(jsonContent){
+                        const workspace_content = jsonContent["workspace"];
+                        const etp_content = jsonContent["etp"];
 
-				getJsonObjectFromServer("ResqmlAccessibleDOR?uuid="+constThis.rootUUID+"&subParamPath="+constThis.name+"&subParamName="+currentName).then(function(jsonContent){
-					const modalID = "modalDOR_" + constThis.rootUUID; // modal window id to open
+                        const modalID = "modalDOR_" + constThis.rootUUID; // modal window id to open
 
-					// Debut du formulaire 
+                        // Debut du formulaire
 
-					/** Formulaire de creation par un uuid externe **/
-					const formCreate_Empty = document.createElement("form");
-					formCreate_Empty.action = "ObjectEdit";
-					formCreate_Empty.method = "post";
+                        /** Formulaire de creation par un uuid externe **/
+                        const formCreate_Empty = document.createElement("form");
+                        formCreate_Empty.action = "ObjectEdit";
+                        formCreate_Empty.method = "post";
 
-					var inputCommand_Empty = document.createElement("input");
-					inputCommand_Empty.type ="text";
-					inputCommand_Empty.name = "command";
-					inputCommand_Empty.value = "update";
-					inputCommand_Empty.hidden = "hidden";
-					formCreate_Empty.appendChild(inputCommand_Empty);
+                        var inputCommand_Empty = document.createElement("input");
+                        inputCommand_Empty.type ="text";
+                        inputCommand_Empty.name = "command";
+                        inputCommand_Empty.value = "update";
+                        inputCommand_Empty.hidden = "hidden";
+                        formCreate_Empty.appendChild(inputCommand_Empty);
 
-					var inputRootUUID = document.createElement("input");
-					inputRootUUID.type ="text";
-					inputRootUUID.name = "Root_UUID";
-					inputRootUUID.value = constThis.rootUUID;
-					inputRootUUID.hidden = "hidden";
-					formCreate_Empty.appendChild(inputRootUUID);
+                        var inputRootUUID = document.createElement("input");
+                        inputRootUUID.type ="text";
+                        inputRootUUID.name = "Root_UUID";
+                        inputRootUUID.value = constThis.rootUUID;
+                        inputRootUUID.hidden = "hidden";
+                        formCreate_Empty.appendChild(inputRootUUID);
 
-					var inputUUID_Empty = document.createElement("input");
-					inputUUID_Empty.type ="text";
-					inputUUID_Empty.name = constSubEltName;
-					inputUUID_Empty.className = "form-control";
-					inputUUID_Empty.placeholder = "External UUID (e.g. 00000000-0000-0000-0000-000000000000)";
-					inputUUID_Empty.style.minWidth = "600px";
-					formCreate_Empty.appendChild(inputUUID_Empty);
-
-
-					var inputSubmit_Empty = document.createElement("button");
-					inputSubmit_Empty.className = "btn btn-success";
-					inputSubmit_Empty.appendChild(document.createTextNode("OK"));
-					inputSubmit_Empty.onclick = function(){
-						sendPostForm_Func(formCreate_Empty, "ObjectEdit", function(){
-																		constThis.refresh();
-																	});
-						closeModal(modalID);
-					};
-
-					/*var formDiv_Empty = document.createElement("div");
-					//formDiv_Empty.className = "dorLinkerForm";
-					formDiv_Empty.appendChild(formCreate_Empty);
-					formDiv_Empty.appendChild(inputSubmit_Empty);*/
-
-					var formDiv_Empty = createInputGroup([formCreate_Empty,inputSubmit_Empty], [false, true]);
+                        var inputUUID_Empty = document.createElement("input");
+                        inputUUID_Empty.type ="text";
+                        inputUUID_Empty.name = constSubEltName;
+                        inputUUID_Empty.className = "form-control";
+                        inputUUID_Empty.placeholder = "External UUID (e.g. 00000000-0000-0000-0000-000000000000)";
+                        inputUUID_Empty.style.minWidth = "600px";
+                        formCreate_Empty.appendChild(inputUUID_Empty);
 
 
-					/** Formulaire de creation par un uuid interne e l'epc **/
-					const formCreate = document.createElement("form");
-					formCreate.action = "ObjectEdit";
-					formCreate.method = "post";
+                        var inputSubmit_Empty = document.createElement("button");
+                        inputSubmit_Empty.className = "btn btn-success";
+                        inputSubmit_Empty.appendChild(document.createTextNode("OK"));
+                        inputSubmit_Empty.onclick = function(){
+                            sendPostForm_Func(formCreate_Empty, "ObjectEdit", function(){
+                                                                            constThis.refresh();
+                                                                        });
+                            closeModal(modalID);
+                        };
 
-					var inputCommand = document.createElement("input");
-					inputCommand.type ="text";
-					inputCommand.name = "command";
-					inputCommand.value = "update";
-					inputCommand.hidden = "hidden";
-					formCreate.appendChild(inputCommand);
+                        /*var formDiv_Empty = document.createElement("div");
+                        //formDiv_Empty.className = "dorLinkerForm";
+                        formDiv_Empty.appendChild(formCreate_Empty);
+                        formDiv_Empty.appendChild(inputSubmit_Empty);*/
 
-					var inputRootUUID = document.createElement("input");
-					inputRootUUID.type ="text";
-					inputRootUUID.name = "Root_UUID";
-					inputRootUUID.value = constThis.rootUUID;
-					inputRootUUID.hidden = "hidden";
-					formCreate.appendChild(inputRootUUID);
+                        var formDiv_Empty = createInputGroup([formCreate_Empty,inputSubmit_Empty], [false, true]);
 
-					var tableDOR = createTableFromData(
-							jsonContent, 
-							["num", "type", "title", "uuid", "schemaVersion"], 
-							["Num", "Type", "Title", "UUID", "SchemaVersion"], 
-							jsonContent.map(contentElt => [ function(){openResqmlObjectContentByUUID(contentElt['uuid'])} ]), 
-							null );
 
-					var shouldBeCheckable = currentElt.type.includes("proposal2_2.Collection");
+                        /** Formulaire de creation par un uuid interne e l'epc **/
+                        const formCreate = document.createElement("form");
+                        formCreate.action = "ObjectEdit";
+                        formCreate.method = "post";
 
-					for(var attIdx in currentElt.attributes){
-						var attrib = currentElt.attributes[attIdx];
-						if(attrib.name == subEltName){
-							if(attrib.type.endsWith("List")){
-								shouldBeCheckable = true;
-							}
-							break;
-						}
-					}
+                        var inputCommand = document.createElement("input");
+                        inputCommand.type ="text";
+                        inputCommand.name = "command";
+                        inputCommand.value = "update";
+                        inputCommand.hidden = "hidden";
+                        formCreate.appendChild(inputCommand);
 
-					/*console.log('sub elt name' + subEltName + " -- ")
-					console.log(currentElt)*/
-					if(shouldBeCheckable){
-						transformTabToFormCheckable(tableDOR, jsonContent.map(contentElt => contentElt.uuid), constSubEltName);
-					}else{
-						transformTabToFormRadio(tableDOR, jsonContent.map(contentElt => contentElt.uuid), constSubEltName);
-					}
+                        var inputRootUUID = document.createElement("input");
+                        inputRootUUID.type ="text";
+                        inputRootUUID.name = "Root_UUID";
+                        inputRootUUID.value = constThis.rootUUID;
+                        inputRootUUID.hidden = "hidden";
+                        formCreate.appendChild(inputRootUUID);
 
-					formCreate.appendChild(tableDOR);
+                        var tableDOR = createTableFromData(
+                                workspace_content,
+                                ["num", "type", "title", "uuid", "schemaVersion"],
+                                ["Num", "Type", "Title", "UUID", "SchemaVersion"],
+                                workspace_content.map(contentElt => [ function(){openResqmlObjectContentByUUID(contentElt['uuid'])} ]),
+                                null );
 
-					var inputSubmit = document.createElement("button");
-					inputSubmit.className = "btn btn-success";
-					inputSubmit.appendChild(document.createTextNode("OK"));
-					inputSubmit.onclick = function(){
-						sendPostForm_Func(formCreate, "ObjectEdit", function(){
-																		constThis.refresh();
-																	});
-						closeModal(modalID);
-					};
+                        var tableDOR_etp = createTableFromData(
+                                etp_content,
+                                ["num", "type", "title", "uuid", "schemaVersion", "uri"],
+                                ["Num", "Type", "Title", "UUID", "SchemaVersion", "Uri"],
+                                null,
+                                null );
 
-					var formDiv = document.createElement("div");
-					formDiv.className = "dorLinkerForm";
-					formDiv.appendChild(formCreate);
+                        var shouldBeCheckable = currentElt.type.includes("proposal2_2.Collection");
 
-					var modalContentDiv = document.createElement("div");
+                        for(var attIdx in currentElt.attributes){
+                            var attrib = currentElt.attributes[attIdx];
+                            if(attrib.name == subEltName){
+                                if(attrib.type.endsWith("List")){
+                                    shouldBeCheckable = true;
+                                }
+                                break;
+                            }
+                        }
 
-					var label_Empty = document.createElement("label");
-					label_Empty.append(document.createTextNode("External reference"));
-					var label_Internal = document.createElement("label");
-					label_Internal.append(document.createTextNode("Internal reference"));
+                        /*console.log('sub elt name' + subEltName + " -- ")
+                        console.log(currentElt)*/
+                        if(shouldBeCheckable){
+                            transformTabToFormCheckable(tableDOR, workspace_content.map(contentElt => contentElt.uuid), constSubEltName);
+                            transformTabToFormCheckable(tableDOR_etp, etp_content.map(contentElt => contentElt.uri), constSubEltName);
+                        }else{
+                            transformTabToFormRadio(tableDOR, workspace_content.map(contentElt => contentElt.uuid), constSubEltName);
+                            transformTabToFormRadio(tableDOR_etp, etp_content.map(contentElt => contentElt.uri), constSubEltName);
+                        }
 
-					modalContentDiv.appendChild(createTableFilterInput(tableDOR));
-					modalContentDiv.appendChild(label_Empty);
-					modalContentDiv.appendChild(formDiv_Empty);
-					modalContentDiv.appendChild(label_Internal);
-					modalContentDiv.appendChild(formDiv);
-					modalContentDiv.appendChild(inputSubmit);
+                        formCreate.appendChild(tableDOR);
 
-					openModal(modalID, "Creating DOR for " + constThis.rootUUID, modalContentDiv);
-				});
+                        if(etp_content.length > 0){
+                            var etpTableTitle = document.createElement("h3");
+                            etpTableTitle.appendChild(document.createTextNode(`From ETP server (dataspace ${etp_dataspace})`));
+                            formCreate.appendChild(etpTableTitle);
+                            formCreate.appendChild(tableDOR_etp);
+                        }
+
+                        var inputSubmit = document.createElement("button");
+                        inputSubmit.className = "btn btn-success";
+                        inputSubmit.appendChild(document.createTextNode("OK"));
+                        inputSubmit.onclick = function(){
+                            sendPostForm_Func(formCreate, "ObjectEdit", function(){
+                                                                            constThis.refresh();
+                                                                        });
+                            closeModal(modalID);
+                        };
+
+                        var formDiv = document.createElement("div");
+                        formDiv.className = "dorLinkerForm";
+                        formDiv.appendChild(formCreate);
+
+                        var modalContentDiv = document.createElement("div");
+
+                        var label_Empty = document.createElement("h3");
+                        label_Empty.append(document.createTextNode("External reference"));
+                        var label_Internal = document.createElement("h3");
+                        label_Internal.append(document.createTextNode("Workspace reference"));
+
+                        modalContentDiv.appendChild(createTableFilterInput(tableDOR));
+                        modalContentDiv.appendChild(label_Empty);
+                        modalContentDiv.appendChild(formDiv_Empty);
+                        modalContentDiv.appendChild(label_Internal);
+                        modalContentDiv.appendChild(formDiv);
+                        modalContentDiv.appendChild(inputSubmit);
+
+                        openModal(modalID, "Creating DOR for " + constThis.rootUUID, modalContentDiv);
+				    }
+				);
 			};
 		}else{
 			// Debut du formulaire 

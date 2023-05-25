@@ -28,24 +28,55 @@ import { XYZLoader } from './loaders/xyzLoader.js';
 import { MeshLoader } from './loaders/meshLoader.js';
 import { PolylineLoader } from './loaders/polylineLoader.js';
 
-export function fun_import_surface(geotjs, fileContent, file_name=""){
-    if(file_name.endsWith(".off")){
+export function fun_import_surface(
+  geotjs,
+  data,
+  fileType,
+  type=null,
+  uuid=null,
+  title=null,
+  pointColor=null,
+  lineColor=null,
+  faceColor=null,
+  epsgCode=null,
+){
+    var name = fileType;
+    if(type != null && uuid != null && title != null){
+      name = type + "_" + uuid + "[" + title + "]";
+    }
+
+    if(fileType.endsWith("off")){
         console.log("reading off");
-        geotjs.geoScene.addObject(new GeoObject(new OffLoader(fileContent), file_name));
-    }else if(file_name.endsWith(".xyz")){
+        geotjs.geoScene.addObject(new GeoObject(new OffLoader(data), name, pointColor, lineColor, faceColor, epsgCode));
+    }else if(fileType.endsWith("xyz")){
         console.log("reading xyz");
-        geotjs.geoScene.addObject(new GeoObject(new XYZLoader(fileContent), file_name));
-    }else if(file_name.endsWith(".mesh")){
+        geotjs.geoScene.addObject(new GeoObject(new XYZLoader(data), name, pointColor, lineColor, faceColor, epsgCode));
+    }else if(fileType.endsWith("mesh")){
         console.log("reading mesh");
-        geotjs.geoScene.addObject(new GeoObject(new MeshLoader(fileContent), file_name));
-    }else if(file_name.endsWith(".polyline")){
+        geotjs.geoScene.addObject(new GeoObject(new MeshLoader(data), name, pointColor, lineColor, faceColor, epsgCode));
+    }else if(fileType.endsWith("polyline")){
         console.log("reading polyline");
-        geotjs.geoScene.addObject(new GeoObject(new PolylineLoader(fileContent), file_name));
+        geotjs.geoScene.addObject(new GeoObject(new PolylineLoader(data), name, pointColor, lineColor, faceColor, epsgCode));
     }else{
         console.log("reading obj");
-        geotjs.geoScene.addObject(new GeoObject(new ObjLoader(fileContent), file_name));
+        geotjs.geoScene.addObject(new GeoObject(new ObjLoader(data), name, pointColor, lineColor, faceColor, epsgCode));
     }
     geotjs.animate();
+}
+
+function blinkObject(geoScene, obj, nbLoop=6, timeMS=300){
+    const const_scene = geoScene;
+
+    for (var i = 0; i < nbLoop; i++) {
+        setTimeout(function () {
+            obj.material.color = new THREE.Color(obj.material.color.getHex() ^ 0xFFFFFF);
+            const_scene.animate();
+        }, ( 2 * i) * timeMS);
+        setTimeout(function () {
+            obj.material.color = new THREE.Color(obj.material.color.getHex() ^ 0xFFFFFF);
+            const_scene.animate();
+        }, ( 2 * i + 1) * timeMS);
+    }
 }
 
 
@@ -103,12 +134,53 @@ export class GeoThreeJS{
     }
 
     setupRenderer(){
+        const const_this = this;
+
         this.renderer = new THREE.WebGLRenderer({
             alpha: true,
             antialias: true
         });
         this.renderer.setSize( this.width, this.height );
         this.canvasElt.appendChild(this.renderer.domElement);
+        console.log(const_this.scene);
+
+        this.raycaster = new THREE.Raycaster();
+        this.renderer.domElement.addEventListener("dblclick", function(event){
+            var mouse = new THREE.Vector2();
+            //mouse.x = ( event.clientX / const_this.canvasElt.innerWidth ) * 2 - 1;
+            //mouse.y = - ( event.clientY / const_this.canvasElt.innerHeight ) * 2 + 1;
+            /*mouse.x =   ( ( event.clientX - const_this.renderer.domElement.offsetLeft ) / const_this.renderer.domElement.width )  * 2 - 1;
+            mouse.y = - ( ( event.clientY - const_this.renderer.domElement.offsetTop  ) / const_this.renderer.domElement.height) * 2 + 1;*/
+            mouse.x =  (event.clientX / const_this.renderer.domElement.clientWidth) * 2 - 1;
+            mouse.y = -(event.clientY / const_this.renderer.domElement.clientHeight) * 2 + 1;
+
+            const_this.raycaster.setFromCamera(mouse, const_this.camera);
+            var intersects = const_this.raycaster.intersectObjects(const_this.scene.children, true); //array
+            if (intersects.length > 0) {
+                const_this.createTemporaryPoint(intersects[0].point.x, intersects[0].point.y, intersects[0].point.z);
+                // var selectedObject = intersects[0];
+                console.log(intersects);
+            }
+        }, true);
+        
+    }
+
+    createTemporaryPoint(x, y, z, size=1){
+        const const_this = this;
+        const geometry = new THREE.SphereGeometry( size, 9, 5 ); 
+        const material = new THREE.MeshBasicMaterial( { color: 0xffff00 } ); 
+        const sphere = new THREE.Mesh( geometry, material );
+        sphere.translateX(x);
+        sphere.translateY(y);
+        sphere.translateZ(z);
+
+        this.scene.add( sphere );
+        blinkObject(const_this, sphere);
+        setTimeout(function () {
+            const_this.scene.remove( sphere );
+            const_this.animate();
+        }, 6000);
+
     }
 
     setupControls(){
@@ -139,12 +211,12 @@ export class GeoThreeJS{
     createView(parent){
         const const_this = this;
         parent.appendChild(this.domElt);
-        this.setupRenderer();
         this.setupCamera();
+        this.setupRenderer();
         this.setupControls();
 
         if(this.createSceneUi){
-            this.geoScene = new GeoScene(this.scene, this.controls);
+            this.geoScene = new GeoScene(this.scene, this.controls, this);
             this.geoUi = new GeoSceneUi(this.geoScene, this.sceneUIElt);
             this.sceneUIElt.addEventListener(GeoScene.EVT_RESET_CONTROLS, (e) => {
                 const_this.setupControls();
@@ -155,7 +227,16 @@ export class GeoThreeJS{
         return this.domElt;
     }
 
-    importSurface(fileContent, fileName){
-        fun_import_surface(this, fileContent, fileName);
+    importSurface(
+      data,
+      fileType,
+      type=null,
+      uuid=null,
+      title=null,
+      pointColor=null,
+      lineColor=null,
+      faceColor=null,
+      epsgCode=null){
+        fun_import_surface(this, data, fileType, type, uuid, title, pointColor, lineColor, faceColor, epsgCode);
     }
 }

@@ -110,6 +110,22 @@ public class SessionUtility {
         WorkspaceContent wc = getWorkspaceContent(session);
         return wc.getNotReadObjects();
     }
+
+    public static boolean removeNotEnergymlObject(HttpSession session, String filePath){
+        Pair<String, byte[]> toRemove = null;
+        List<Pair<String, byte[]>> notEnergymlObj = getNotResqmlObjects(session);
+        for(Pair<String, byte[]> p: notEnergymlObj){
+            if(p.l().compareTo(filePath) == 0){
+                toRemove = p;
+            }
+        }
+        if(toRemove != null){
+            notEnergymlObj.remove(toRemove);
+            return true;
+        }
+        return false;
+    }
+
     public static Map<String, Object> getAdditionalInformation(HttpSession session) {
         WorkspaceContent wc = getWorkspaceContent(session);
         return wc.getAdditionalInformation();

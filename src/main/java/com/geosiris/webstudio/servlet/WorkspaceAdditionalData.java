@@ -89,7 +89,6 @@ public class WorkspaceAdditionalData extends HttpServlet {
 		response.setCharacterEncoding("UTF-8");
 		out.write("File " + filePath + " not found.");
 		out.flush();
-
 	}
 
 	/**
