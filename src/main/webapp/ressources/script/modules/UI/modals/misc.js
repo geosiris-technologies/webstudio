@@ -14,13 +14,13 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-import {downloadGetURL_Promise, sendGetURL_Promise, sendPostRequestJson_Promise, sendPostRequest_Promise} from "../../requests/requests.js"
-import {beginTask, endTask} from "../ui.js"
-import {modal_waitDomUpdate, sendForm} from "./modalEntityManager.js"
-import {sendGetURLAndReload} from "../eventHandler.js"
-import {saveAllResqmlObject_promise} from "../tabulation.js"
-import {appendConsoleMessage} from "../../logs/console.js"
-import {__ENUM_CONSOLE_MSG_SEVERITY_TOAST__, __ID_CONSOLE__, __RWS_CLIENT_NAME__, __RWS_ETP_LOGIN__, __RWS_ETP_PWD__, __RWS_ETP_URI__, set__RWS_ETP_URI__} from "../../common/variables.js"
+import {downloadGetURL_Promise, sendGetURL_Promise, sendPostRequestJson_Promise, sendPostRequest_Promise} from "../../requests/requests.js";
+import {beginTask, endTask} from "../ui.js";
+import {modal_waitDomUpdate, sendForm} from "./modalEntityManager.js";
+import {sendGetURLAndReload} from "../eventHandler.js";
+import {saveAllResqmlObject_promise} from "../tabulation.js";
+import {appendConsoleMessage} from "../../logs/console.js";
+import {__ENUM_CONSOLE_MSG_SEVERITY_TOAST__, __ID_CONSOLE__, __RWS_CLIENT_NAME__, __RWS_ETP_LOGIN__, __RWS_ETP_PWD__, __RWS_ETP_URI__, set__RWS_ETP_URI__} from "../../common/variables.js";
 
 
 export function dochangeDorReference(){

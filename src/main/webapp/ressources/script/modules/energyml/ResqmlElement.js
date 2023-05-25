@@ -215,6 +215,9 @@ export class ResqmlElement{
 			        this.attributes[cur_idx].subAttribCollapserElt.click();
 			    }catch(exceptionVisible){
 			        console.log(exceptionVisible);
+              console.log(this.attributes);
+              console.log(cur_idx);
+              console.log(visibleIdx);
 			    }
 			}
 		}else{ 								// Si on met à jour un arbre existant
@@ -1374,8 +1377,6 @@ export class ResqmlElement{
 				    function(jsonContent){
                         const workspace_content = jsonContent["workspace"];
                         const etp_content = jsonContent["etp"];
-
-                        console.log(etp_content);
 
                         const modalID = "modalDOR_" + constThis.rootUUID; // modal window id to open
 

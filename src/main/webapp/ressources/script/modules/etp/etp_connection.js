@@ -261,7 +261,7 @@ export function create_dataspace_input(callback_func){
 }
 
 export function update_dataspaces_inputs(callback_func, force){
-    console.log("dataspaces_needs_update" + dataspaces_needs_update());
+    // console.log("dataspaces_needs_update" + dataspaces_needs_update());
     if( (force != null && force) || dataspaces_needs_update() ){
         dataspace_has_been_updated()
         sendGetURL_Promise("ETPListDataspaces").then(
@@ -276,6 +276,8 @@ export function update_dataspaces_inputs(callback_func, force){
                     callback_func()
                 }
             });
+    }else if(callback_func != null){
+        callback_func()
     }
 }
 

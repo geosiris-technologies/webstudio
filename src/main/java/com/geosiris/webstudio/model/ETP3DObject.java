@@ -23,7 +23,9 @@ public class ETP3DObject {
     private String data, fileType;
     private String type, uuid, title;
 
-    public ETP3DObject(String data, String fileType, String type, String uuid, String title, String pointColor, String lineColor, String faceColor) {
+    private String epsgCode;
+
+    public ETP3DObject(String data, String fileType, String type, String uuid, String title, String pointColor, String lineColor, String faceColor, String epsgCode) {
         this.data = data;
         this.fileType = fileType;
         this.type = type;
@@ -32,6 +34,7 @@ public class ETP3DObject {
         this.pointColor = pointColor;
         this.lineColor = lineColor;
         this.faceColor = faceColor;
+        this.epsgCode = epsgCode;
     }
 
     @Override

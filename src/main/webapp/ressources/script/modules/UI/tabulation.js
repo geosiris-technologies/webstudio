@@ -29,13 +29,11 @@ export function closeAllResqmlObjectContent(){
     }
 }
 
-
 export function saveAllResqmlObject_promise(){
     var promessesSave = [];
     var tabsSaver = document.getElementsByClassName("tabulationSave");
     for (var i = tabsSaver.length - 1; i >= 0; i--) {
         promessesSave.push(new Promise(    function (resolve, reject) {
-                                        console.log("click " + i);
                                         resolve(tabsSaver[i].click());
                                     })
                     );
@@ -45,7 +43,7 @@ export function saveAllResqmlObject_promise(){
 
 export function saveResqmlObject_promise(uuid, idTabHeader){
     var promessesSave = [];
-    objContentElt = document.getElementById(genObjectContentDivElementId(uuid));
+    var objContentElt = document.getElementById(genObjectContentDivElementId(uuid));
     if(objContentElt != null){
         var butObjSave = objContentElt.getElementsByClassName("tabulationSave");
         for (var i = butObjSave.length - 1; i >= 0; i--) {

@@ -300,8 +300,8 @@ export function refreshHighlightedOpenedObjects(){
     const openedUUID = openedObjects.map(x => x.resqmlElt.rootUUID);
     //highlightTableLineFromTdText("colName_uuid", openedUUID);    // Le colName_uuid provient de la fonction de creation de tableau
     Array.prototype.forEach.call(openedUUID, uuid =>
-            highlightTableCellFromClass(getObjectTableCellClass(uuid), true)
-            );
+        highlightTableCellFromClass(getObjectTableCellClass(uuid), true)
+    );
 }
 
 export function refreshExistingObjectInWorkspace(){
@@ -324,6 +324,7 @@ export function highlightExistingElt(jsonObjectList){
     }
 
     jsonObjectList_promise.then( (objectList) => {
+        //console.log(objectList);
         for(let itemToHighlight of document.getElementsByClassName(CLASS_HIGHLIGHT_EXISTING_OBJECT)){
             objectList.forEach( elt => {
                 if(elt["uuid"] != null && elt["uuid"].length> 0 && itemToHighlight.className.includes(getObjectTableCellClass(elt["uuid"]))){
