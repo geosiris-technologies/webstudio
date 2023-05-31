@@ -142,7 +142,7 @@ export class GeoThreeJS{
         });
         this.renderer.setSize( this.width, this.height );
         this.canvasElt.appendChild(this.renderer.domElement);
-        console.log(const_this.scene);
+        // console.log(const_this.scene);
 
         this.raycaster = new THREE.Raycaster();
         this.renderer.domElement.addEventListener("dblclick", function(event){

@@ -147,6 +147,7 @@ const __CL_CONSOLE_LI__ERROR    = __CL_CONSOLE_LI__ + __ENUM_CONSOLE_MSG_SEVERIT
 */
 
 
+export const REGEX_HEX_COLOR = new RegExp('#(([0-9]|[a-f]){2}){3}');
 
 
 // OTHER VARIABLES

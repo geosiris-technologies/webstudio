@@ -14,16 +14,16 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-import {sendGetURL, sendGetURL_Promise, sendPostForm_Func, getJsonObjectFromServer} from "../requests/requests.js"
-import {createDeleteButton, createDropDownButton, createHoverableHtmlContent, createInputGroup, geosiris_createEditableSelector, getPopoverOpenUUID} from "../UI/htmlUtils.js"
-import {openResqmlObjectContentByUUID, saveResqmlObjectByUUID} from "../main.js"
-import {generateUUID, isResqmlListType, isUUID} from "../common/utils.js"
-import {createSnackBar} from "../UI/snackbar.js"
-import {extTypeAttributes, mapResqmlEnumToValues, mapResqmlTypeToSubtypes, mapResqmlTypesComment, openHDFViewAskH5Location} from "./epcContentManager.js"
-import {closeModal, openModal} from "../UI/modals/modalEntityManager.js"
-import {createTableFilterInput, createTableFromData, transformTabToFormCheckable, transformTabToFormRadio} from "../UI/table.js"
-import {UUID_REGEX, UUID_REGEX_str} from "../common/variables.js"
-import {geosiris_DndHandler} from "../UI/dragAndDrop.js"
+import {sendGetURL, sendGetURL_Promise, sendPostForm_Func, getJsonObjectFromServer} from "../requests/requests.js";
+import {createDeleteButton, createDropDownButton, createHoverableHtmlContent, createInputGroup, geosiris_createEditableSelector, getPopoverOpenUUID} from "../UI/htmlUtils.js";
+import {openResqmlObjectContentByUUID, saveResqmlObjectByUUID} from "../main.js";
+import {generateUUID, isResqmlListType, isUUID, hsvToRgb} from "../common/utils.js";
+import {createSnackBar} from "../UI/snackbar.js";
+import {extTypeAttributes, mapResqmlEnumToValues, mapResqmlTypeToSubtypes, mapResqmlTypesComment, openHDFViewAskH5Location} from "./epcContentManager.js";
+import {closeModal, openModal} from "../UI/modals/modalEntityManager.js";
+import {createTableFilterInput, createTableFromData, transformTabToFormCheckable, transformTabToFormRadio} from "../UI/table.js";
+import {UUID_REGEX, UUID_REGEX_str, REGEX_HEX_COLOR} from "../common/variables.js";
+import {geosiris_DndHandler} from "../UI/dragAndDrop.js";
 
 
 const ResqmlElement_NAMESUBATTPREFIX = "subAtt_";
@@ -32,7 +32,6 @@ export function ResqmlElement_isNullAttribute(resqmlElt){
 	return 	resqmlElt==null || ((resqmlElt.attributes == null || resqmlElt.attributes.length <= 0)
 						&&   resqmlElt.value == null 
 						&& 	(resqmlElt.properties == null || resqmlElt.properties.length <= 0));
-						
 }
 
 export function getHtmlEltIdxInParent(elt_html){
@@ -210,15 +209,17 @@ export class ResqmlElement{
 			}
 			for(var curAtt_Idx=0; curAtt_Idx < visibleIdx.length; curAtt_Idx++){
 			    var cur_idx = visibleIdx[curAtt_Idx];
-			    try{
-			        this.attributes[cur_idx].visible = true;
-			        this.attributes[cur_idx].subAttribCollapserElt.click();
-			    }catch(exceptionVisible){
-			        console.log(exceptionVisible);
-              console.log(this.attributes);
-              console.log(cur_idx);
-              console.log(visibleIdx);
-			    }
+          if(this.attributes.length >= cur_idx){
+  			    try{
+  			        this.attributes[cur_idx].visible = true;
+  			        this.attributes[cur_idx].subAttribCollapserElt.click();
+  			    }catch(exceptionVisible){
+  			        console.log(exceptionVisible);
+                console.log(this.attributes);
+                console.log(cur_idx);
+                console.log(visibleIdx);
+  			    }
+          }
 			}
 		}else{ 								// Si on met à jour un arbre existant
 			// Si il y a des attributs
@@ -777,68 +778,125 @@ export class ResqmlElement{
 				/*console.log('This title : ' + titleValue + " -- ")
 				console.log(this.properties)*/
 
-				if(!isNaN(parseInt(shortName)) || this.type.toLowerCase().includes("dataobjectreference")){
-					// On cherche si pour les elements des listes on peut avoir un meilleur nom
-					// Pour tous les fils, on regarde si il existe un element Title
-					if(this.properties != null){
-						var found_title = false;
-						for(var propIdx=0; propIdx < this.properties.length; propIdx++){
-							const subProp = this.properties[propIdx];
-							var subPropName = subProp.name;
-							if(subPropName.includes(".")){
-								subPropName = subPropName.substring(subPropName.lastIndexOf('.')+1);
-							}
-							if(subPropName.toLowerCase() == "title"){
-								titleValue += " '" + subProp.value + "'";
-								found_title = false;
-								break;
-							}
-						}
-						// Si on ne trouve pas de title, on cherche une value (e.g. les value dans les StringTableLookup)
-						if(!found_title){
-							for(var propIdx=0; propIdx < this.properties.length; propIdx++){
-								const subProp = this.properties[propIdx];
-								var subPropName = subProp.name;
-								if(subPropName.includes(".")){
-									subPropName = subPropName.substring(subPropName.lastIndexOf('.')+1);
-								}
-								if(subPropName.toLowerCase() == "value"){
-									titleValue += " <" + subProp.value + ">";
-									found_title = false;
-									break;
-								}
-							}
-						}
-					}
-					if(this.attributes!=null){
-						for(var attIdx=0; attIdx < this.attributes.length; attIdx++){
-							const subA = this.attributes[attIdx];
-							if(subA.properties != null && subA.properties.length > 0){
-								var subA_shortName = subA.name;
-								if(subA_shortName.includes(".")){
-									subA_shortName = subA_shortName.substring(subA_shortName.lastIndexOf('.')+1);
-								}
-								for(var propIdx=0; propIdx < subA.properties.length; propIdx++){
-									const subProp = subA.properties[propIdx];
-									var subPropName = subProp.name;
-									if(subPropName.includes(".")){
-										subPropName = subPropName.substring(subPropName.lastIndexOf('.')+1);
-									}
-									if(subPropName.toLowerCase() == "title"){
-										titleValue += " " + subA_shortName.replace( /[a-z]/g, '' ) + "(" + subProp.value + ")";
-										break;
-									}
-								}
-							}
-						}
-					}
-				}
+				{ // === TITLE SUFFIX
+          var subColor = null;
+          var subTitle = null;
+          var subValue = null;
+          if(!isNaN(parseInt(shortName)) || this.type.toLowerCase().includes("dataobjectreference")){
+            // On cherche si pour les elements des listes on peut avoir un meilleur nom
+            // Pour tous les fils, on regarde si il existe un element Title
+            if(this.properties != null){
+  
+              for(var propIdx=0; propIdx < this.properties.length; propIdx++){
+                const subProp = this.properties[propIdx];
+                var subPropName = subProp.name;
+                if(subPropName.includes(".")){
+                  subPropName = subPropName.substring(subPropName.lastIndexOf('.') + 1);
+                }
+                if(subColor == null && subPropName.toLowerCase() == "hue"){
+                  var hue = subProp.value;
+                  var value = null;
+                  var saturation = null;
 
+                  for(var propIdxBIS=0; propIdxBIS < this.properties.length; propIdxBIS++){
+                    const subPropBIS = this.properties[propIdx];
+                    if(subPropBIS.name .toLowerCase() == "value"){
+                      value = subPropBIS.value;
+                    }
+                    if(subPropBIS.name .toLowerCase() == "saturation"){
+                      saturation = subPropBIS.value;
+                    }
+                  }
+                  if(hue != null && value != null && saturation != null){
+                    subColor = hsvToRgb(hue, saturation, value);
+                  }
+                }
+                if(subTitle == null && subPropName.toLowerCase() == "title"){
+                  titleValue += " '" + subProp.value + "'";
+                  subTitle = subProp.value;
+                  if(REGEX_HEX_COLOR.test(subTitle)){
+                    subColor = subTitle;
+                  }
+                }
+                if(subTitle == null && subPropName.toLowerCase() == "value"){
+                  titleValue += " '" + subProp.value + "'";
+                  subValue = subProp.value;
+                }
+              }
+            }
+            if(this.attributes!=null){
+              for(var attIdx=0; attIdx < this.attributes.length; attIdx++){
+                const subA = this.attributes[attIdx];
+                if(subA.properties != null && subA.properties.length > 0){
+                  var subA_shortName = subA.name;
+                  if(subA_shortName.includes(".")){
+                    subA_shortName = subA_shortName.substring(subA_shortName.lastIndexOf('.')+1);
+                  }
+                  for(var propIdx=0; propIdx < subA.properties.length; propIdx++){
+                    const subProp = subA.properties[propIdx];
+                    var subPropName = subProp.name;
+                    if(subPropName.includes(".")){
+                      subPropName = subPropName.substring(subPropName.lastIndexOf('.') + 1);
+                    }
+                    if(subColor == null && subPropName.toLowerCase() == "hue"){
+                      var hue = subProp.value;
+                      var value = null;
+                      var saturation = null;
 
-				// Title type
-				var htmlTitleElt_type = document.createElement("span");
-				htmlTitleElt_type.appendChild(document.createTextNode(typeInTitle));
-				this.htmlTitleElt.appendChild(htmlTitleElt_type);
+                      for(var propIdxBIS=0; propIdxBIS < subA.properties.length; propIdxBIS++){
+                        const subPropBIS = subA.properties[propIdx];
+                        if(subPropBIS.name .toLowerCase() == "value"){
+                          value = subPropBIS.value;
+                        }
+                        if(subPropBIS.name .toLowerCase() == "saturation"){
+                          saturation = subPropBIS.value;
+                        }
+                      }
+                      if(hue != null && value != null && saturation != null){
+                        subColor = hsvToRgb(hue, saturation, value);
+                      }
+                    }
+                    if(subTitle == null && subPropName.toLowerCase() == "title"){
+                      titleValue += " '" + subProp.value + "'";
+                      subTitle = subProp.value;
+                      if(REGEX_HEX_COLOR.test(subTitle)){
+                        subColor = subTitle;
+                      }
+                    }
+                    if(subTitle == null && subPropName.toLowerCase() == "value"){
+                      titleValue += " '" + subProp.value + "'";
+                      subValue = subProp.value;
+                    }
+                  }
+                  /*for(var propIdx=0; propIdx < subA.properties.length; propIdx++){
+                    const subProp = subA.properties[propIdx];
+                    var subPropName = subProp.name;
+                    if(subPropName.includes(".")){
+                      subPropName = subPropName.substring(subPropName.lastIndexOf('.')+1);
+                    }
+                    if(subPropName.toLowerCase() == "title"){
+                      titleValue += " " + subA_shortName.replace( /[a-z]/g, '' ) + "(" + subProp.value + ")";
+                      break;
+                    }
+                  }*/
+                }
+              }
+            }
+          }
+
+          if(subColor != null){
+            var spanTitleColor = document.createElement("span");
+            spanTitleColor.className = "fas fa-circle colorCircle";
+            spanTitleColor.style.color = subColor;
+            this.htmlTitleElt.appendChild(spanTitleColor);
+          }
+          
+  
+          // Title type
+          var htmlTitleElt_type = document.createElement("span");
+          htmlTitleElt_type.appendChild(document.createTextNode(typeInTitle));
+          this.htmlTitleElt.appendChild(htmlTitleElt_type);
+        }
 
 				if(mapResqmlTypesComment[this.type.toLowerCase()] != null){
 					var commentType = document.createElement("span");
@@ -1146,7 +1204,6 @@ export class ResqmlElement{
 			}
 		}
 
-
 		propertyDiv.appendChild(titleElt);
 		propertyDiv.appendChild(propTable);
 
@@ -1155,19 +1212,22 @@ export class ResqmlElement{
 
 
 	getCurrentListContentElt(){
-		if(this.isResqmlListType()){
-			var contentJSON = "{\"name\":\"" + this.name  + "\", "
-							+ " \"type\":\"" + this.templatedClass[0] + "\"}";
+    try{
+  		if(this.isResqmlListType()){
+  			var contentJSON = "{\"name\":\"" + this.name  + "\", " + " \"type\":\"" + this.templatedClass[0] + "\"}";
 
-			var res = new ResqmlElement(JSON.parse(contentJSON), 
-										this.rootUUID, 
-										this.htmlElt_propertyRoot,
-										this, 
-										true);
-			return res;
-		}else{
-			//console.log("not a list type " + this.name +" - " + this.type);
-		}
+  			var res = new ResqmlElement(JSON.parse(contentJSON), 
+  										this.rootUUID, 
+  										this.htmlElt_propertyRoot,
+  										this, 
+  										true);
+  			return res;
+  		}else{
+  			//console.log("not a list type " + this.name +" - " + this.type);
+  		}
+    }catch(except){
+      console.log(except)
+    }
 		return this;
 	}
 

@@ -205,7 +205,9 @@ export function sendPostRequestJson(str_url, dict){
     xhr.setRequestHeader("Content-Type", "application/json");
     xhr.onreadystatechange = function () {
         if (xhr.readyState === 4 && xhr.status === 200) {
-            var json = JSON.parse(xhr.responseText);
+            try{
+                var json = JSON.parse(xhr.responseText);
+            }catch(e){console.log(e);}
         }
     };
     var data = JSON.stringify(dict);
@@ -277,20 +279,23 @@ export function getJsonObjectFromServer(url){
     return fetch(url)
     .then(response => {
         endTask();
-        if (!response.ok) {
-            return response.json()
-                .catch(() => {
-                    // Couldn't parse the JSON
-                    console.log(new Error(response.status));
-                    return {};
-                })
-                .then(({message}) => {
-                    // Got valid JSON with error response, use it
-                    console.log(new Error(message || response.status));
-                    return {};
-                });
-        }
-        // Successful response, parse the JSON and return the data
-        return response.json();
+        try{
+            if (!response.ok) {
+                return response.json()
+                    .catch(() => {
+                        // Couldn't parse the JSON
+                        console.log(new Error(response.status));
+                        return {};
+                    })
+                    .then(({message}) => {
+                        // Got valid JSON with error response, use it
+                        console.log(new Error(message || response.status));
+                        return {};
+                    });
+            }
+            // Successful response, parse the JSON and return the data
+            return response.json();
+        }catch(except){console.log(except);}
+        return null;
     });
 }

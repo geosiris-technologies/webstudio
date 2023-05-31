@@ -14,18 +14,19 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-import {createTabulation, openTabulation, saveAllResqmlObject_promise} from "../UI/tabulation.js"
-import {beginTask, endTask, refreshHighlightedOpenedObjects} from "../UI/ui.js"
-import {sendGetURLAndReload, sendPostFormAndReload} from "../UI/eventHandler.js"
-import {downloadGetURL_Promise, sendGetURL, sendGetURL_Promise, getJsonObjectFromServer} from "./requests.js"
-import {genObjectContentDivElementId, genObjectContentElementId, genObjectPropertyElementId, resquestCorrection, resquestObjectCopy, resquestValidation} from "../energyml/epcContentManager.js"
-import {ResqmlElement} from "../energyml/ResqmlElement.js"
-import {appendConsoleMessage} from "../logs/console.js"
-import {call_after_DOM_updated, createSplitter} from "../UI/htmlUtils.js"
-import {sendUserFormWithPasswordValidation} from "../common/passwordValidator.js"
-import {createTableFromData, transformTabToFormCheckable} from "../UI/table.js"
-import {closeResqmlObjectContentByUUID, openResqmlObjectContentByUUID} from "../main.js"
-import {closeModal, openExistingModal, openModal} from "../UI/modals/modalEntityManager.js"
+import {createTabulation, openTabulation, saveAllResqmlObject_promise} from "../UI/tabulation.js";
+import {beginTask, endTask, refreshHighlightedOpenedObjects} from "../UI/ui.js";
+import {sendGetURLAndReload, sendPostFormAndReload} from "../UI/eventHandler.js";
+import {downloadGetURL_Promise, sendGetURL, sendGetURL_Promise, getJsonObjectFromServer} from "./requests.js";
+import {genObjectContentDivElementId, genObjectContentElementId, genObjectPropertyElementId, resquestCorrection, resquestObjectCopy, resquestValidation} from "../energyml/epcContentManager.js";
+import {ResqmlElement} from "../energyml/ResqmlElement.js";
+import {appendConsoleMessage} from "../logs/console.js";
+import {call_after_DOM_updated, createSplitter} from "../UI/htmlUtils.js";
+import {sendUserFormWithPasswordValidation} from "../common/passwordValidator.js";
+import {createTableFromData, transformTabToFormCheckable} from "../UI/table.js";
+import {closeResqmlObjectContentByUUID, openResqmlObjectContentByUUID} from "../main.js";
+import {closeModal, openExistingModal, openModal} from "../UI/modals/modalEntityManager.js";
+import {createSnackBar} from "../UI/snackbar.js";
 
 
 export function saveAllResqmlObjectContent(){
@@ -63,6 +64,7 @@ export function openResqmlObjectContent(    uuid,
             var xmlHttp = new XMLHttpRequest();
 
             getJsonObjectFromServer("ResqmlObjectTree?uuid=" + uuid).then(function(parsedJSON){
+              if(parsedJSON != null){
                 var objectProperty = document.createElement("div");
                 objectProperty.id  = genObjectPropertyElementId(uuid);
                 objectProperty.className = classObjectProperty;
@@ -241,8 +243,11 @@ export function openResqmlObjectContent(    uuid,
                 // console.log("#openResqmlObjectContent call refreshHighlightedOpenedObjects")
                 // refreshHighlightedOpenedObjects(); allready done in openTab
                 // console.log("#openResqmlObjectContent END")
-                endTask();
-            });
+            }else{
+                createSnackBar("Object " + uuid + " not found in workspace");
+            }
+            endTask();
+          });
         }else{
             endTask();
         }

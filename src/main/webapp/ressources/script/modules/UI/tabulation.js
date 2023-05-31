@@ -14,12 +14,31 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-import {genObjectContentDivElementId} from "../energyml/epcContentManager.js"
-import {getResqmlEltTabText, getResqmlEltTitleText} from "../energyml/ResqmlElement.js"
-import {highlightTableCellFromClass} from "./table.js"
-import {refreshHighlightedOpenedObjects} from "./ui.js"
-import {getObjectTableCellClass} from "../common/variables.js"
+import {genObjectContentDivElementId} from "../energyml/epcContentManager.js";
+import {getResqmlEltTabText, getResqmlEltTitleText} from "../energyml/ResqmlElement.js";
+import {highlightTableCellFromClass} from "./table.js";
+import {refreshHighlightedOpenedObjects} from "./ui.js";
+import {getObjectTableCellClass} from "../common/variables.js";
 
+
+export function getActiveOpenedObject(idTabHeader){
+    var tabHeader = document.getElementById(idTabHeader);
+    var navs = tabHeader.getElementsByClassName("nav-link");
+    for (var i = navs.length - 1; i >= 0; i--) {
+        if(navs[i].className.includes(" active")){
+          return nav[i].parent;
+        }
+    }
+    return null;
+}
+
+export function closeOpenedObject(navItem){
+    if(navItem != null){
+        try{
+            navItem.getElementsByClassName("tabulationCloser").click();
+        }catch(e){console.log(e);}
+    }
+}
 
 export function closeAllResqmlObjectContent(){
     //console.log("closing all");console.log(document.getElementsByClassName("tabulationCloser"));

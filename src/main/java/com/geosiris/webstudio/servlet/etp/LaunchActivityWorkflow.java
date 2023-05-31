@@ -125,12 +125,12 @@ public class LaunchActivityWorkflow extends HttpServlet {
                                 Map<CharSequence, CharSequence> mapActivity = new HashMap<>();
                                 for(Object paramActivity : parameters){
                                     try {
-                                        mapActivity.put(mapActivity.size() + "", ETPUtils.getUriFromDOR(ObjectController.getObjectAttributeValue(paramActivity, "dataObject"), currentDataspace).toString());
+                                        mapActivity.put((mapActivity.size() + 1) + "", ETPUtils.getUriFromDOR(ObjectController.getObjectAttributeValue(paramActivity, "dataObject"), currentDataspace).toString());
                                     }catch (Exception e){
                                         e.printStackTrace();
                                     }
                                 }
-                                String reqContent = "{\"data_objects\": " + gson.toJson(ETPDefaultProtocolBuilder.buildGetDataObjects(mapActivity, "xml")).replace("\u0027", "'") + "}";
+                                String reqContent = "{\"data_objects\": " + gson.toJson(ETPDefaultProtocolBuilder.buildGetDataObjects(mapActivity, "xml")).replace("\\u0027", "'") + "}";
                                 logger.debug( reqContent );
 
                                 answer.append(sendLaunchWorkflow(session, reqContent, ce_type)).append("\n");
@@ -171,15 +171,32 @@ public class LaunchActivityWorkflow extends HttpServlet {
             send_req.setEntity(params);
             HttpResponse answer = httpClient.execute(send_req);
             result = IOUtils.toString(answer.getEntity().getContent());
-            logger.debug("@sendLaunchWorkflow \n" + Arrays.stream(answer.getAllHeaders()).map(h -> "\t" + h.getName() + " => " + h.getValue() + "\n").reduce("", (a,b) -> a+b ));
+            logger.debug("@sendLaunchWorkflow to " + properties.getWorkflowUrl() + "\n" + Arrays.stream(send_req.getAllHeaders()).map(h -> "\t" + h.getName() + " => " + h.getValue() + "\n").reduce("", (a,b) -> a+b ));
 
             SessionUtility.log(session, new ServerLogMessage( ServerLogMessage.MessageType.DEBUG,
                     "@sendLaunchWorkflow \n" + Arrays.stream(answer.getAllHeaders()).map(h -> "\t" + h.getName() + " => " + h.getValue() + "\n").reduce("", (a,b) -> a+b),
                     "ActivityLauncher"));
             logger.debug("@sendLaunchWorkflow " + result);
         } catch (Exception ex) {
+            ex.printStackTrace();
+            logger.error(ex);
             logger.error(ex.getMessage());
         }
         return result;
+    }
+
+    public static void main(String[] argv){
+        Gson gson = new Gson();
+        Map<CharSequence, CharSequence> mapActivity = new HashMap<>();
+                                for(int i=0; i<3; i++){
+                                    try {
+                                        mapActivity.put(mapActivity.size() + "", "eml:///dataspace('coucou')/resqml22.TriangulatedSetRepresentation(00000)");
+                                    }catch (Exception e){
+                                        e.printStackTrace();
+                                    }
+                                }
+            String reqContent = "{\"data_objects\": " + gson.toJson(ETPDefaultProtocolBuilder.buildGetDataObjects(mapActivity, "xml")).replace("\\u0027", "'") + "}";
+    System.out.println(reqContent);
+
     }
 }

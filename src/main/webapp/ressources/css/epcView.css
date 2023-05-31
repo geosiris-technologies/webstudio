@@ -408,6 +408,11 @@ label + input {
 	color: #e33437!important;
 }
 
+.colorCircle {
+  border: 2px solid black;
+  border-radius: 50%;
+}
+
 /**************** 		Blink 	  ***************/
 .blink {
   animation-duration: 2000ms;    /*blinking speed decreases and increase */

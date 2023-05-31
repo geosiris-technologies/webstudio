@@ -73,3 +73,48 @@ export function getAttribute(obj, att){
         return null;
     }
 }
+
+export function rgbToString(r, g, b) {
+    var rs =  Math.round(r * 255).toString(16);
+    var gs =  Math.round(g * 255).toString(16);
+    var bs =  Math.round(b * 255).toString(16);
+
+    if(rs.length() < 2){
+        rs = "0" + rs;
+    }
+    if(gs.length() < 2){
+        gs = "0" + gs;
+    }
+    if(bs.length() < 2){
+        bs = "0" + bs;
+    }
+    return "#" + rs + gs + bs;
+}
+
+export function hsvToRgb(hue, saturation, value) {
+        // Hue must be [0;360]
+        if(saturation > 1) // [0;1] or [0;100]
+            saturation = saturation * 0.01;
+        if(value > 1) // [0;1] or [0;100]
+            value = value * 0.01;
+
+        var h = (hue / 60);
+        var C = value * saturation;
+        var X = C * (1. - Math.abs((h % 2) - 1.));
+
+        var m = value - C;
+
+        if(h<1)
+            return rgbToString(C + m, X + m, 0 + m);
+        else if(h<2)
+            return rgbToString(X + m, C + m, 0 + m);
+        else if(h<3)
+            return rgbToString(0 + m, C + m, X + m);
+        else if(h<4)
+            return rgbToString(0 + m, X + m, C + m);
+        else if(h<5)
+            return rgbToString(X + m, 0 + m, C + m);
+        else
+            return rgbToString(C + m, 0 + m, X + m);
+    }
+
