@@ -15,21 +15,39 @@ limitations under the License.
 */
 package com.geosiris.webstudio.utils;
 
+import com.amazonaws.AmazonServiceException;
+import com.amazonaws.ClientConfiguration;
+import com.amazonaws.SdkClientException;
+import com.amazonaws.auth.AWSStaticCredentialsProvider;
+import com.amazonaws.auth.BasicAWSCredentials;
+import com.amazonaws.auth.profile.ProfileCredentialsProvider;
+import com.amazonaws.client.builder.AwsClientBuilder;
+import com.amazonaws.regions.Regions;
+import com.amazonaws.services.s3.AmazonS3;
+import com.amazonaws.services.s3.AmazonS3ClientBuilder;
+import com.amazonaws.services.s3.model.*;
+import com.amazonaws.services.s3.model.ownership.OwnershipControls;
 import com.geosiris.energyml.pkg.EPCPackage;
 import com.geosiris.energyml.utils.ObjectController;
 import com.geosiris.energyml.utils.Pair;
+import com.geosiris.storage.cloud.api.service.impl.S3Service;
 import com.geosiris.webstudio.servlet.Editor;
 import com.google.gson.Gson;
+import energyml.witsml2_1.ObjectFactory;
+import jakarta.xml.bind.JAXBElement;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.openjdk.jol.info.GraphLayout;
 
+import java.io.File;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 
 public class Utility {
     public static Logger logger = LogManager.getLogger(Utility.class);
@@ -195,5 +213,20 @@ public class Utility {
     public static String transformStringForJsonCompatibility(String input){
         Gson gson =  new Gson();
         return gson.toJson(input);
+    }
+
+    public static void main(String[] argv) throws IllegalAccessException {
+/*//        ReservoirCompartmentInterpretation rc = new ReservoirCompartmentInterpretation();
+//        System.out.println(Editor.pkgManager.marshal(rc));
+        ObjectFactory f = new ObjectFactory();
+//        for(Field field : f.getClass().getDeclaredFields()){
+//            if(field.getType() == QName.class) {
+//                System.out.println(((QName)field.get(null)).getLocalPart());
+//            }
+//        }
+        for(Class<?> cc: Arrays.stream(f.getClass().getMethods()).filter(m -> m.getReturnType() == JAXBElement.class && m.getParameterCount() == 1).map(m->m.getParameters()[0].getType()).collect(Collectors.toList())){
+                System.out.println(cc.getName());
+        }
+ */
     }
 }

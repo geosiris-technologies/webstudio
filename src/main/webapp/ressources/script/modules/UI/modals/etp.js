@@ -14,18 +14,18 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-import {create_dataspace_input, geosiris_createETP_connector_form, update_etp_connexion_views} from "../../etp/etp_connection.js"
-import {modal_getParentContainer, sendForm} from "./modalEntityManager.js"
-import {importObjectIn3DView} from "./misc.js"
-import {appendConsoleMessage} from "../../logs/console.js"
-import {call_after_DOM_updated, createSelector} from "../htmlUtils.js"
-import {sendPostForm_Promise, sendPostRequestJson_Promise, sendPostRequest} from "../../requests/requests.js"
-import {resquestValidation} from "../../energyml/epcContentManager.js"
-import {createTableFromData, transformTabToFormCheckable} from "../table.js"
-import {checkAllRelations} from "./exportEPC.js"
-import {refreshHighlightedOpenedObjects} from "../ui.js"
-import {REGEX_ETP_URI, __ENUM_CONSOLE_MSG_SEVERITY_TOAST__, __ID_CONSOLE__, __RWS_CLIENT_NAME__} from "../../common/variables.js"
-import {geo3DVue} from "../../main.js"
+import {create_dataspace_input, geosiris_createETP_connector_form, update_etp_connexion_views} from "../../etp/etp_connection.js";
+import {modal_getParentContainer, sendForm} from "./modalEntityManager.js";
+import {importObjectIn3DView} from "./misc.js";
+import {appendConsoleMessage} from "../../logs/console.js";
+import {call_after_DOM_updated, createSelector} from "../htmlUtils.js";
+import {sendPostForm_Promise, sendPostRequestJson_Promise, sendPostRequest} from "../../requests/requests.js";
+import {resquestValidation} from "../../energyml/epcContentManager.js";
+import {createTableFromData, transformTabToFormCheckable} from "../table.js";
+import {checkAllRelations} from "./exportEPC.js";
+import {refreshHighlightedOpenedObjects} from "../ui.js";
+import {REGEX_ETP_URI, __ENUM_CONSOLE_MSG_SEVERITY_TOAST__, __ID_CONSOLE__, __RWS_CLIENT_NAME__} from "../../common/variables.js";
+import {geo3DVue} from "../../main.js";
 
 
 var ETP_REQUEST_LAUNCH = 0

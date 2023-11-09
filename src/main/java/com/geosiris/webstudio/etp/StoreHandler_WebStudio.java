@@ -107,7 +107,7 @@ public class StoreHandler_WebStudio extends StoreHandler{
         List<String> urisToImport = new ArrayList<>(importableUUID);
         for(String uriToImport : urisToImport){
             logger.info("\t[StoreHandler_WebStudio] <==" + uriToImport);
-            if(uriToImport.contains(inputUri)){
+            if(inputUri.contains(uriToImport)){
                 found = true;
                 if(removeIfFound){
                     importableUUID.remove(inputUri);

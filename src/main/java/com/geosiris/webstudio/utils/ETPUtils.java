@@ -15,7 +15,10 @@ limitations under the License.
 */
 package com.geosiris.webstudio.utils;
 
-import Energistics.Etp.v12.Datatypes.Object.*;
+import Energistics.Etp.v12.Datatypes.Object.ContextInfo;
+import Energistics.Etp.v12.Datatypes.Object.ContextScopeKind;
+import Energistics.Etp.v12.Datatypes.Object.RelationshipKind;
+import Energistics.Etp.v12.Datatypes.Object.Resource;
 import Energistics.Etp.v12.Datatypes.ServerCapabilities;
 import Energistics.Etp.v12.Protocol.Discovery.GetResources;
 import Energistics.Etp.v12.Protocol.Discovery.GetResourcesResponse;
@@ -38,12 +41,6 @@ import com.geosiris.webstudio.etp.*;
 import com.geosiris.webstudio.logs.ServerLogMessage;
 import com.geosiris.webstudio.model.ETP3DObject;
 import com.geosiris.webstudio.servlet.Editor;
-import energyml.common2_0.ProjectedCrsEpsgCode;
-import energyml.common2_3.GraphicalInformationSet;
-import energyml.resqml2_2.HsvColor;
-import energyml.resqml_dev3x_2_2.ColorInformation;
-import energyml.resqml_dev3x_2_2.ColorMapDictionary;
-import energyml.resqml_dev3x_2_2.LocalDepth3DCrs;
 import jakarta.servlet.http.HttpSession;
 import jakarta.xml.bind.JAXBException;
 import org.apache.avro.specific.SpecificRecordBase;
@@ -374,12 +371,20 @@ public class ETPUtils {
         long nbPoints = 0;
         long nbfaces = 0;
 
-        if(resqmlObj.getClass().getSimpleName().compareToIgnoreCase("TriangulatedSetRepresentation") == 0) {
-            List<Object> trianglePatch = (List<Object>) ObjectController.getObjectAttributeValue(resqmlObj, "trianglePatch");
-            logger.debug("patchs : " + trianglePatch.size() + "\n\t" + (trianglePatch.size() > 0 ? trianglePatch.get(0) : "NONE"));
+        if(resqmlObj.getClass().getSimpleName().endsWith("TriangulatedSetRepresentation")) {
+            List<Object> trianglePatch = (List<Object>) ObjectController.getObjectAttributeValue(resqmlObj, "TrianglePatch");
+
+            trianglePatch.sort(Comparator.comparingInt(a -> Integer.parseInt(String.valueOf(ObjectController.getObjectAttributeValue(a, "PatchIndex")))));
+            System.out.println("Title : " + ObjectController.getObjectAttributeValue(resqmlObj, "citation.Title") + "\n" + resqmlObj);
+            System.out.println("patchs : " + trianglePatch.size() + "\n\t" + (trianglePatch.size() > 0 ? trianglePatch.get(0) : "NONE"));
+
             for (Object patch : trianglePatch) {
+//                String crsUuid = (String) ObjectController.getObjectAttributeValue(patch, "Geometry.LocalCrs.Uuid");
+
                 List<Object> pointsExtArray = ObjectController.findSubObjects(ObjectController.getObjectAttributeValue(patch, "geometry"), "ExternalDataArrayPart", true);
+                pointsExtArray.addAll(ObjectController.findSubObjects(ObjectController.getObjectAttributeValue(patch, "geometry"), "Hdf5Dataset", true));
                 List<Object> trianglesExtArray = ObjectController.findSubObjects(ObjectController.getObjectAttributeValue(patch, "triangles"), "ExternalDataArrayPart", true);
+                trianglesExtArray.addAll(ObjectController.findSubObjects(ObjectController.getObjectAttributeValue(patch, "triangles"), "Hdf5Dataset", true));
 
                 assert pointsExtArray.size() > 0;
                 assert pointsExtArray.size() == trianglesExtArray.size(); // Should have as many pointExtArray as triangleExtArray
@@ -387,7 +392,7 @@ public class ETPUtils {
                 for (int patchPart_idx = 0; patchPart_idx < pointsExtArray.size(); patchPart_idx++) {
                     String pathInExternalFile_point = (String) ObjectController.getObjectAttributeValue(pointsExtArray.get(patchPart_idx), "PathInExternalFile");
                     if(pathInExternalFile_point == null){
-                        pathInExternalFile_point = (String) ObjectController.getObjectAttributeValue(trianglesExtArray.get(patchPart_idx), "PathInHdfFile");
+                        pathInExternalFile_point = (String) ObjectController.getObjectAttributeValue(pointsExtArray.get(patchPart_idx), "PathInHdfFile");
                     }
                     String pathInExternalFile_triangles = (String) ObjectController.getObjectAttributeValue(trianglesExtArray.get(patchPart_idx), "PathInExternalFile");
                     if(pathInExternalFile_triangles == null){
