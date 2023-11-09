@@ -285,7 +285,7 @@ public class ResqmlVerification {
 
         return referencedDOR.parallelStream().map( (dor) -> {
             List<LogMessage> messages = new ArrayList<>();
-            Object refUuid = dor.getData("uuid");
+            String refUuid = (String) dor.getData("uuid");
             if (refUuid != null) {
                 String rootTitle = objTree.getData("Citation.Title") + "";
 
@@ -330,6 +330,13 @@ public class ResqmlVerification {
                         }
                     }
                     if (!foundInAdditional) {
+                        ServerLogMessage.MessageType msgSeverity = ServerLogMessage.MessageType.INFO;
+
+                        // Accepting 00000000-0000-0000-0000-00000000**** uuids for referencing fake data
+                        if(refUuid.startsWith("00000000-0000-0000-0000-00000000")){
+                            msgSeverity = ServerLogMessage.MessageType.DEBUG;
+                        }
+
                         messages.add(new LogResqmlVerification("DOR reference missing",
                                 "Object is referencing an unkown uuid with value " + refUuid
                                         + " sub object is at path : " + dor.getName() + " and supposed title is '"
@@ -337,7 +344,8 @@ public class ResqmlVerification {
                                 rootUUID,
                                 rootTitle,
                                 rootType,
-                                ServerLogMessage.MessageType.INFO));
+                                msgSeverity
+                        ));
                     }
                 } else {
                     Object referencedObj = resqmlObjects.get(refUuid);

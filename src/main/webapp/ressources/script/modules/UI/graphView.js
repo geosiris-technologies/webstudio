@@ -16,7 +16,7 @@ limitations under the License.
 
 import {createCheck, createCollapser, createSplitter} from "./htmlUtils.js"
 import {getOpenObjectsUuid, openResqmlObjectContentByUUID} from "../main.js"
-import {sendGetURL_Promise} from "../requests/requests.js"
+import {getJsonObjectFromServer} from "../requests/requests.js"
 
 
 import cytoscape from "./lib/cytoscape/cytoscape.esm.min.js"
@@ -736,7 +736,41 @@ export function start_graph(){
 
     // Si on est pas deja en train de faire une action
     if(tryStartTaskCY()){
-        return sendGetURL_Promise("ResqmlEPCRelationship").then(
+        return getJsonObjectFromServer("ResqmlEPCRelationship").then(
+            relations =>{
+                try{
+                    CONST_CY_RELATIONS = relations;
+                    
+                    while(document.getElementById("graphElementChecked").firstChild){
+                        document.getElementById("graphElementChecked").firstChild.remove();
+                    }
+                    document.getElementById("graphElementChecked").appendChild(
+                        createCheckableFIRPlist(relations, "cy_graphChecker"));
+                    
+                    if(CONST_CY == null){
+                        CONST_CY = initiateGraphView(document.getElementById("cyGrapher"));
+                    }else{
+                        // TODO chercher tous les noeuds et arc et sotcker les id dans une liste pour les ajouter de nouveau apres suppressions!
+                        // ca permet de tout remettre a jour
+                        var previousNodesUUID = CONST_CY.nodes().map(node => node.data("id") );
+
+                        for(var prevN_Idx=0; prevN_Idx<previousNodesUUID.length; prevN_Idx++){
+                            if(relations[previousNodesUUID[prevN_Idx]] != undefined){
+                                updateNodeData(relations[previousNodesUUID[prevN_Idx]], CONST_CY, relations, null, leftDblClickOnNodeAction, null, rightDblClickOnNodeAction);
+                            }else{
+                                removeNodeFromGraph(previousNodesUUID[prevN_Idx], CONST_CY, relations);
+                            }
+                        }
+                    }
+                    updateCheckableFromGraph(CONST_CY, relations);
+                    updateGraphStyle();
+                }catch(e){
+                    console.log(e);
+                }
+                endTaskCY();
+            }
+        );
+        /*return sendGetURL_Promise("ResqmlEPCRelationship").then(
                 function(relsJson){
                     try{
                         const relations = JSON.parse(relsJson);
@@ -771,7 +805,7 @@ export function start_graph(){
                     }
                     endTaskCY();
                 }
-            );
+            );*/
     }else{
         return null;
     }
@@ -878,10 +912,8 @@ export function createCheckableFIRPlist(relations, checkableName){
                         );
 
         var circleColored = document.createElement("span");
-        circleColored.className = "fas fa-circle";
+        circleColored.className = "fas fa-circle colorCircle";
         circleColored.style.color = cyGetFIRPColor(firpTAG);
-        circleColored.style.border = '2px solid black';
-        circleColored.style.borderRadius = "50%";
         tagCheckbox.appendChild(circleColored);
 
         for(var subIdx in mapFIRP[firpTAG]){

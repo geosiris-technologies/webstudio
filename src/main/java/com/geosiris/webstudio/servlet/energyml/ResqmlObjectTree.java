@@ -108,6 +108,10 @@ public class ResqmlObjectTree extends HttpServlet {
 
             objectJSONTree = Utility.getEPCContentAsJSON(new ArrayList<>(objList));
         }
+        if(objectJSONTree.length() == 0){
+            objectJSONTree = "null";
+        }
+
         PrintWriter out = response.getWriter();
         response.setContentType("application/json");
         response.setCharacterEncoding("UTF-8");

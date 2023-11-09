@@ -14,22 +14,25 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-import {enableWaitingUi, initEditorContent, setVueOrientation} from "./UI/ui.js"
-import {initSessionLogEventHandler, initSessionMetrics} from "./UI/eventHandler.js"
-import {updateTypesMap, updateVueFromPreferences} from "./energyml/epcContentManager.js"
-import {refreshPropertyDictVue, refreshWorkspaceDictVue} from "./UI/modals/propertiesVue.js"
-import {__initOrganizationType__, updateFIRPView} from "./UI/modals/firpVue.js"
+import {enableWaitingUi, initEditorContent, setVueOrientation} from "./UI/ui.js";
+import {initSessionLogEventHandler, initSessionMetrics} from "./UI/eventHandler.js";
+import {updateTypesMap, updateVueFromPreferences} from "./energyml/epcContentManager.js";
+import {refreshPropertyDictVue, refreshWorkspaceDictVue} from "./UI/modals/propertiesVue.js";
+import {__initOrganizationType__, updateFIRPView} from "./UI/modals/firpVue.js";
 import {init_etp_forms, beginETPRequest, updateExportToETPTableContent,
-        updateGetRelatedETPTableContent, endETPRequest} from "./UI/modals/etp.js"
-import {update_etp_connexion_views} from "./etp/etp_connection.js"
-import {rws_addConsoleMessageFilter} from "./logs/console.js"
-import {updatePartialExportTableContent} from "./UI/modals/exportEPC.js"
-import {createSplitter} from "./UI/htmlUtils.js"
-import {openResqmlObjectContent} from "./requests/uiRequest.js"
-import {getJsonObjectFromServer} from "./requests/requests.js"
-import {closeTabulation, getOpenObjectsUuid_GivingTabHeader, saveResqmlObject_promise, saveAllResqmlObject_promise} from "./UI/tabulation.js"
-import {__ID_CONSOLE__, __ID_EPC_TABLE_DIV__, __ID_EPC_TABS_CONTAINER__, __ID_EPC_TABS_HEADER__} from "./common/variables.js"
-import {createSnackBar} from "./UI/snackbar.js"
+        updateGetRelatedETPTableContent, endETPRequest} from "./UI/modals/etp.js";
+import {update_etp_connexion_views} from "./etp/etp_connection.js";
+import {rws_addConsoleMessageFilter} from "./logs/console.js";
+import {updatePartialExportTableContent} from "./UI/modals/exportEPC.js";
+import {createSplitter} from "./UI/htmlUtils.js";
+import {openResqmlObjectContent} from "./requests/uiRequest.js";
+import {getJsonObjectFromServer} from "./requests/requests.js";
+import {closeTabulation, getOpenObjectsUuid_GivingTabHeader, 
+        saveResqmlObject_promise, saveAllResqmlObject_promise, 
+        getActiveOpenedObject, closeOpenedObject
+      } from "./UI/tabulation.js";
+import {__ID_CONSOLE__, __ID_EPC_TABLE_DIV__, __ID_EPC_TABS_CONTAINER__, __ID_EPC_TABS_HEADER__} from "./common/variables.js";
+import {createSnackBar} from "./UI/snackbar.js";
 
 import {GeoThreeJS, fun_import_surface} from "./UI/lib/geo-threejs/geo-threejs.js";
 
@@ -142,7 +145,24 @@ export function initWebStudioView(){
             e.preventDefault();
             $("#modal_import_partialEPC").modal();
         }
+        /*
+        // Doesn't work with modern browsers
+        else if(e.key == 'w') {
+            e.stopPropagation();
+            e.preventDefault();
+            if(e.shiftKey){
+                closeAllResqmlObjectContent();
+            }else{
+                closeOpenedObject(getActiveOpenedObject(__ID_EPC_TABS_HEADER__));
+            }
+        }*/
     });
+
+/*    $(window).on('beforeunload', function(e) { // preventing CTRL + W closing
+        e.stopPropagation();
+        e.preventDefault();
+        return false;
+    });*/
 }
 
 

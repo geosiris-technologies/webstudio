@@ -205,7 +205,9 @@ export function sendPostRequestJson(str_url, dict){
     xhr.setRequestHeader("Content-Type", "application/json");
     xhr.onreadystatechange = function () {
         if (xhr.readyState === 4 && xhr.status === 200) {
-            var json = JSON.parse(xhr.responseText);
+            try{
+                var json = JSON.parse(xhr.responseText);
+            }catch(e){console.log(e);}
         }
     };
     var data = JSON.stringify(dict);

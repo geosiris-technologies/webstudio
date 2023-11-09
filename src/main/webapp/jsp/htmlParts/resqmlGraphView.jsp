@@ -74,7 +74,7 @@ limitations under the License.
 							<button class="btn btn-primary" id="but_startGraph">Update data from EPC</button>
  						</div>
  						<div class="input-group-append">
-							<button class="btn btn-info" id="but_showOnlOpened">Show only selected ressources</button>
+							<button class="btn btn-info" id="but_showOnlOpened">Show opened objects</button>
  						</div>
  						<div class="input-group-append">
 							<button class="btn btn-dark" id="but_reloadGraph">Automate nodes position</button>

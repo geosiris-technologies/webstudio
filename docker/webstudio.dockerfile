@@ -60,6 +60,9 @@ RUN wget http://geosiris.com/wp-content/uploads/2022/09/witsml_v2.1.zip -P tmp_Z
 RUN 7z x tmp_ZIP/witsml_v2.1.zip -o/config/data/xsd/energyml/witsml/
 
 # Prodml
+    # v2.0
+RUN wget http://geosiris.com/wp-content/uploads/2022/09/prodml_v2.0.zip -P tmp_ZIP/
+RUN 7z x tmp_ZIP/prodml_v2.0.zip -o/config/data/xsd/energyml/prodml/
     # v2.2
 RUN wget http://geosiris.com/wp-content/uploads/2022/09/prodml_v2.2.zip -P tmp_ZIP/
 RUN 7z x tmp_ZIP/prodml_v2.2.zip -o/config/data/xsd/energyml/prodml/
@@ -78,6 +81,7 @@ RUN echo "{ \
     \"energyml.witsml2_0\" : \"/config/data/xsd/energyml/witsml/v2.0/xsd_schemas/WitsmlAllObjects.xsd\", \
     \"energyml.witsml2_1\" : \"/config/data/xsd/energyml/witsml/v2.1/xsd_schemas/WitsmlAllObjects.xsd\", \
  \
+    \"energyml.prodml2_0\" : \"/config/data/xsd/energyml/prodml/v2.0/xsd_schemas/ProdmlAllObjects.xsd\", \
     \"energyml.prodml2_2\" : \"/config/data/xsd/energyml/prodml/v2.2/xsd_schemas/ProdmlAllObjects.xsd\" \
 }" > /config/data/xsd/xsd_mapping.json
 

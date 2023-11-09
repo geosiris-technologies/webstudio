@@ -40,12 +40,12 @@ class GeoObject{
 
         this.points = createPointCloud(this.surface_loader.points);
         if(pointColor != null && pointColor.length > 0){
-          console.log("pointColor '" + pointColor + "'")
+//          console.log("pointColor '" + pointColor + "'")
           this.points.material.color = new THREE.Color(pointColor);
         }
 
         if(this.surface_loader.lines != null && this.surface_loader.lines.length > 0){
-            console.log("lineColor '" + lineColor + "'")
+//            console.log("lineColor '" + lineColor + "'")
             this.lines = createSegments(this.surface_loader.lines);
           if(lineColor != null && lineColor.length > 0){
             this.lines.material.color = new THREE.Color(lineColor);

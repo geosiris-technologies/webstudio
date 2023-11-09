@@ -214,7 +214,7 @@ public class ETPRequest extends HttpServlet {
                             mapUri.put(mapUri.size()+"", etpuri.toString());
                         }
 
-                        storeHandler.importableUUID.addAll(mapUri.values().stream().map(CharSequence::toString).collect(Collectors.toList()));
+                        storeHandler.importableUUID.addAll(mapUri.values().stream().map(CharSequence::toString).map(ETPUri::parse).map(ETPUri::getUuid).collect(Collectors.toList()));
 
                         GetDataObjects getDataO = ETPDefaultProtocolBuilder.buildGetDataObjects(mapUri, "xml");
                         List<Message> dataResp_m_l = ETPUtils.sendETPRequest(session, etpClient, getDataO, ask_aknowledge, -1);

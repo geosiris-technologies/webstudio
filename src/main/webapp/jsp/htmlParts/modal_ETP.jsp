@@ -88,7 +88,7 @@ limitations under the License.
                         </div>
                         <br>
                         <form id="ETPRequest_import_Form" name="ETPForm" method="post" action="ETPRequest" accept-charset="utf-8">
-                            <input class="form-control" type="text" required name="request"value="getresources" hidden="hidden" />
+                            <input class="form-control" type="text" required name="request" value="getresources" hidden="hidden" />
                             <div class="form-row">
                                 <label><input class="checkbox" type="checkbox" name="ask_aknowledge">Ask acknowledge</label>
                             </div>
