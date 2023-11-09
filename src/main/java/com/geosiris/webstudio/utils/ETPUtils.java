@@ -427,13 +427,15 @@ public class ETPUtils {
             result.append(off_triangles);
 
             obj3D = new ETP3DObject(result.toString(), "off", resqmlObj.getClass().getSimpleName(), uuid, title, "#000000", "#000000", faceColor, epsgCode);
-        } else if(resqmlObj.getClass().getSimpleName().compareToIgnoreCase("PolylineSetRepresentation") == 0)  {
+        }else if(resqmlObj.getClass().getSimpleName().contains("PolylineSetRepresentation"))  {
             StringBuilder result = new StringBuilder();
 
             List<Object> patchs = (List<Object>) ObjectController.getObjectAttributeValue(resqmlObj, "linePatch");
             for (Object patch : patchs) {
                 List<Object> pointsExtArray = ObjectController.findSubObjects(ObjectController.getObjectAttributeValue(patch, "geometry"), "ExternalDataArrayPart", true);
+                pointsExtArray.addAll(ObjectController.findSubObjects(ObjectController.getObjectAttributeValue(patch, "geometry"), "Hdf5Dataset", true));
                 List<Object> nodeCountExtArray = ObjectController.findSubObjects(ObjectController.getObjectAttributeValue(patch, "NodeCountPerPolyline"), "ExternalDataArrayPart", true);
+                nodeCountExtArray.addAll(ObjectController.findSubObjects(ObjectController.getObjectAttributeValue(patch, "NodeCountPerPolyline"), "Hdf5Dataset", true));
                 assert pointsExtArray.size() > 0;
 
                 List<List<Number>> pointPerElt = new ArrayList<>();
