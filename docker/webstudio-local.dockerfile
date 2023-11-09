@@ -1,4 +1,4 @@
-FROM tomcat:10.1.0-M15-jdk11-openjdk-slim-buster as base
+FROM tomcat:10.1-jdk11-openjdk-slim as base
 
 LABEL maintainer="valentin.gauthier@geosiris.com"
 
