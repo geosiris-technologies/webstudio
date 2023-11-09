@@ -45,7 +45,6 @@ import org.apache.http.entity.StringEntity;
 import org.apache.http.impl.client.HttpClientBuilder;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.eclipse.jetty.http.HttpURI;
 
 import java.io.IOException;
 import java.io.PrintWriter;
@@ -73,9 +72,7 @@ public class LaunchActivityWorkflow extends HttpServlet {
             return;
         }
         StringBuilder answer = new StringBuilder();
-
         HttpSession session = request.getSession(false);
-        HttpURI host = new HttpURI("ws://rdms.geosiris.com/etp/");
 
         String message =  IOUtils.toString(request.getInputStream(), StandardCharsets.UTF_8);
 
@@ -95,7 +92,7 @@ public class LaunchActivityWorkflow extends HttpServlet {
         for(JsonElement uriElt: uris){
             String uri = uriElt.getAsString();
             if(uri.contains("Activity"))
-                mapUri.put(mapUri.size() + "", uri);
+                mapUri.put(String.valueOf(mapUri.size()), uri);
             else{
                 logger.debug("Not an activity : " + uri);
             }
@@ -115,7 +112,7 @@ public class LaunchActivityWorkflow extends HttpServlet {
 //                        logger.debug("ETP <== Recieve ETP message " + dataResp.getClass().getSimpleName() + " : " + dataResp);
                         GetDataObjectsResponse gdor = (GetDataObjectsResponse) dataResp;
                         for (CharSequence respId : gdor.getDataObjects().keySet()) {
-                            String currentDataspace = ETPUri.parse(mapUri.get(respId + "") + "").getDataspace(); // On lit l'uri de l'objet qui a donne cette reponse
+                            String currentDataspace = ETPUri.parse(String.valueOf(mapUri.get(String.valueOf(respId)))).getDataspace(); // On lit l'uri de l'objet qui a donne cette reponse
                             logger.debug(respId + "- " + mapUri.size() + ") CURRENT DATASPACE : " + currentDataspace + " of " + mapUri.get(respId));
                             try {
                                 Object parsedObject = Editor.pkgManager.unmarshal(new String(gdor.getDataObjects().get(respId).getData().array(), StandardCharsets.UTF_8)).getValue();
@@ -125,9 +122,10 @@ public class LaunchActivityWorkflow extends HttpServlet {
                                 Map<CharSequence, CharSequence> mapActivity = new HashMap<>();
                                 for(Object paramActivity : parameters){
                                     try {
-                                        mapActivity.put((mapActivity.size() + 1) + "", ETPUtils.getUriFromDOR(ObjectController.getObjectAttributeValue(paramActivity, "dataObject"), currentDataspace).toString());
+                                        mapActivity.put(String.valueOf(mapActivity.size() + 1), ETPUtils.getUriFromDOR(ObjectController.getObjectAttributeValue(paramActivity, "dataObject"), currentDataspace).toString());
                                     }catch (Exception e){
-                                        e.printStackTrace();
+                                        logger.error(e);
+                                        logger.error(e.getMessage());
                                     }
                                 }
                                 String reqContent = "{\"data_objects\": " + gson.toJson(ETPDefaultProtocolBuilder.buildGetDataObjects(mapActivity, "xml")).replace("\\u0027", "'") + "}";
@@ -135,7 +133,8 @@ public class LaunchActivityWorkflow extends HttpServlet {
 
                                 answer.append(sendLaunchWorkflow(session, reqContent, ce_type)).append("\n");
                             } catch (Exception e) {
-                                e.printStackTrace();
+                                logger.error(e);
+                                logger.error(e.getMessage());
                             }
                         }
                     } else {
@@ -143,7 +142,8 @@ public class LaunchActivityWorkflow extends HttpServlet {
                     }
                 }
             } catch (Exception e) {
-                e.printStackTrace();
+                logger.error(e);
+                logger.error(e.getMessage());
             }
         }
 
@@ -178,7 +178,7 @@ public class LaunchActivityWorkflow extends HttpServlet {
                     "ActivityLauncher"));
             logger.debug("@sendLaunchWorkflow " + result);
         } catch (Exception ex) {
-            ex.printStackTrace();
+            //ex.printStackTrace();
             logger.error(ex);
             logger.error(ex.getMessage());
         }
@@ -188,15 +188,16 @@ public class LaunchActivityWorkflow extends HttpServlet {
     public static void main(String[] argv){
         Gson gson = new Gson();
         Map<CharSequence, CharSequence> mapActivity = new HashMap<>();
-                                for(int i=0; i<3; i++){
-                                    try {
-                                        mapActivity.put(mapActivity.size() + "", "eml:///dataspace('coucou')/resqml22.TriangulatedSetRepresentation(00000)");
-                                    }catch (Exception e){
-                                        e.printStackTrace();
-                                    }
-                                }
-            String reqContent = "{\"data_objects\": " + gson.toJson(ETPDefaultProtocolBuilder.buildGetDataObjects(mapActivity, "xml")).replace("\\u0027", "'") + "}";
-    System.out.println(reqContent);
-
+        for(int i=0; i<3; i++){
+            try {
+                mapActivity.put(String.valueOf(mapActivity.size()), "eml:///dataspace('coucou')/resqml22.TriangulatedSetRepresentation(00000)");
+            }catch (Exception e){
+                e.printStackTrace();
+                logger.error(e);
+                logger.error(e.getMessage());
+            }
+        }
+        String reqContent = "{\"data_objects\": " + gson.toJson(ETPDefaultProtocolBuilder.buildGetDataObjects(mapActivity, "xml")).replace("\\u0027", "'") + "}";
+        logger.info(reqContent);
     }
 }

@@ -279,23 +279,20 @@ export function getJsonObjectFromServer(url){
     return fetch(url)
     .then(response => {
         endTask();
-        try{
-            if (!response.ok) {
-                return response.json()
-                    .catch(() => {
-                        // Couldn't parse the JSON
-                        console.log(new Error(response.status));
-                        return {};
-                    })
-                    .then(({message}) => {
-                        // Got valid JSON with error response, use it
-                        console.log(new Error(message || response.status));
-                        return {};
-                    });
-            }
-            // Successful response, parse the JSON and return the data
-            return response.json();
-        }catch(except){console.log(except);}
-        return null;
+        if (!response.ok) {
+            return response.json()
+                .catch(() => {
+                    // Couldn't parse the JSON
+                    console.log(new Error(response.status));
+                    return {};
+                })
+                .then(({message}) => {
+                    // Got valid JSON with error response, use it
+                    console.log(new Error(message || response.status));
+                    return {};
+                });
+        }
+        // Successful response, parse the JSON and return the data
+        return response.json();
     });
 }
