@@ -65,10 +65,16 @@ public class WorkspaceContent {
     }
 
     public void putAll(WorkspaceContent rf) {
-        this.notReadObjects.addAll(rf.notReadObjects);
-        this.readObjects.putAll(rf.readObjects);
-        this.additionalInformation.putAll(rf.additionalInformation);
-        this.parsedRels.putAll(rf.parsedRels);
+        if(rf != null){
+            if(rf.notReadObjects != null)
+                this.notReadObjects.addAll(rf.notReadObjects);
+            if(rf.readObjects != null)
+                this.readObjects.putAll(rf.readObjects);
+            if(rf.additionalInformation != null)
+                this.additionalInformation.putAll(rf.additionalInformation);
+            if(rf.parsedRels != null)
+                this.parsedRels.putAll(rf.parsedRels);
+        }
     }
 
     public Map<String, Relationships> getParsedRels() {

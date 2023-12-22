@@ -17,7 +17,6 @@ package com.geosiris.webstudio.utils;
 
 import com.geosiris.energyml.utils.EPCGenericManager;
 import com.geosiris.energyml.utils.ObjectController;
-import com.geosiris.webstudio.logs.LogMessage;
 import com.geosiris.webstudio.logs.LogResqmlVerification;
 import com.geosiris.webstudio.logs.ServerLogMessage;
 import com.geosiris.webstudio.servlet.Editor;
@@ -57,12 +56,12 @@ public class ResqmlVerification {
         return false;
     }
 
-    private static List<LogMessage> verifyMendatoryAttributes(ObjectTree tree,
-                                                              String rootUUID,
-                                                              String rootCitationTitle,
-                                                              String rootType) {
+    private static List<LogResqmlVerification> verifyMendatoryAttributes(ObjectTree tree,
+                                                                         String rootUUID,
+                                                                         String rootCitationTitle,
+                                                                         String rootType) {
         // int coutError = 0;
-        List<LogMessage> messages = new ArrayList<>();
+        List<LogResqmlVerification> messages = new ArrayList<>();
 
         if (tree.getDataClass() != null
                 // et si on est pas sur des fils null (qui ont soit une valeur soit des
@@ -97,12 +96,12 @@ public class ResqmlVerification {
         return messages;
     }
 
-    private static List<LogMessage> verifyActivityParameters(ObjectTree tree,
-                                                             String rootUUID,
-                                                             String rootCitationTitle,
-                                                             String rootType,
-                                                             Map<String, Object> resqmlObjects) {
-        List<LogMessage> messages = new ArrayList<>();
+    private static List<LogResqmlVerification> verifyActivityParameters(ObjectTree tree,
+                                                                        String rootUUID,
+                                                                        String rootCitationTitle,
+                                                                        String rootType,
+                                                                        Map<String, Object> resqmlObjects) {
+        List<LogResqmlVerification> messages = new ArrayList<>();
         String dataClassNameLower = rootType.toLowerCase();
         if (dataClassNameLower.compareTo("activity") == 0
                 || dataClassNameLower.compareTo("objactivity") == 0) {
@@ -243,7 +242,7 @@ public class ResqmlVerification {
                 } catch (Exception e) {
                     logger.error(e.getMessage(), e);
                 }
-                if (minOc < 0) {
+                if (minOc != null && minOc < 0) {
                     messages.add(new LogResqmlVerification("Wrong field value for '" + actParam.getName() + "'",
                             "MinOccur should be greater than 0 but value is set to '" + minOc + "' ",
                             rootUUID,
@@ -251,7 +250,7 @@ public class ResqmlVerification {
                             rootType,
                             ServerLogMessage.MessageType.WARNING));
                 }
-                if (maxOc < -1) {
+                if (maxOc != null && maxOc < -1) {
                     messages.add(new LogResqmlVerification("Wrong field value for '" + actParam.getName() + "'",
                             "MaxOccur should be greater than 0 (or -1 for infinite) but value is set to '" + minOc
                                     + "' ",
@@ -260,7 +259,7 @@ public class ResqmlVerification {
                             rootType,
                             ServerLogMessage.MessageType.WARNING));
                 }
-                if (maxOc >= 0 && minOc > maxOc) {
+                if (minOc != null && maxOc != null && maxOc >= 0 && minOc > maxOc) {
                     messages.add(new LogResqmlVerification("Wrong field value for '" + actParam.getName() + "'",
                             "MaxOccur should be greater than MinOccur '" + minOc + "' ",
                             rootUUID,
@@ -273,7 +272,7 @@ public class ResqmlVerification {
         return messages;
     }
 
-    private static List<LogMessage> verifyReferencedDOR(
+    private static List<LogResqmlVerification> verifyReferencedDOR(
             ObjectTree objTree,
             String rootUUID,
             String rootCitationTitle,
@@ -284,7 +283,7 @@ public class ResqmlVerification {
         final List<ObjectTree> referencedDOR = objTree.filterListByObjectType("DataObjectReference", false, true);
 
         return referencedDOR.parallelStream().map( (dor) -> {
-            List<LogMessage> messages = new ArrayList<>();
+            List<LogResqmlVerification> messages = new ArrayList<>();
             String refUuid = (String) dor.getData("uuid");
             if (refUuid != null) {
                 String rootTitle = objTree.getData("Citation.Title") + "";
@@ -336,11 +335,15 @@ public class ResqmlVerification {
                         if(refUuid.startsWith("00000000-0000-0000-0000-00000000")){
                             msgSeverity = ServerLogMessage.MessageType.DEBUG;
                         }
+                        String dorType = (String) dor.getData("qualifiedType");
+                        if(dorType == null){
+                            dorType = (String) dor.getData("contentType");
+                        }
 
                         messages.add(new LogResqmlVerification("DOR reference missing",
-                                "Object is referencing an unkown uuid with value " + refUuid
-                                        + " sub object is at path : " + dor.getName() + " and supposed title is '"
-                                        + dor.getData("title") + "'",
+                                "Object is referencing an unkown uuid with value '" + refUuid
+                                        + "' sub object is at path : " + dor.getName() + " and supposed title is '"
+                                        + dor.getData("title") + "' supposed types is '" + dorType + "'",
                                 rootUUID,
                                 rootTitle,
                                 rootType,
@@ -401,13 +404,13 @@ public class ResqmlVerification {
         }).flatMap(List::stream).collect(Collectors.toList());
     }
 
-    private static List<LogMessage> verifySingleCollectionAssociationHomogeneity(
+    private static List<LogResqmlVerification> verifySingleCollectionAssociationHomogeneity(
             Object resqmlObject,
             ObjectTree objectTree,
             String rootUUID,
             String rootTitle,
             String rootType) {
-        List<LogMessage> messages = new ArrayList<>();
+        List<LogResqmlVerification> messages = new ArrayList<>();
 
         if (resqmlObject.getClass().getSimpleName()
                 .compareToIgnoreCase("CollectionsToDataobjectsAssociationSet") == 0) {
@@ -461,12 +464,12 @@ public class ResqmlVerification {
 
         return messages;
     }
-    private static List<LogMessage> verifyWithXSDSchema(Object resqmlObject){
+    private static List<LogResqmlVerification> verifyWithXSDSchema(Object resqmlObject){
         String objUuid = (String) ObjectController.getObjectAttributeValue(resqmlObject, "uuid");
         String objTitle = (String) ObjectController.getObjectAttributeValue(resqmlObject, "Citation.Title");
         String objType = resqmlObject.getClass().getSimpleName();
 
-        List<LogMessage> messages = new ArrayList<>();
+        List<LogResqmlVerification> messages = new ArrayList<>();
         try{
             Editor.pkgManager.validate(resqmlObject);
         }catch (Exception e){
@@ -484,7 +487,7 @@ public class ResqmlVerification {
         return messages;
     }
 
-    private static List<LogResqmlVerification> correctDORInformation(final Object resqmlObject, final Map<String, Object> resqmlObjects) {
+    private static List<LogResqmlVerification> correctDORInformation(final Object resqmlObject, final Map<String, Object> allAbstractObjects) {
 
         final String objUuid = (String) ObjectController.getObjectAttributeValue(resqmlObject, "uuid");
         final String objTitle = (String) ObjectController.getObjectAttributeValue(resqmlObject, "Citation.Title");
@@ -498,7 +501,7 @@ public class ResqmlVerification {
             List<LogResqmlVerification> messages = new ArrayList<>();
             String dorUuid = (String) ObjectController.getObjectAttributeValue(dor, "uuid");
 
-            if(dorUuid != null && (resqmlObjects.containsKey(dorUuid) || additionalProperties.containsKey(dorUuid))){
+            if(dorUuid != null && (allAbstractObjects.containsKey(dorUuid) || additionalProperties.containsKey(dorUuid))){
                 if(additionalProperties.containsKey(dorUuid)){
                     messages.add(new LogResqmlVerification("DOR reference to property dictionary",
                             "Object is referencing a property of the common dictionary " + dorUuid,
@@ -513,8 +516,8 @@ public class ResqmlVerification {
 
                 // Target object infos
                 Object dorTarget;
-                if(resqmlObjects.containsKey(dorUuid)){
-                    dorTarget = resqmlObjects.get(dorUuid);
+                if(allAbstractObjects.containsKey(dorUuid)){
+                    dorTarget = allAbstractObjects.get(dorUuid);
                 }else{
                     dorTarget = additionalProperties.get(dorUuid);
                 }
@@ -573,20 +576,39 @@ public class ResqmlVerification {
         }).flatMap(List::stream).collect(Collectors.toList());
     }
 
-    public static List<LogMessage> doVerification(final Map<String, Object> in_resqmlObjects) {
-        List<LogMessage> messages = new ArrayList<>();
+    public static List<LogResqmlVerification> doVerification(final Map<String, Object> in_resqmlObjects) {
+        List<LogResqmlVerification> messages = new ArrayList<>();
         Map<String, Object> resqmlObjects = new HashMap<>(in_resqmlObjects);
-
+        Map<String, Object> allAbstractObjects = getAllEnergymlAbstractObjects(resqmlObjects);
         for (String rootUUID : resqmlObjects.keySet()) {
-            messages.addAll(doVerification(rootUUID, resqmlObjects));
+            messages.addAll(doVerification(rootUUID, resqmlObjects, allAbstractObjects));
         }
         return messages;
     }
 
-    public static List<LogMessage> doVerification(String objUUID, final Map<String, Object> in_resqmlObjects) {
-        List<LogMessage> messages = new ArrayList<>();
+    public static Map<String, Object> getAllEnergymlAbstractObjects(Map<String, Object> workspaceObjects){
+        // In Witsml some object like "Channel" in Log or ChannelSet have not their own xml file but are inside another abstractObject
+        Map<String, Object> energymlObjects_Recursive = new HashMap<>(workspaceObjects);
 
-        Map<String, Object> resqmlObjects = new HashMap<>(in_resqmlObjects);
+        for(Object o: workspaceObjects.values()){
+            List<Object> subAbstractObjects = ObjectController.findSubObjects(o, "AbstractObject", true);
+            for(Object sao: subAbstractObjects){
+                String sao_uuid = (String) ObjectController.getObjectAttributeValue(sao, "uuid");
+                if(sao_uuid == null){
+                    sao_uuid = (String) ObjectController.getObjectAttributeValue(sao, "uid"); // Witsml/Prodml
+                }
+                if(sao_uuid == null){
+                    energymlObjects_Recursive.put(sao_uuid, sao);
+                }
+            }
+        }
+        return energymlObjects_Recursive;
+    }
+
+    public static List<LogResqmlVerification> doVerification(String objUUID, final Map<String, Object> workspaceObjects, Map<String, Object> allAbstractObjects) {
+        List<LogResqmlVerification> messages = new ArrayList<>();
+
+        Map<String, Object> resqmlObjects = new HashMap<>(workspaceObjects);
 
         Object resqmlObj = resqmlObjects.get(objUUID);
 
@@ -605,13 +627,13 @@ public class ResqmlVerification {
         messages.addAll(verifyWithXSDSchema(resqmlObj));
 
         // Verifications des DOR
-        messages.addAll(verifyReferencedDOR(objTree, objUUID, objTitle, objType, resqmlObjects));
+        messages.addAll(verifyReferencedDOR(objTree, objUUID, objTitle, objType, allAbstractObjects));
 
         // Verification des Mandatories
         messages.addAll(verifyMendatoryAttributes(objTree, objUUID, objTitle, objType));
 
         // Verifications des parametres d'activity
-        messages.addAll(verifyActivityParameters(objTree, objUUID, objTitle, objType, resqmlObjects));
+        messages.addAll(verifyActivityParameters(objTree, objUUID, objTitle, objType, allAbstractObjects));
 
         // Verification de l'homogeneite des object dans la collectionAssociation
         messages.addAll(verifySingleCollectionAssociationHomogeneity(resqmlObj, objTree, objUUID, objTitle, objType));
@@ -621,17 +643,17 @@ public class ResqmlVerification {
 
     public static List<LogResqmlVerification> doCorrection(Map<String, Object> resqmlObjects) {
         List<LogResqmlVerification> messages = new ArrayList<>();
-
+        Map<String, Object> allAbstractObjects = ResqmlVerification.getAllEnergymlAbstractObjects(resqmlObjects);
         for (String rootUUID : resqmlObjects.keySet()) {
-            messages.addAll(doCorrection(rootUUID, resqmlObjects));
+            messages.addAll(doCorrection(rootUUID, allAbstractObjects));
         }
         return messages;
     }
 
-    public static List<LogResqmlVerification> doCorrection(String objUUID, Map<String, Object> resqmlObjects) {
+    public static List<LogResqmlVerification> doCorrection(String objUUID, Map<String, Object> allAbstractObjects) {
         List<LogResqmlVerification> messages = new ArrayList<>();
-        if(resqmlObjects.containsKey(objUUID)){
-            return correctDORInformation(resqmlObjects.get(objUUID), resqmlObjects);
+        if(allAbstractObjects.containsKey(objUUID)){
+            return correctDORInformation(allAbstractObjects.get(objUUID), allAbstractObjects);
         }
         return messages;
     }

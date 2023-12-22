@@ -15,10 +15,9 @@ limitations under the License.
 */
 package com.geosiris.webstudio.servlet;
 
-import com.geosiris.energyml.utils.EPCGenericManager;
 import com.geosiris.energyml.utils.ExportVersion;
-import com.geosiris.energyml.utils.Pair;
 import com.geosiris.webstudio.model.WorkspaceContent;
+import com.geosiris.webstudio.utils.HttpSender;
 import com.geosiris.webstudio.utils.SessionUtility;
 import jakarta.servlet.ServletContext;
 import jakarta.servlet.ServletException;
@@ -30,16 +29,12 @@ import jakarta.servlet.http.HttpSession;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
-import java.io.ByteArrayOutputStream;
 import java.io.IOException;
-import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
-import java.util.zip.ZipEntry;
-import java.util.zip.ZipOutputStream;
 
 /**
  * Servlet implementation class ExportEPCFile
@@ -103,46 +98,14 @@ public class ExportEPCFile extends HttpServlet {
             }
             // FIN filtrage fichiers a exporter
 
-            try {
-                ByteArrayOutputStream bos = new ByteArrayOutputStream();
-                exportEPCFile(bos,
-                        workspace,
-                        exportVersion);
-                byte[] bos_bytes = bos.toByteArray();
+            request.setAttribute("response", "File exported");
 
-                request.setAttribute("response", "File exported");
+            // obtains ServletContext
+            ServletContext context = getServletContext();
 
-                // obtains ServletContext
-                ServletContext context = getServletContext();
-
-                // gets MIME type of the file
-                String mimeType = context.getMimeType(filePath);
-                if (mimeType == null) {
-                    // set to binary type if MIME mapping not found
-                    mimeType = "application/octet-stream";
-                }
-
-                response.setContentType(mimeType);
-//                response.setContentLength((int) downloadFile.length());
-                response.setContentLength(bos_bytes.length);
-
-                // forces download
-                String headerKey = "Content-Disposition";
-                String headerValue = String.format("attachment; filename=\"%s\"", filePath);
-                response.setHeader(headerKey, headerValue);
-
-                // obtains response's output stream
-                OutputStream outStream = response.getOutputStream();
-
-                for(int chunk=0; chunk<bos_bytes.length; chunk+= 4096){
-                    outStream.write(bos_bytes, chunk, Math.min(4096, bos_bytes.length-chunk));
-                }
-
-                outStream.close();
-            } catch (Exception e) {
-                logger.error(e.getMessage(), e);
-                request.setAttribute("response", "Error occured while exporting file : \n" + e.getMessage() + " \n " + Arrays.toString(e.getStackTrace()));
-            }
+            // gets MIME type of the file
+            String mimeType = context.getMimeType(filePath);
+            HttpSender.writeEpcAsRequestResponse(response, workspace, filePath, exportVersion, mimeType);
 
             String closeEpc = request.getParameter("close");
             if (closeEpc != null && closeEpc.toLowerCase().compareTo("true") == 0) {
@@ -162,41 +125,4 @@ public class ExportEPCFile extends HttpServlet {
         doGet(request, response);
     }
 
-    public static void exportEPCFile(OutputStream out,
-                                     WorkspaceContent workspace,
-                                     ExportVersion exportVersion){
-        logger.info("@exportEPCFile");
-        try {
-            try(ZipOutputStream epc = new ZipOutputStream(out)) {
-                for (Map.Entry<String, Object> kv : workspace.getReadObjects().entrySet()) {
-                    ZipEntry ze_resqml = new ZipEntry(EPCGenericManager.genPathInEPC(kv.getValue(), exportVersion));
-                    epc.putNextEntry(ze_resqml);
-                    Editor.pkgManager.marshal(kv.getValue(), epc);
-                    epc.closeEntry();
-                }
-                EPCGenericManager.exportRels(workspace.getReadObjects(), workspace.getParsedRels(), exportVersion, epc, "Geosiris Resqml WebStudio");
-
-                if (workspace.getNotReadObjects() != null) {
-                    /// non resqml obj
-                    for (Pair<String, byte[]> nonResqmlObj : workspace.getNotReadObjects()) {
-                        ZipEntry ze_resqml = new ZipEntry(nonResqmlObj.l());
-                        epc.putNextEntry(ze_resqml);
-                        try {
-                            byte[] fileContent = nonResqmlObj.r();
-                            for(int chunk=0; chunk<fileContent.length; chunk += 4096){
-                                epc.write(fileContent, chunk, Math.min(4096, fileContent.length-chunk));
-                            }
-                        } catch (Exception e) {
-                            logger.error(e.getMessage(), e);
-                            logger.error("nonResqmlObj " + nonResqmlObj.l());
-                        }
-                        epc.closeEntry();
-                    }
-                }
-//                epc.finish();
-            }
-        } catch (IOException e) {
-            logger.error(e.getMessage(), e);
-        }
-    }
 }

@@ -40,6 +40,13 @@ The WebStudio is a web application that allows to manipulate energyml file (such
     - 3D visu : 
         - *ColorInformation* in a *GraphicalInformationSet* can be used if it references an **HSV color** in a *DiscreteColorMap*
 
+- 1.0.14:
+    - REST API : 
+        - A REST API has been added to be able to validate/fix EPC/xml files.
+    - Bugfix : 
+      - Sometimes export the EPC file was failing from the interface. It was due to specific entities that were not supported for export.
+      - Witsml/Prodml objects (like **Log**) can contain as *sub-objects* other *AbstractObject*. They are now detected during validation/auto-correction.
+
 ## License
 
 This project is licensed under the Apache 2.0 License - see the `LICENSE` file for details
@@ -184,3 +191,27 @@ Change the **docker/server-production.xml** to have a connector like this:
     </SSLHostConfig>
 </Connector>
 ```
+
+## REST API
+
+The WebStudio provides a simple REST API to validate and correct EPC/xml files.
+
+### Validation : "/EnergymlValidation"
+
+A post request on the endpoint "/EnergymlValidation" with files inside "form-data" will return a json file containing information about the correctness of your xml/epc files.
+
+The messages help you with a dotted notation for each error. Example : *".ChanelSet.O.Channel.1"* means the 2nd Channel xml element in the 1st sub xml element "ChannelSet".
+
+Example with postman : 
+![POSTMAN-validation-request](doc/image/REST/postman-energyml-validation.png)
+
+### Correction : "/EnergymlFix"
+
+A post request on the endpoint "/EnergymlFix" with files inside "form-data" will return an EPC file containing all of your xml files (even taken from an input EPC file), and also a log file that describes the modifications done to correct your entities.
+
+For now the only correction done is on DOR information. If an object refers to an other one with its UUID, the *Title* and the *QualifiedType*/*ContentType* are verified and eventually fixed.
+
+**Export version:** The resulting EPC can follow the old file naming convention "/[ENERGYML_TYPE]\_[UUID].xml" but also the new one : "/[PACKAGE][PACKAGE\_VERSION]/[ENERGYML\_TYPE]_[UUID].xml". The new version is obtainable by sending a parameter called "version" with the value **EXPANDED** (uppercase).
+
+Example with postman : 
+![POSTMAN-correction-request](doc/image/REST/postman-energyml-fix.png)
