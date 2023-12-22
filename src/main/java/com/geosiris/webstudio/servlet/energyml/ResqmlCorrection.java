@@ -67,7 +67,7 @@ public class ResqmlCorrection extends HttpServlet {
         if (correctionType == null || correctionType.compareToIgnoreCase("dor") == 0) {
             List<LogResqmlVerification> logs;
             if (uuid != null) {
-                logs = ResqmlVerification.doCorrection(uuid, map);
+                logs = ResqmlVerification.doCorrection(uuid, ResqmlVerification.getAllEnergymlAbstractObjects(map));
             } else {
                 logs = ResqmlVerification.doCorrection(map);
             }

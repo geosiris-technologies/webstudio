@@ -109,7 +109,7 @@ public class OSDU_Manifest extends HttpServlet {
 		}
 
 		String answer = HttpSender.sendfileWithPostRequest(session,
-				(outputStream -> ExportEPCFile.exportEPCFile(outputStream, workspace, ExportVersion.CLASSIC)),
+				(outputStream -> HttpSender.exportEPCFile(outputStream, workspace, ExportVersion.CLASSIC)),
 				"http://osdu-manifest:8000/", null, null, "file", otherParams);
 
 		PrintWriter out = response.getWriter();

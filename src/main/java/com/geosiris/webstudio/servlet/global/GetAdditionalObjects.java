@@ -18,7 +18,7 @@ package com.geosiris.webstudio.servlet.global;
 import com.geosiris.energyml.utils.ObjectController;
 import com.geosiris.energyml.utils.Pair;
 import com.geosiris.webstudio.model.WorkspaceContent;
-import com.geosiris.webstudio.servlet.FileReciever;
+import com.geosiris.webstudio.utils.HttpSender;
 import com.geosiris.webstudio.utils.SessionUtility;
 import com.google.gson.Gson;
 import jakarta.servlet.ServletException;
@@ -102,7 +102,7 @@ public class GetAdditionalObjects extends HttpServlet {
 						for (String fPath : filesPath) {
 							File f = new File(additionalDataFolderPath + "/" + fPath);
 							if (f.exists() && f.isFile()) {
-								WorkspaceContent readed = FileReciever
+								WorkspaceContent readed = HttpSender
 										.readFile(null, new FileInputStream(f), f.getName());
 								result.putAll(readed.getReadObjects());
 								for (Pair<String, byte[]> notReadedFiles : readed.getNotReadObjects()) {

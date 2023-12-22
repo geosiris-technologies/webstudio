@@ -33,7 +33,6 @@ public class EPCPackageTest {
         assert res != null;
         logger.info(res);
 
-
         res = pkg_witsml.marshal(pkg_witsml.parseXmlContent(witsml_rig, false).getValue());
         assert res != null;
         logger.info(res);
