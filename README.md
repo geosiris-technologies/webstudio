@@ -184,3 +184,27 @@ Change the **docker/server-production.xml** to have a connector like this:
     </SSLHostConfig>
 </Connector>
 ```
+
+## REST API
+
+The WebStudio provides a simple REST API to validate and correct EPC/xml files.
+
+### Validation : "/EnergymlValidation"
+
+A post request on the endpoint "/EnergymlValidation" with files inside "form-data" will return a json file containing information about the correctness of your xml/epc files.
+
+The messages help you with a dotted notation for each error. Example : *".ChanelSet.O.Channel.1"* means the 2nd Channel xml element in the 1st sub xml element "ChannelSet".
+
+Example with postman : 
+![POSTMAN-validation-request](doc/image/REST/postman-energyml-validation.png)
+
+### Correction : "/EnergymlFix"
+
+A post request on the endpoint "/EnergymlFix" with files inside "form-data" will return an EPC file containing all of your xml files (even taken from an input EPC file), and also a log file that describes the modifications done to correct your entities.
+
+For now the only correction done is on DOR information. If an object refers to an other one with its UUID, the *Title* and the *QualifiedType*/*ContentType* are verified and eventually fixed.
+
+**Export version:** The resulting EPC can follow the old file naming convention "/[ENERGYML_TYPE]\_[UUID].xml" but also the new one : "/[PACKAGE][PACKAGE\_VERSION]/[ENERGYML\_TYPE]_[UUID].xml". The new version is obtainable by sending a parameter called "version" with the value **EXPANDED** (uppercase).
+
+Example with postman : 
+![POSTMAN-correction-request](doc/image/REST/postman-energyml-fix.png)
