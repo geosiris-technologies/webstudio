@@ -40,6 +40,13 @@ The WebStudio is a web application that allows to manipulate energyml file (such
     - 3D visu : 
         - *ColorInformation* in a *GraphicalInformationSet* can be used if it references an **HSV color** in a *DiscreteColorMap*
 
+- 1.0.14:
+    - REST API : 
+        - A REST API has been added to be able to validate/fix EPC/xml files.
+    - Bugfix : 
+      - Sometimes export the EPC file was failing from the interface. It was due to specific entities that were not supported for export.
+      - Witsml/Prodml objects (like **Log**) can contain as *sub-objects* other *AbstractObject*. They are now detected during validation/auto-correction.
+
 ## License
 
 This project is licensed under the Apache 2.0 License - see the `LICENSE` file for details
