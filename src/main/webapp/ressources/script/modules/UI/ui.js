@@ -398,23 +398,27 @@ export function initRootEltSelector(typeSelector){
         // on cherche la deniere partie du nom de package, qui contient le numero de version
         versionNum = versionNum.substring(versionNum.lastIndexOf(".")+1).replace(/[^\d_]/g, '');
 
-        var packageName = energymlRootTypes[typeIdx].substring(0, energymlRootTypes[typeIdx].lastIndexOf("."));
-        packageName = packageName.substring(packageName.lastIndexOf(".")+1).substring(0, packageName.length - versionNum.length);
-        while(!isNaN(parseInt(packageName.slice(-1), 10)) 
-            || packageName.slice(-1) == "_" ){
-            packageName = packageName.substring(0, packageName.length - 1);
-        }
+        if(versionNum.length > 0){
 
+            var packageName = energymlRootTypes[typeIdx].substring(0, energymlRootTypes[typeIdx].lastIndexOf("."));
+            packageName = packageName.substring(packageName.lastIndexOf(".")+1).substring(0, packageName.length - versionNum.length);
+            while(!isNaN(parseInt(packageName.slice(-1), 10))
+                || packageName.slice(-1) == "_" ){
+                packageName = packageName.substring(0, packageName.length - 1);
+            }
+    //        console.log(energymlRootTypes[typeIdx] +" version '" + versionNum + "' pkg '" + packageName + "'")
 
-        //console.log(energymlRootTypes[typeIdx] +" version '" + versionNum + "'' pkg '" + packageName +"'")
-
-        if(mapPackageToVersionToTypes[packageName]==null){
-            mapPackageToVersionToTypes[packageName] = {};
+            if(mapPackageToVersionToTypes[packageName]==null){
+                mapPackageToVersionToTypes[packageName] = {};
+            }
+            if(mapPackageToVersionToTypes[packageName][versionNum]==null){
+                mapPackageToVersionToTypes[packageName][versionNum] = [];
+            }
+            mapPackageToVersionToTypes[packageName][versionNum].push(energymlRootTypes[typeIdx]);
+        }else{
+//            console.log("empty version for '" + energymlRootTypes[typeIdx] + "' -- " );
+//            console.log(energymlRootTypes[typeIdx].match(rgxPkg));
         }
-        if(mapPackageToVersionToTypes[packageName][versionNum]==null){
-            mapPackageToVersionToTypes[packageName][versionNum] = [];
-        }
-        mapPackageToVersionToTypes[packageName][versionNum].push(energymlRootTypes[typeIdx]);
     }
 
     const selectVersionContainer = document.getElementById("modal_createRootElt_pkgChooserSelect");
@@ -502,7 +506,7 @@ export function initRootEltSelector(typeSelector){
         } 
         //pkgTypesDiv.style.display = '';
         //console.log("Enabeling : " + radioPkgVersionName)
-        console.log(">> : " + radioIdPrefix+this.value)
+        //console.log(">> : " + radioIdPrefix+this.value)
         radioVersionContainer.querySelector('input[name='+radioIdPrefix+this.value+']').click();
     }
 }
