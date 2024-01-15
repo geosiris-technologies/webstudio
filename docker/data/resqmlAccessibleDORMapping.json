@@ -27,5 +27,6 @@
 	"WellBoreFrameRepresentation"				: ["WellBoretrajectoryRepresentation"],
 	"WellBoreMarkerFrameRepresentation"			: ["WellboreMarker" ,"HorizonInterpretation", "GeobodyBoundaryInterpretation", "FluidBoundaryInterpretation" , "FaultInterpretation"],
 	"WellTrajectoryRepresentation"				: ["DeviationSurveyRepresentation", "MdDatum"],
-	"Operator"									: ["BusinessAssociate"]
+	"Operator"									: ["BusinessAssociate"],
+	"BusinessAssociate"							: ["BusinessAssociate"]
 }
