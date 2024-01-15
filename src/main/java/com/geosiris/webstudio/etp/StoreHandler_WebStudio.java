@@ -21,7 +21,7 @@ import com.geosiris.etp.communication.ClientInfo;
 import com.geosiris.etp.communication.Message;
 import com.geosiris.etp.protocols.handlers.StoreHandler;
 import com.geosiris.webstudio.logs.ServerLogMessage;
-import com.geosiris.webstudio.servlet.FileReciever;
+import com.geosiris.webstudio.servlet.editing.FileReciever;
 import com.geosiris.webstudio.utils.SessionUtility;
 import jakarta.servlet.http.HttpSession;
 import org.apache.logging.log4j.LogManager;

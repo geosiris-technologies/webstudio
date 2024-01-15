@@ -42,4 +42,12 @@ public class ETP3DObject {
         Gson gson = new Gson();
         return gson.toJson(this);
     }
+
+    public String getData() {
+        return data;
+    }
+
+    public String getFileType() {
+        return fileType;
+    }
 }

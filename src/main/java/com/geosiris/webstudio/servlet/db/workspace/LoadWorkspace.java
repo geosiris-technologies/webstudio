@@ -27,7 +27,7 @@ import com.geosiris.storage.cloud.api.service.StorageService;
 import com.geosiris.webstudio.model.WorkspaceContent;
 import com.geosiris.webstudio.property.WorkspaceProperties;
 import com.geosiris.webstudio.servlet.Editor;
-import com.geosiris.webstudio.servlet.FileReciever;
+import com.geosiris.webstudio.servlet.editing.FileReciever;
 import com.geosiris.webstudio.utils.SessionUtility;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.WebServlet;

@@ -20,7 +20,7 @@ import {appendConsoleMessage} from "../logs/console.js"
 import {getAllOpendedObjects, deleteResqmlObject} from "../requests/uiRequest.js"
 import {sendGetWorkspaceObjectsList} from "../requests/requests.js"
 import {compare, copyOtherTableSortingParams, createTableFromData, highlightTableCellFromClass, highlightTableLineFromTdText, transformTab_AddColumn} from "./table.js"
-import {getAttribute} from "../common/utils.js"
+import {getAttribute, compareVersionNumber} from "../common/utils.js"
 import {openResqmlObjectContentByUUID} from "../main.js"
 import {energymlRootTypes, savePreferences} from "../energyml/epcContentManager.js"
 import {JsonTableColumnizer_Checkbox, JsonTableColumnizer_Radio, JsonTableColumnizer_Icon, JsonTableColumnizer_DotAttrib, toTable} from "./jsonToTable.js"
@@ -439,7 +439,8 @@ export function initRootEltSelector(typeSelector){
         const radioPkgVersionName = radioIdPrefix + constPkg;
 
         var countType = 0;
-        for(var version in mapPackageToVersionToTypes[pkg]){
+        var versionListSorted = Object.keys(mapPackageToVersionToTypes[pkg]).sort(compareVersionNumber).reverse();
+        versionListSorted.forEach(version => {
             const constVersion = version;
             var found = version.match(rgxPkg);
             var versionVue = found.groups["versionNum"].replace("_", ".")
@@ -477,7 +478,7 @@ export function initRootEltSelector(typeSelector){
 
             pkgTypesDiv.appendChild(radioVersion);
             countType++;
-        }
+        });
 
         radioVersionContainer.appendChild(pkgTypesDiv);
 

@@ -151,12 +151,12 @@ public class ETPConnexion extends HttpServlet {
 
 		logger.info("#ETP : host " + host_uri);
 		logger.info(request.getSession(false));
-		Boolean isConnected = ETPUtils.establishConnexion(request.getSession(false), host_uri, userName, password, askConnection);
+		ETPClient client = ETPUtils.establishConnexion(request.getSession(false), host_uri, userName, password, askConnection);
 
 		PrintWriter out = response.getWriter();
         response.setContentType("application/text");
         response.setCharacterEncoding("UTF-8");
-        out.write("" + isConnected);
+        out.write(String.valueOf(client != null));
         out.flush();
 	}
 

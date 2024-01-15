@@ -26,5 +26,6 @@
 	"SubRepresentation"							: ["AbstractRepresentation"],
 	"WellBoreFrameRepresentation"				: ["WellBoretrajectoryRepresentation"],
 	"WellBoreMarkerFrameRepresentation"			: ["WellboreMarker" ,"HorizonInterpretation", "GeobodyBoundaryInterpretation", "FluidBoundaryInterpretation" , "FaultInterpretation"],
-	"WellTrajectoryRepresentation"				: ["DeviationSurveyRepresentation", "MdDatum"]
+	"WellTrajectoryRepresentation"				: ["DeviationSurveyRepresentation", "MdDatum"],
+	"Operator"									: ["BusinessAssociate"]
 }

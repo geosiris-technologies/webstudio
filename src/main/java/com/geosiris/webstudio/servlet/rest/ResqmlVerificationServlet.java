@@ -13,7 +13,7 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 */
-package com.geosiris.webstudio.servlet.energyml;
+package com.geosiris.webstudio.servlet.rest;
 
 import com.geosiris.energyml.utils.ExportVersion;
 import com.geosiris.energyml.utils.Pair;
