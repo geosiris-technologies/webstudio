@@ -13,7 +13,7 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 */
-package com.geosiris.webstudio.servlet;
+package com.geosiris.webstudio.servlet.editing;
 
 import com.geosiris.energyml.exception.NoSuchAccessibleParameterFound;
 import com.geosiris.energyml.exception.NoSuchEditableParameterFound;
@@ -23,6 +23,7 @@ import com.geosiris.energyml.utils.EPCGenericManager;
 import com.geosiris.energyml.utils.ObjectController;
 import com.geosiris.energyml.utils.Utils;
 import com.geosiris.webstudio.property.ConfigurationType;
+import com.geosiris.webstudio.servlet.Editor;
 import com.geosiris.webstudio.servlet.db.workspace.LoadWorkspace;
 import com.geosiris.webstudio.utils.ResQMLConverter;
 import com.geosiris.webstudio.utils.ResqmlObjectControler;

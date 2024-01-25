@@ -47,6 +47,12 @@ The WebStudio is a web application that allows to manipulate energyml file (such
       - Sometimes export the EPC file was failing from the interface. It was due to specific entities that were not supported for export.
       - Witsml/Prodml objects (like **Log**) can contain as *sub-objects* other *AbstractObject*. They are now detected during validation/auto-correction.
 
+- 1.0.15:
+  - Bugfix
+  - About button added in the interface to link to github
+  - Verifications:
+    - Verification on objectVerion in DOR
+
 ## License
 
 This project is licensed under the Apache 2.0 License - see the `LICENSE` file for details
@@ -215,3 +221,12 @@ For now the only correction done is on DOR information. If an object refers to a
 
 Example with postman : 
 ![POSTMAN-correction-request](doc/image/REST/postman-energyml-fix.png)
+
+### Correction : "/ETPSurfaceToFile"
+
+A post request on the endpoint "/ETPSurfaceToFile" with files inside "form-data" will return a 3D surface file in text format.
+
+**Format:** The format can be "off" or "obj".
+
+Example with postman : 
+![POSTMAN-correction-request](doc/image/REST/postman-etp-surface-to-file.png)

@@ -352,11 +352,16 @@ public class ResqmlVerification {
                     }
                 } else {
                     Object referencedObj = resqmlObjects.get(refUuid);
+                    String refObjVersion = (String) ObjectController.getObjectAttributeValue(referencedObj, "ObjectVersion");
                     String refObjTitle = (String) ObjectController.getObjectAttributeValue(referencedObj, "Citation.Title");
                     String refObjContentType = EPCGenericManager.getObjectContentType(referencedObj);
                     String refObjQualifiedType = EPCGenericManager.getObjectQualifiedType(referencedObj);
 
                     String title = (String) dor.getData("title");
+                    String objVersion = (String) dor.getData("VersionString");
+                    if(objVersion == null){
+                        objVersion = (String) dor.getData("ObjectVersion");
+                    }
                     try {
                         String contentType = (String) dor.getData("contenttype");
                         String qualifiedType = (String) dor.getData("qualifiedType");
@@ -389,6 +394,18 @@ public class ResqmlVerification {
                         if (refObjTitle.compareTo(title) != 0) {
                             messages.add(new LogResqmlVerification("DOR reference has wrong information",
                                     "Referenced object title is '" + refObjTitle + "' and not '" + title
+                                            + "' at path : " + dor.getName(),
+                                    rootUUID,
+                                    rootTitle,
+                                    rootType,
+                                    ServerLogMessage.MessageType.WARNING));
+                        }
+                        if ((refObjVersion != null && objVersion == null)
+                                || (refObjVersion == null && objVersion != null)
+                                || (refObjVersion != null && refObjVersion.compareTo(objVersion) != 0)
+                        ) {
+                            messages.add(new LogResqmlVerification("DOR reference has wrong information",
+                                    "Referenced object Version is '" + refObjTitle + "' and not '" + objVersion
                                             + "' at path : " + dor.getName(),
                                     rootUUID,
                                     rootTitle,

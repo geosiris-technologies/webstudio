@@ -13,10 +13,11 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 */
-package com.geosiris.webstudio.servlet;
+package com.geosiris.webstudio.servlet.energyml;
 
 import com.geosiris.energyml.utils.ExportVersion;
 import com.geosiris.webstudio.model.WorkspaceContent;
+import com.geosiris.webstudio.servlet.editing.FileReciever;
 import com.geosiris.webstudio.utils.HttpSender;
 import com.geosiris.webstudio.utils.SessionUtility;
 import jakarta.servlet.ServletContext;

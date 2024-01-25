@@ -156,6 +156,10 @@ body{
 	background-color:#2983d2;
 }
 
+.dropdown-menu{
+    width: max-content;
+}
+
 .dropright {
   position: relative;
   display: contents;
@@ -181,14 +185,14 @@ hr {
 
 .objectContent {
 	height: calc(60% - 10px - 1px);
-	/* On enlève la moitié de la taille du hr + la moitié de ses marges */
+	/* On enlï¿½ve la moitiï¿½ de la taille du hr + la moitiï¿½ de ses marges */
 	overflow: auto;
 	width: 100%;
 }
 
 .entityProperty {
 	height: 100%;
-	/* On enlève la moitié de la taille du hr + la moitié de ses marges */
+	/* On enlï¿½ve la moitiï¿½ de la taille du hr + la moitiï¿½ de ses marges */
 	overflow: auto;
 	width: 100%;
 }

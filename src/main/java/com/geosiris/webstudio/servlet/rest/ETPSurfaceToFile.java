@@ -13,24 +13,21 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 */
-package com.geosiris.webstudio.servlet.etp;
+package com.geosiris.webstudio.servlet.rest;
 
 import com.geosiris.etp.utils.ETPUri;
 import com.geosiris.etp.websocket.ETPClient;
-import com.geosiris.webstudio.logs.ServerLogMessage;
 import com.geosiris.webstudio.model.ETP3DObject;
 import com.geosiris.webstudio.utils.ETPUtils;
 import com.geosiris.webstudio.utils.File3DType;
 import com.geosiris.webstudio.utils.SessionUtility;
 import com.google.gson.Gson;
-import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
-import jakarta.servlet.http.HttpSession;
 import jakarta.xml.bind.JAXBException;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -41,19 +38,19 @@ import java.io.PrintWriter;
 import java.util.*;
 
 /**
- * Servlet implementation class ETPLoadSurfaceInVue
+ * Servlet implementation class ETPSurfaceToOff
  */
-@WebServlet("/ETPLoadSurfaceInVue")
-public class ETPLoadSurfaceInVue extends HttpServlet {
+@WebServlet(urlPatterns = {"/ETPSurfaceToFile", "/ETPSurfaceToObj", "/ETPSurfaceToOff"})
+public class ETPSurfaceToFile extends HttpServlet {
     private static final long serialVersionUID = 1L;
 
-    public static Logger logger = LogManager.getLogger(ETPLoadSurfaceInVue.class);
+    public static Logger logger = LogManager.getLogger(ETPSurfaceToFile.class);
 
 
     /**
      * @see HttpServlet#HttpServlet()
      */
-    public ETPLoadSurfaceInVue() {
+    public ETPSurfaceToFile() {
         super();
     }
 
@@ -68,9 +65,9 @@ public class ETPLoadSurfaceInVue extends HttpServlet {
         }
 
         PrintWriter out = response.getWriter();
-        response.setContentType("application/json");
+        response.setContentType("application/text");
         response.setCharacterEncoding("UTF-8");
-        out.write("Please use POST");
+        out.write("Please use POST with parameters : uri, serverUrl, [serverLogin], [serverPassword], [format]");
         out.flush();
     }
 
@@ -78,12 +75,9 @@ public class ETPLoadSurfaceInVue extends HttpServlet {
      * @see HttpServlet#doPost(HttpServletRequest request, HttpServletResponse
      *      response)
      */
+    @Override
     protected void doPost(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
-        if (!SessionUtility.tryConnectServlet(request, response)) {
-            return;
-        }
-        HttpSession session = request.getSession(false);
         StringBuilder jb = new StringBuilder();
         String line;
         try {
@@ -91,24 +85,38 @@ public class ETPLoadSurfaceInVue extends HttpServlet {
             while ((line = reader.readLine()) != null)
                 jb.append(line);
         } catch (Exception e) { /*report an error*/ }
-
+        String requestUri = request.getRequestURI().toLowerCase();
         JsonObject parameters = new Gson().fromJson(jb.toString(), JsonObject.class);
 
-        Map<String, ETPUri> mapUri = new HashMap<>();
-        logger.debug("#importObjectIn3DView uris :");
-        for (JsonElement uri : parameters.getAsJsonArray("uris")) {
-            logger.debug(uri);
-            ETPUri etpuri = ETPUri.parse(uri.getAsString());
-            SessionUtility.log(session, new ServerLogMessage(ServerLogMessage.MessageType.LOG,
-                    "ETP request import on " + etpuri + " == " + etpuri.hasDataspace() + " --- " + etpuri.getDataspace(),
-                    SessionUtility.EDITOR_NAME));
-            mapUri.put(mapUri.size()+"", etpuri);
+        String serverUrl = parameters.get("serverUrl").getAsString();
+        String username = parameters.get("username").getAsString();
+        String password = parameters.get("password").getAsString();
+//        String serverToken = parameters.get("serverToken").getAsString();
+
+        String fileFormat_param = parameters.get("format").getAsString();
+        File3DType fileFormat = File3DType.OFF;
+        if(fileFormat_param != null){
+            if(fileFormat_param.equalsIgnoreCase("obj")){
+                fileFormat = File3DType.OBJ;
+            }
+        } else if (requestUri.contains("obj")) {
+            fileFormat = File3DType.OBJ;
+        }else if (requestUri.contains("off")) {
+            fileFormat = File3DType.OFF;
         }
+
+
+        System.out.println(serverUrl  + "- " + username  + "- " + password);
+        ETPClient etpClient = ETPUtils.establishConnexion(null, ETPUtils.getHttpUriETP(serverUrl), username, password, true);
+
+        Map<String, ETPUri> mapUri = new HashMap<>();
+        ETPUri etpuri = ETPUri.parse(parameters.get("uri").getAsString());
+        mapUri.put("0", etpuri);
 
         List<ETP3DObject> surfaces = new ArrayList<>();
         for(ETPUri etpUri: mapUri.values()) {
             try {
-                surfaces.add(ETPUtils.get3DFileFromETP((ETPClient) session.getAttribute(SessionUtility.SESSION_ETP_CLIENT_ID), session, etpUri.toString(), File3DType.OFF, false));
+                surfaces.add(ETPUtils.get3DFileFromETP(etpClient, null, etpUri.toString(), fileFormat, false));
             } catch (JAXBException e) {
                 logger.error(e.getMessage(), e);
             }
@@ -116,7 +124,7 @@ public class ETPLoadSurfaceInVue extends HttpServlet {
         PrintWriter out = response.getWriter();
         response.setContentType("application/text");
         response.setCharacterEncoding("UTF-8");
-        out.write(Objects.requireNonNullElse(new Gson().toJson(surfaces), ""));
+        out.write(Objects.requireNonNullElse(surfaces.get(0).getData(), ""));
         out.flush();
     }
 

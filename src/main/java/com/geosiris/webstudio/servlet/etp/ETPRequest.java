@@ -35,7 +35,7 @@ import com.geosiris.webstudio.logs.ServerLogMessage;
 import com.geosiris.webstudio.logs.ServerLogMessage.MessageType;
 import com.geosiris.webstudio.property.ConfigurationType;
 import com.geosiris.webstudio.servlet.Editor;
-import com.geosiris.webstudio.servlet.FileReciever;
+import com.geosiris.webstudio.servlet.editing.FileReciever;
 import com.geosiris.webstudio.utils.ETPRequestUtils;
 import com.geosiris.webstudio.utils.ETPUtils;
 import com.geosiris.webstudio.utils.SessionUtility;

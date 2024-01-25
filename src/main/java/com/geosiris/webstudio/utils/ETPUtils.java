@@ -56,6 +56,15 @@ public class ETPUtils {
     public static Logger logger = LogManager.getLogger(ETPUtils.class);
     public static final int waitingForResponseTime = 20000;
 
+    public static HttpURI getHttpUriETP(String serverUrl){
+        if(serverUrl.toLowerCase(Locale.ROOT).startsWith("http:")) {
+            serverUrl = "ws" + serverUrl.substring(4);
+        }else if(!serverUrl.toLowerCase(Locale.ROOT).startsWith("ws") && !serverUrl.toLowerCase(Locale.ROOT).startsWith("wss") ){
+            serverUrl = "ws://" + serverUrl;
+        }
+        return new HttpURI(serverUrl);
+    }
+
     public static List<Message> sendETPRequest(HttpSession session, ETPClient etpClient, SpecificRecordBase msg,
                                                boolean ask_acknowledge, int timeout) {
         long msgId = etpClient.send(msg);
@@ -92,40 +101,49 @@ public class ETPUtils {
         return dataResp;
     }
 
-    public static Boolean establishConnexion(HttpSession session, HttpURI host, String userName, String password,
-                                             Boolean askConnection) {
-
-        SessionUtility.log(session, new ServerLogMessage( ServerLogMessage.MessageType.TOAST,
-                "(ETP) trying to establish connexion with '" + host + "'",
-                SessionUtility.EDITOR_NAME));
+    public static ETPClient establishConnexion(HttpSession session, HttpURI host, String userName, String password,
+                                               Boolean askConnection) {
+        if(session != null) {
+            SessionUtility.log(session, new ServerLogMessage(ServerLogMessage.MessageType.TOAST,
+                    "(ETP) trying to establish connexion with '" + host + "'",
+                    SessionUtility.EDITOR_NAME));
+        }
         if (askConnection) {
             ETPClient etpClient = establishConnexionForClient(session, host, userName, password);
             if (etpClient != null) {
-                session.setAttribute(SessionUtility.SESSION_ETP_CLIENT_ID, etpClient);
-                session.setAttribute(SessionUtility.SESSION_ETP_CLIENT_LAST_URL, host);
-                session.setAttribute(SessionUtility.SESSION_ETP_CLIENT_LAST_USERNAME, userName);
-                session.setAttribute(SessionUtility.SESSION_ETP_CLIENT_LAST_PASSWORD, password);
-                SessionUtility.log(session, new ServerLogMessage(ServerLogMessage.MessageType.LOG,
-                        "ETP ==> Connexion established with '" + host,
-                        SessionUtility.EDITOR_NAME));
-                return true;
+                if(session != null) {
+                    session.setAttribute(SessionUtility.SESSION_ETP_CLIENT_ID, etpClient);
+                    session.setAttribute(SessionUtility.SESSION_ETP_CLIENT_LAST_URL, host);
+                    session.setAttribute(SessionUtility.SESSION_ETP_CLIENT_LAST_USERNAME, userName);
+                    session.setAttribute(SessionUtility.SESSION_ETP_CLIENT_LAST_PASSWORD, password);
+                    SessionUtility.log(session, new ServerLogMessage(ServerLogMessage.MessageType.LOG,
+                            "ETP ==> Connexion established with '" + host,
+                            SessionUtility.EDITOR_NAME));
+                }
+                return etpClient;
             } else {
-                SessionUtility.log(session, new ServerLogMessage(ServerLogMessage.MessageType.ERROR,
-                        "ETP ==> Connexion NOT established with '" + host,
-                        SessionUtility.EDITOR_NAME));
-                SessionUtility.log(session, new ServerLogMessage(ServerLogMessage.MessageType.TOAST,
-                        "ETP ==> Connexion NOT established with '" + host,
-                        SessionUtility.EDITOR_NAME));
+                if(session != null) {
+                    SessionUtility.log(session, new ServerLogMessage(ServerLogMessage.MessageType.ERROR,
+                            "ETP ==> Connexion NOT established with '" + host,
+                            SessionUtility.EDITOR_NAME));
+                    SessionUtility.log(session, new ServerLogMessage(ServerLogMessage.MessageType.TOAST,
+                            "ETP ==> Connexion NOT established with '" + host,
+                            SessionUtility.EDITOR_NAME));
+                }
             }
         } else {
             ETPClient etpClient = (ETPClient) session.getAttribute(SessionUtility.SESSION_ETP_CLIENT_ID);
             etpClient.closeClient();
-            session.setAttribute(SessionUtility.SESSION_ETP_CLIENT_ID, null);
+            if(session != null) {
+                session.setAttribute(SessionUtility.SESSION_ETP_CLIENT_ID, null);
+            }
         }
-        session.setAttribute(SessionUtility.SESSION_ETP_CLIENT_LAST_URL, "");
-        session.setAttribute(SessionUtility.SESSION_ETP_CLIENT_LAST_USERNAME, "");
-        session.setAttribute(SessionUtility.SESSION_ETP_CLIENT_LAST_PASSWORD, "");
-        return false;
+        if(session != null) {
+            session.setAttribute(SessionUtility.SESSION_ETP_CLIENT_LAST_URL, "");
+            session.setAttribute(SessionUtility.SESSION_ETP_CLIENT_LAST_USERNAME, "");
+            session.setAttribute(SessionUtility.SESSION_ETP_CLIENT_LAST_PASSWORD, "");
+        }
+        return null;
     }
 
     public static List<Resource> getResources(HttpSession session, String dataspace){
@@ -264,10 +282,85 @@ public class ETPUtils {
         return graphicalElements;
     }
 
-    public static ETP3DObject get3DFileFromETP(HttpSession session, String uri, Boolean normalizePosition) throws JAXBException {
+
+    public static String write3DFile(List<Number> pointsCoords, List<List<Long>> facesPointIndices, File3DType file3DType, Object3DType objType){
+        return write3DFile(pointsCoords, 3, facesPointIndices, file3DType, objType);
+    }
+    public static String write3DFile(List<Number> pointsCoords, int pointDimension, List<List<Long>> facesPointIndices, File3DType file3DType, Object3DType objType){
+        if (Objects.requireNonNull(file3DType) == File3DType.OBJ) {
+            return write3DFile_OBJ(pointsCoords, pointDimension, facesPointIndices, objType);
+        }
+        return write3DFile_OFF(pointsCoords, pointDimension, facesPointIndices);
+    }
+
+    public static String write3DFile_OFF(List<Number> pointsCoords, int pointDimension, List<List<Long>> facesPointIndices){
+        StringBuilder result = new StringBuilder();
+        result.append("OFF\n\n");
+        result.append(pointsCoords.size() / pointDimension).append(" ").append(facesPointIndices.size()).append(" ").append("0\n");
+
+        // Points
+        StringBuilder off_points = new StringBuilder();
+        for(int pi = 0; pi<pointsCoords.size() / pointDimension; pi++){
+            for(int dim=0; dim<pointDimension; dim++){
+                off_points.append(pointsCoords.get(pi*pointDimension + dim).floatValue()).append(" ");
+            }
+            off_points.append("\n");
+        }
+
+        StringBuilder off_triangles = new StringBuilder();
+        for(List<Long> face: facesPointIndices){
+            off_triangles.append(face.size()).append(" ");
+            for (Long number : face) {
+                off_triangles.append(number).append(" ");
+            }
+            off_triangles.append("\n");
+        }
+
+        result.append(off_points).append("\n");
+        result.append(off_triangles);
+
+        return result.toString();
+    }
+    public static String write3DFile_OBJ(List<Number> pointsCoords, int pointDimension, List<List<Long>> facesPointIndices, Object3DType objType){
+        String entityPrefix;
+        switch (objType){
+            case POINT_CLOUD:
+            case POLYLINE:
+                entityPrefix = "l";
+                break;
+            default:
+                entityPrefix = "f";
+                break;
+        }
+        StringBuilder result = new StringBuilder();
+        // Points
+        StringBuilder obj_points = new StringBuilder();
+        for(int pi = 0; pi<pointsCoords.size() / pointDimension; pi++){
+            obj_points.append("v ");
+            for(int dim=0; dim<pointDimension; dim++){
+                obj_points.append(pointsCoords.get(pi*pointDimension + dim).floatValue()).append(" ");
+            }
+            obj_points.append("\n");
+        }
+
+        StringBuilder obj_entity = new StringBuilder();
+        for(List<Long> face: facesPointIndices){
+            obj_entity.append(entityPrefix).append(" ");
+            for (Long number : face) {
+                obj_entity.append(number + 1).append(" ");
+            }
+            obj_entity.append("\n");
+        }
+
+        result.append(obj_points).append("\n");
+        result.append(obj_entity);
+
+        return result.toString();
+    }
+
+    public static ETP3DObject get3DFileFromETP(ETPClient etpClient, HttpSession session, String uri, File3DType file3DType, Boolean normalizePosition) throws JAXBException {
         ETP3DObject obj3D = null;
 
-        ETPClient etpClient = (ETPClient) session.getAttribute(SessionUtility.SESSION_ETP_CLIENT_ID);
         ETPUri etpUri = ETPUri.parse(uri);
 
         String fileContent = ETPHelper.sendGetDataObjects_pretty(etpClient, Arrays.asList(new String[]{uri}), "xml", 50000).get(0);
@@ -298,64 +391,67 @@ public class ETPUtils {
         logger.debug("graphical_info start");
         Map<String, Object> graphicals = new HashMap<>();
 
+        String pointColor=null, lineColor=null, faceColor=null;
+        if(session != null) {
 //        try{
-        graphicals = getGraphical(session, etpUri);
-        logger.debug("graphical size " + graphicals.size());
+            graphicals = getGraphical(session, etpUri);
+            logger.debug("graphical size " + graphicals.size());
 //        }catch (Exception e){
 //            logger.error(e);
 //        }
 
-        String pointColor=null, lineColor=null, faceColor=null;
-        Iterator<Object> graphicalValuesIt = graphicals.values().iterator();
-        while(graphicalValuesIt.hasNext()
-                && ( pointColor == null
-                || lineColor == null
-                || faceColor == null)
-        ){
-            Object g = graphicalValuesIt.next();
+            Iterator<Object> graphicalValuesIt = graphicals.values().iterator();
+            while(graphicalValuesIt.hasNext()
+                    && ( pointColor == null
+                    || lineColor == null
+                    || faceColor == null)
+            ){
+                Object g = graphicalValuesIt.next();
 
-            List<?> g_info = (List<?>) ObjectController.getObjectAttributeValue(g, "GraphicalInformation");
+                List<?> g_info = (List<?>) ObjectController.getObjectAttributeValue(g, "GraphicalInformation");
 //            logger.debug("g_info " + g_info.size());
-            for (Object info: g_info) {
-                if ( pointColor == null
-                        || lineColor == null
-                        || faceColor == null) {
-                    String colorMapUuid = (String) ObjectController.getObjectAttributeValue(info, "ColorMap.uuid");
+                for (Object info: g_info) {
+                    if ( pointColor == null
+                            || lineColor == null
+                            || faceColor == null) {
+                        String colorMapUuid = (String) ObjectController.getObjectAttributeValue(info, "ColorMap.uuid");
 
-                    String colorMapXml = getDataObjectFromUuid(session, etpUri.getDataspace(), colorMapUuid);
+                        String colorMapXml = getDataObjectFromUuid(session, etpUri.getDataspace(), colorMapUuid);
 //                    logger.debug("colorMapXml " + colorMapXml);
-                    if (colorMapUuid != null && colorMapXml != null) {
-                        Object colorMap = Editor.pkgManager.unmarshal(colorMapXml).getValue();
+                        if (colorMapUuid != null && colorMapXml != null) {
+                            Object colorMap = Editor.pkgManager.unmarshal(colorMapXml).getValue();
 //                        logger.debug("colorMap " + colorMap);
-                        List<Object> targets = ObjectController.findSubObjects(info, "DataObjectReference", true);
+                            List<Object> targets = ObjectController.findSubObjects(info, "DataObjectReference", true);
 //                        logger.debug("targets " + targets.size());
-                        for (Object dor : targets) {
-                            if (etpUri.getUuid().compareTo((String) ObjectController.getObjectAttributeValue(dor, "uuid")) == 0) {
-                                try {
-                                    int valueVectorIndex = Integer.parseInt(ObjectController.getObjectAttributeValue(info, "ValueVectorIndex") + "");
-                                    Object hsvColorEntry = ObjectController.getObjectAttributeValue(colorMap, "Entry." + valueVectorIndex + ".hsv");
-                                    String rgbHexColor = hsvToRgb(
-                                            Float.parseFloat("" + ObjectController.getObjectAttributeValue(hsvColorEntry, "Hue")),
-                                            Float.parseFloat("" + ObjectController.getObjectAttributeValue(hsvColorEntry, "Saturation")),
-                                            Float.parseFloat("" + ObjectController.getObjectAttributeValue(hsvColorEntry, "Value"))
-                                    );
-                                    pointColor = rgbHexColor;
-                                    lineColor = rgbHexColor;
-                                    faceColor = rgbHexColor;
-                                    break;
-                                } catch (Exception e) {
-                                    logger.error(e);
+                            for (Object dor : targets) {
+                                if (etpUri.getUuid().compareTo((String) ObjectController.getObjectAttributeValue(dor, "uuid")) == 0) {
+                                    try {
+                                        int valueVectorIndex = Integer.parseInt(ObjectController.getObjectAttributeValue(info, "ValueVectorIndex") + "");
+                                        Object hsvColorEntry = ObjectController.getObjectAttributeValue(colorMap, "Entry." + valueVectorIndex + ".hsv");
+                                        String rgbHexColor = hsvToRgb(
+                                                Float.parseFloat("" + ObjectController.getObjectAttributeValue(hsvColorEntry, "Hue")),
+                                                Float.parseFloat("" + ObjectController.getObjectAttributeValue(hsvColorEntry, "Saturation")),
+                                                Float.parseFloat("" + ObjectController.getObjectAttributeValue(hsvColorEntry, "Value"))
+                                        );
+                                        pointColor = rgbHexColor;
+                                        lineColor = rgbHexColor;
+                                        faceColor = rgbHexColor;
+                                        break;
+                                    } catch (Exception e) {
+                                        logger.error(e);
+                                    }
                                 }
                             }
                         }
+                    }else{
+                        break;
                     }
-                }else{
-                    break;
                 }
             }
+
+            logger.debug("Colors found : " + pointColor + " " + lineColor + " " + faceColor);
         }
 
-        logger.debug("Colors found : " + pointColor + " " + lineColor + " " + faceColor);
         /* --- Color  end  --- */
 
         String title = (String) ObjectController.getObjectAttributeValue(resqmlObj, "citation.Title");
@@ -374,9 +470,27 @@ public class ETPUtils {
         if(resqmlObj.getClass().getSimpleName().endsWith("TriangulatedSetRepresentation")) {
             List<Object> trianglePatch = (List<Object>) ObjectController.getObjectAttributeValue(resqmlObj, "TrianglePatch");
 
-            trianglePatch.sort(Comparator.comparingInt(a -> Integer.parseInt(String.valueOf(ObjectController.getObjectAttributeValue(a, "PatchIndex")))));
+            trianglePatch.sort((a, b) -> {
+                        String indexa = String.valueOf(ObjectController.getObjectAttributeValue(a, "PatchIndex"));
+                        String indexb = String.valueOf(ObjectController.getObjectAttributeValue(b, "PatchIndex"));
+                        if(indexa==null){
+                            return -1;
+                        } else if (indexb==null) {
+                            return 1;
+                        }else{
+                            try{
+                                return Integer.compare(Integer.parseInt(indexa), Integer.parseInt(indexb));
+                            }catch (Exception ignore){}
+                        }
+                        return -1;
+                    }
+            );
             System.out.println("Title : " + ObjectController.getObjectAttributeValue(resqmlObj, "citation.Title") + "\n" + resqmlObj);
             System.out.println("patchs : " + trianglePatch.size() + "\n\t" + (trianglePatch.size() > 0 ? trianglePatch.get(0) : "NONE"));
+
+
+            List<Number> allSurfacepoints = new ArrayList<>();
+            List<List<Long>> allSurfacefaces = new ArrayList<>();
 
             for (Object patch : trianglePatch) {
 //                String crsUuid = (String) ObjectController.getObjectAttributeValue(patch, "Geometry.LocalCrs.Uuid");
@@ -402,18 +516,27 @@ public class ETPUtils {
                     List<Number> allpoints = ETPHelper.sendGetDataArray_prettier(etpClient, uri, pathInExternalFile_point, 5000, true);
                     List<Number> alltriangles = ETPHelper.sendGetDataArray_prettier(etpClient, uri, pathInExternalFile_triangles, 5000, true);
 
-                    for (int p_idx = 0; p_idx < allpoints.size() - 2; p_idx += 3) {
-                        off_points.append(allpoints.get(p_idx).floatValue()).append(" ");
-                        off_points.append(allpoints.get(p_idx + 1).floatValue()).append(" ");
-                        off_points.append(allpoints.get(p_idx + 2).floatValue()).append("\n");
-                        nbPoints++;
-                    }
+//                    for (int p_idx = 0; p_idx < allpoints.size() - 2; p_idx += 3) {
+//                        off_points.append(allpoints.get(p_idx).floatValue()).append(" ");
+//                        off_points.append(allpoints.get(p_idx + 1).floatValue()).append(" ");
+//                        off_points.append(allpoints.get(p_idx + 2).floatValue()).append("\n");
+//                        nbPoints++;
+//                    }
+                    allSurfacepoints.addAll(allpoints);
+
+//                    for (int f_idx = 0; f_idx < alltriangles.size() - 2; f_idx += 3) {
+//                        off_triangles.append("3 ");
+//                        off_triangles.append(offsetPoints + alltriangles.get(f_idx).longValue()).append(" ");
+//                        off_triangles.append(offsetPoints + alltriangles.get(f_idx + 1).longValue()).append(" ");
+//                        off_triangles.append(offsetPoints + alltriangles.get(f_idx + 2).longValue()).append("\n");
+//                        nbfaces++;
+//                    }
+
                     for (int f_idx = 0; f_idx < alltriangles.size() - 2; f_idx += 3) {
-                        off_triangles.append("3 ");
-                        off_triangles.append(offsetPoints + alltriangles.get(f_idx).longValue()).append(" ");
-                        off_triangles.append(offsetPoints + alltriangles.get(f_idx + 1).longValue()).append(" ");
-                        off_triangles.append(offsetPoints + alltriangles.get(f_idx + 2).longValue()).append("\n");
-                        nbfaces++;
+                        allSurfacefaces.add(Arrays.asList(
+                                offsetPoints + alltriangles.get(f_idx).longValue(),
+                                offsetPoints + alltriangles.get(f_idx + 1).longValue(),
+                                offsetPoints + alltriangles.get(f_idx + 2).longValue()));
                     }
 
                     offsetPoints += allpoints.size() / 3;
@@ -421,12 +544,14 @@ public class ETPUtils {
             }
 
             StringBuilder result = new StringBuilder();
-            result.append("OFF\n\n");
-            result.append(nbPoints).append(" ").append(nbfaces).append(" ").append("0\n");
-            result.append(off_points).append("\n");
-            result.append(off_triangles);
+//            result.append("OFF\n\n");
+//            result.append(nbPoints).append(" ").append(nbfaces).append(" ").append("0\n");
+//            result.append(off_points).append("\n");
+//            result.append(off_triangles);
 
-            obj3D = new ETP3DObject(result.toString(), "off", resqmlObj.getClass().getSimpleName(), uuid, title, "#000000", "#000000", faceColor, epsgCode);
+            result.append(write3DFile(allSurfacepoints, 3, allSurfacefaces, file3DType, Object3DType.SURFACE));
+
+            obj3D = new ETP3DObject(result.toString(), file3DType.toString().toLowerCase(), resqmlObj.getClass().getSimpleName(), uuid, title, "#000000", "#000000", faceColor, epsgCode);
         }else if(resqmlObj.getClass().getSimpleName().contains("PolylineSetRepresentation"))  {
             StringBuilder result = new StringBuilder();
 
