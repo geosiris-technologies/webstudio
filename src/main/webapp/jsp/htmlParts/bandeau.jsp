@@ -89,7 +89,7 @@ limitations under the License.
 
 					<a class="dropdown-item" id="but_validate_workspace" onclick="">Validate workspace</a>
 					<a class="dropdown-item" id="but_save_all_Open_Objects">Save all open elements [ctrl + s]</a>
-					<a class="dropdown-item" data-toggle="modal" data-target="#modal_closeEPC">Clear workspace</a>
+					<a class="dropdown-item" data-toggle="modal" data-target="#modal_closeEPC">Clear workspace (remove all loaded data)</a>
 
 					<div class="dropdown-divider"></div>
 
@@ -131,6 +131,19 @@ limitations under the License.
 				data-target="#modal_resqmlGraphView">EPC graph</a>
 			</li>
 		</ul>
+
+		<ul class="navbar-nav">
+			<li class="nav-item dropdown">
+				<a class="nav-link dropdown-toggle" href="#" id="navbarDropdown_About"
+				role="button" data-toggle="dropdown" aria-haspopup="true"
+				aria-expanded="false"> About </a>
+				<div class="dropdown-menu" aria-labelledby="navbarDropdown_About">
+					<a class="nav-link fab fa-github" href="https://github.com/geosiris-technologies/webstudio-platform" target="_blank">WebStudio platform</a>
+					<a class="nav-link fab fa-github" href="https://github.com/geosiris-technologies/webstudio" target="_blank">WebStudio</a>
+				</div>
+			</li>
+		</ul>
+
         <ul class="navbar-nav ml-auto">
         	<li class="nav-item navbar-text" id="sessionCounter_item">
         		<span class="nav-link fas fa-users" style="display: none" id="sessionCounter" title="Other connected users count"></a>
