@@ -106,7 +106,7 @@ public class GetAdditionalObjects extends HttpServlet {
 										.readFile(null, new FileInputStream(f), f.getName());
 								result.putAll(readed.getReadObjects());
 								for (Pair<String, byte[]> notReadedFiles : readed.getNotReadObjects()) {
-									logger.error("[Additional data reading : ] Not readed file : " + notReadedFiles.l());
+									logger.error("[Additional data reading : ] Not read file : " + notReadedFiles.l());
 								}
 							} else {
 								result.putAll(readAdditionalObjects(additionalDataFolderPath + "/" + fPath));

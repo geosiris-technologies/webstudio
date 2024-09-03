@@ -16,8 +16,10 @@ limitations under the License.
 <div class="modal fade" id="modal_WorkspaceDict" >
 	<script type="module">
 		import {filterJsonDictUI, refreshWorkspaceDictVue} from "/ressources/script/modules/UI/modals/propertiesVue.js";
+		import {onEnterPressed} from "/ressources/script/modules/UI/htmlUtils.js";
 
 		document.getElementById("FilterWorkspaceDict").onkeypress = function(event){
+		    console.log(event);
 			onEnterPressed(event, function(){
 									filterJsonDictUI('container_WorkspaceDict', 
 															"counter_WorkspaceDict", 

@@ -51,7 +51,7 @@ The WebStudio is a web application that allows to manipulate energyml file (such
   - Bugfix
   - About button added in the interface to link to github
   - Verifications:
-    - Verification on objectVerion in DOR
+    - Verification on objectVersion in DOR
 
 ## License
 

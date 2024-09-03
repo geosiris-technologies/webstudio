@@ -471,15 +471,15 @@ public class ETPUtils {
             List<Object> trianglePatch = (List<Object>) ObjectController.getObjectAttributeValue(resqmlObj, "TrianglePatch");
 
             trianglePatch.sort((a, b) -> {
-                        String indexa = String.valueOf(ObjectController.getObjectAttributeValue(a, "PatchIndex"));
-                        String indexb = String.valueOf(ObjectController.getObjectAttributeValue(b, "PatchIndex"));
-                        if(indexa==null){
-                            return -1;
-                        } else if (indexb==null) {
+                        Object indexa = ObjectController.getObjectAttributeValue(a, "PatchIndex");
+                        Object indexb = ObjectController.getObjectAttributeValue(b, "PatchIndex");
+                        if (indexb==null) {
                             return 1;
-                        }else{
+                        } else if(indexa==null){
+                            return -1;
+                        } else {
                             try{
-                                return Integer.compare(Integer.parseInt(indexa), Integer.parseInt(indexb));
+                                return Integer.compare(Integer.parseInt(String.valueOf(indexa)), Integer.parseInt(String.valueOf(indexb)));
                             }catch (Exception ignore){}
                         }
                         return -1;
@@ -583,9 +583,9 @@ public class ETPUtils {
                         pathInExternalFile_point = (String) ObjectController.getObjectAttributeValue(nodeCountExt, "PathInHdfFile");
                     }
                     List<Number> nodeCounts = ETPHelper.sendGetDataArray_prettier(etpClient, uri, pathInExternalFile_point, 5000, true);
-                    for(Number n: nodeCounts){
-                        logger.debug(n);
-                    }
+//                    for(Number n: nodeCounts){
+//                        logger.debug(n);
+//                    }
                     int idx = 0;
                     for(Number size: nodeCounts){
                         try {
@@ -681,7 +681,9 @@ public class ETPUtils {
             objList.put((String) ObjectController.getObjectAttributeValue(resqmlObj, "uuid"), resqmlObj);
 
             Object dor = Editor.pkgManager.createInstance(dorClassName, objList, uri.getUuid());
-            ObjectController.editObjectAttribute(dor, "EnergisticsUri", uri.toString());
+            try {
+                ObjectController.editObjectAttribute(dor, "EnergisticsUri", uri.toString());
+            }catch (Exception _ignore){}
             return dor;
         }catch (Exception e){
             logger.error(e);

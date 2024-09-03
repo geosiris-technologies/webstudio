@@ -387,7 +387,7 @@ export function createTable(jsonList,
 }
 
 export function initRootEltSelector(typeSelector){
-    const rgxPkg = new RegExp("_?(?<version>((?<dev>dev[\\d]+)x_)?(?<versionNum>([\\d]+[_])*\\d))$");
+    const rgxPkg = new RegExp("_?(?<version>((?<dev>dev[\\d]+)x_)?(?<versionNum>([\\d]+[_\\.])*\\d))$");
 
     const mapPackageToVersionToTypes = {};
     //createRadio
@@ -396,10 +396,9 @@ export function initRootEltSelector(typeSelector){
         // On recupere tout sauf le nom de la classe
         var versionNum = energymlRootTypes[typeIdx].substring(0, energymlRootTypes[typeIdx].lastIndexOf(".")); 
         // on cherche la deniere partie du nom de package, qui contient le numero de version
-        versionNum = versionNum.substring(versionNum.lastIndexOf(".")+1).replace(/[^\d_]/g, '');
+        versionNum = versionNum.substring(versionNum.lastIndexOf(".")+1).replace(/([\w\d\.]+)(_|[a-zA-Z])(\d[\d\_\\.]+$)/g, '$3');
 
-        if(versionNum.length > 0){
-
+        if(versionNum.length > 0 && versionNum.match(/(\d[\d\_\\.]+$)/g)){
             var packageName = energymlRootTypes[typeIdx].substring(0, energymlRootTypes[typeIdx].lastIndexOf("."));
             packageName = packageName.substring(packageName.lastIndexOf(".")+1).substring(0, packageName.length - versionNum.length);
             while(!isNaN(parseInt(packageName.slice(-1), 10))
@@ -443,41 +442,43 @@ export function initRootEltSelector(typeSelector){
         versionListSorted.forEach(version => {
             const constVersion = version;
             var found = version.match(rgxPkg);
-            var versionVue = found.groups["versionNum"].replace("_", ".")
-            if(found.groups["dev"]!=null){
-                versionVue += "(" + found.groups["dev"] +")";
-            }
-            var radioVersion = createRadio("v " + versionVue, "", radioPkgVersionName, 
-                                            function(){
-                                                while(typeSelector.firstChild){
-                                                    typeSelector.firstChild.remove();
-                                                }
-                                                pkgMapVersionToType[constVersion].sort();
-
-                                                for(var eltIdx=0; eltIdx<pkgMapVersionToType[constVersion].length; eltIdx++){
-                                                    var opt = document.createElement("option");
-                                                    opt.value = pkgMapVersionToType[constVersion][eltIdx];
-                                                    opt.appendChild(document.createTextNode(opt.value.substring(opt.value.lastIndexOf(".") + 1)));
-                                                    typeSelector.appendChild(opt);
-                                                }
-                                            }, 
-                                            countType==0 && countPackage==0);
-            radioVersion.className += " form-check-inline";
-            
-            if(countType==0 && countPackage==0){
-                pkgMapVersionToType[constVersion].sort();
-                for(var eltIdx=0; eltIdx<pkgMapVersionToType[constVersion].length; eltIdx++){
-                    var opt = document.createElement("option");
-                    opt.value = pkgMapVersionToType[constVersion][eltIdx];
-                    opt.appendChild(document.createTextNode(opt.value.substring(opt.value.lastIndexOf(".") + 1)));
-                    typeSelector.appendChild(opt);
-                    pkgTypesDiv.style.display = ''; 
+            if(found != null){
+                var versionVue = found.groups["versionNum"].replace("_", ".")
+                if(found.groups["dev"]!=null){
+                    versionVue += "(" + found.groups["dev"] +")";
                 }
+                var radioVersion = createRadio("v " + versionVue, "", radioPkgVersionName,
+                                                function(){
+                                                    while(typeSelector.firstChild){
+                                                        typeSelector.firstChild.remove();
+                                                    }
+                                                    pkgMapVersionToType[constVersion].sort();
+
+                                                    for(var eltIdx=0; eltIdx<pkgMapVersionToType[constVersion].length; eltIdx++){
+                                                        var opt = document.createElement("option");
+                                                        opt.value = pkgMapVersionToType[constVersion][eltIdx];
+                                                        opt.appendChild(document.createTextNode(opt.value.substring(opt.value.lastIndexOf(".") + 1)));
+                                                        typeSelector.appendChild(opt);
+                                                    }
+                                                },
+                                                countType==0 && countPackage==0);
+                radioVersion.className += " form-check-inline";
+
+                if(countType==0 && countPackage==0){
+                    pkgMapVersionToType[constVersion].sort();
+                    for(var eltIdx=0; eltIdx<pkgMapVersionToType[constVersion].length; eltIdx++){
+                        var opt = document.createElement("option");
+                        opt.value = pkgMapVersionToType[constVersion][eltIdx];
+                        opt.appendChild(document.createTextNode(opt.value.substring(opt.value.lastIndexOf(".") + 1)));
+                        typeSelector.appendChild(opt);
+                        pkgTypesDiv.style.display = '';
+                    }
+                    countType++;
+                }
+
+                pkgTypesDiv.appendChild(radioVersion);
                 countType++;
             }
-
-            pkgTypesDiv.appendChild(radioVersion);
-            countType++;
         });
 
         radioVersionContainer.appendChild(pkgTypesDiv);

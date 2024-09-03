@@ -55,221 +55,221 @@ import java.util.zip.ZipInputStream;
 import java.util.zip.ZipOutputStream;
 
 public class HttpSender {
-	public static Logger logger = LogManager.getLogger(HttpSender.class);
+    public static Logger logger = LogManager.getLogger(HttpSender.class);
 
-	private static final String LINE_FEED = "\r\n";
+    private static final String LINE_FEED = "\r\n";
 
-	private static void addFilePart(HttpURLConnection con, String boundary,
-									String fieldName, String fileName, String fileContent, PrintWriter writer)
-			throws IOException {
-		//    	OutputStream outputStream = con.getOutputStream();
-		//PrintWriter writer = new PrintWriter(new OutputStreamWriter(outputStream, StandardCharsets.UTF_8),
-		//                true);
-		writer.append("--").append(boundary).append(LINE_FEED);
-		writer.append("Content-Disposition: form-data; name=\"").append(fieldName).append("\"; filename=\"").append(fileName).append("\"")
-				.append(LINE_FEED);
-		writer.append("Content-Type: ").append(URLConnection.guessContentTypeFromName(fileName))
-				.append(LINE_FEED);
-		writer.append("Content-Transfer-Encoding: text/plain").append(LINE_FEED);
-		writer.append(LINE_FEED);
-		writer.flush();
+    private static void addFilePart(HttpURLConnection con, String boundary,
+                                    String fieldName, String fileName, String fileContent, PrintWriter writer)
+            throws IOException {
+        //    	OutputStream outputStream = con.getOutputStream();
+        //PrintWriter writer = new PrintWriter(new OutputStreamWriter(outputStream, StandardCharsets.UTF_8),
+        //                true);
+        writer.append("--").append(boundary).append(LINE_FEED);
+        writer.append("Content-Disposition: form-data; name=\"").append(fieldName).append("\"; filename=\"").append(fileName).append("\"")
+                .append(LINE_FEED);
+        writer.append("Content-Type: ").append(URLConnection.guessContentTypeFromName(fileName))
+                .append(LINE_FEED);
+        writer.append("Content-Transfer-Encoding: text/plain").append(LINE_FEED);
+        writer.append(LINE_FEED);
+        writer.flush();
 
-		writer.append(fileContent);
-		writer.append(LINE_FEED);
-		writer.flush();
-		//        writer.close();
-	}
+        writer.append(fileContent);
+        writer.append(LINE_FEED);
+        writer.flush();
+        //        writer.close();
+    }
 
-	public static void addFormField(String name, String value, String boundary, PrintWriter writer) {
-		writer.append("--").append(boundary).append(LINE_FEED);
-		writer.append("Content-Disposition: form-data; name=\"").append(name).append("\"")
-				.append(LINE_FEED);
+    public static void addFormField(String name, String value, String boundary, PrintWriter writer) {
+        writer.append("--").append(boundary).append(LINE_FEED);
+        writer.append("Content-Disposition: form-data; name=\"").append(name).append("\"")
+                .append(LINE_FEED);
 //		writer.append("Content-Type: text/plain; charset=").append(String.valueOf(StandardCharsets.UTF_8)).append(
 //				LINE_FEED);
 //		writer.append(LINE_FEED);
-		writer.append(value).append(LINE_FEED);
-		writer.flush();
-	}
+        writer.append(value).append(LINE_FEED);
+        writer.flush();
+    }
 
-	public static String finish(HttpURLConnection con, String boundary, PrintWriter writer) throws IOException {
-		StringBuilder response = new StringBuilder();
+    public static String finish(HttpURLConnection con, String boundary, PrintWriter writer) throws IOException {
+        StringBuilder response = new StringBuilder();
 
-		writer.flush();
-		writer.append("--").append(boundary).append("--").append(LINE_FEED);
-		writer.close();
-
-
-		// checks server's status code first
-		int status = con.getResponseCode();
-		if (status == HttpURLConnection.HTTP_OK) {
-			BufferedReader reader = new BufferedReader(new InputStreamReader(
-					con.getInputStream()));
-			String line;
-			while ((line = reader.readLine()) != null) {
-				response.append(line).append("\n");
-			}
-			reader.close();
-			con.disconnect();
-		} else {
-			throw new IOException("Server returned non-OK status: " + status + " : " + con.getResponseMessage());
-		}
-
-		return response.toString();
-	}
-
-	public static void sendfileWithPostRequest(
-			HttpSession session,
-			List<Pair<String, String>> filesNameAndContent,
-			String _url, String login, String pwd,
-			String fileParamName, HashMap<String, String> otherParams) {
-		String boundary = "===" + System.currentTimeMillis() + "===";
-
-		try {
-			URL url = new URL(_url);
-			HttpURLConnection con = (HttpURLConnection) url.openConnection();
-			con.setRequestMethod("POST");
-
-			if(login!=null && login.length()>0) {
-				String auth = login + ":" + pwd;
-				byte[] encodedAuth = Base64.encodeBase64(auth.getBytes(StandardCharsets.UTF_8));
-				String authHeaderValue = "Basic " + new String(encodedAuth);
-				con.setRequestProperty("Authorization", authHeaderValue);
-			}
-
-			con.setUseCaches(false);
-			con.setDoOutput(true); // indicates POST method
-			con.setDoInput(true);
-			con.setRequestProperty("Content-Type", "multipart/form-data;boundary=" + boundary+"");
+        writer.flush();
+        writer.append("--").append(boundary).append("--").append(LINE_FEED);
+        writer.close();
 
 
-			OutputStream outputStream = con.getOutputStream();
-			PrintWriter writer = new PrintWriter(new OutputStreamWriter(outputStream, StandardCharsets.UTF_8), true);
+        // checks server's status code first
+        int status = con.getResponseCode();
+        if (status == HttpURLConnection.HTTP_OK) {
+            BufferedReader reader = new BufferedReader(new InputStreamReader(
+                    con.getInputStream()));
+            String line;
+            while ((line = reader.readLine()) != null) {
+                response.append(line).append("\n");
+            }
+            reader.close();
+            con.disconnect();
+        } else {
+            throw new IOException("Server returned non-OK status: " + status + " : " + con.getResponseMessage());
+        }
 
-			for(String paramName : otherParams.keySet()) {
-				logger.error("Setting param '"+paramName+"' with value : '" + otherParams.get(paramName)+"'");
-				addFormField(paramName, otherParams.get(paramName), boundary, writer);
-			}
+        return response.toString();
+    }
 
-			for(Pair<String,String> fNameAndContent : filesNameAndContent) {
-				addFilePart(con, boundary, fileParamName, fNameAndContent.l(), fNameAndContent.r(), writer);
-			}
+    public static void sendfileWithPostRequest(
+            HttpSession session,
+            List<Pair<String, String>> filesNameAndContent,
+            String _url, String login, String pwd,
+            String fileParamName, HashMap<String, String> otherParams) {
+        String boundary = "===" + System.currentTimeMillis() + "===";
+
+        try {
+            URL url = new URL(_url);
+            HttpURLConnection con = (HttpURLConnection) url.openConnection();
+            con.setRequestMethod("POST");
+
+            if(login!=null && login.length()>0) {
+                String auth = login + ":" + pwd;
+                byte[] encodedAuth = Base64.encodeBase64(auth.getBytes(StandardCharsets.UTF_8));
+                String authHeaderValue = "Basic " + new String(encodedAuth);
+                con.setRequestProperty("Authorization", authHeaderValue);
+            }
+
+            con.setUseCaches(false);
+            con.setDoOutput(true); // indicates POST method
+            con.setDoInput(true);
+            con.setRequestProperty("Content-Type", "multipart/form-data;boundary=" + boundary+"");
+
+
+            OutputStream outputStream = con.getOutputStream();
+            PrintWriter writer = new PrintWriter(new OutputStreamWriter(outputStream, StandardCharsets.UTF_8), true);
+
+            for(String paramName : otherParams.keySet()) {
+                logger.error("Setting param '"+paramName+"' with value : '" + otherParams.get(paramName)+"'");
+                addFormField(paramName, otherParams.get(paramName), boundary, writer);
+            }
+
+            for(Pair<String,String> fNameAndContent : filesNameAndContent) {
+                addFilePart(con, boundary, fileParamName, fNameAndContent.l(), fNameAndContent.r(), writer);
+            }
 //			if(!WebStudioConfig.ENV_VAR_IS_IN_PRODUCTION)
-			logger.info(finish(con, boundary, writer));
-		} catch (ConnectException e) {
-			SessionUtility.log(session, new ServerLogMessage(MessageType.DEBUG, "Workspace database connection exception", SessionUtility.EDITOR_NAME));
-		} catch (Exception e) {
-			logger.error(e.getMessage(), e);
-		}
-	}
+            logger.info(finish(con, boundary, writer));
+        } catch (ConnectException e) {
+            SessionUtility.log(session, new ServerLogMessage(MessageType.DEBUG, "Workspace database connection exception", SessionUtility.EDITOR_NAME));
+        } catch (Exception e) {
+            logger.error(e.getMessage(), e);
+        }
+    }
 
-	public static String sendfileWithPostRequest(
-			HttpSession session,
-			Consumer<OutputStream> f_epc_writer,
-			String _url, String login, String pwd,
-			String fileParamName, Map<String, String> otherParams) {
-		String boundary = "===" + System.currentTimeMillis() + "===";
-		String result = "";
-		try {
-			URL url = new URL(_url);
-			HttpURLConnection con = (HttpURLConnection) url.openConnection();
-			con.setRequestMethod("POST");
+    public static String sendfileWithPostRequest(
+            HttpSession session,
+            Consumer<OutputStream> f_epc_writer,
+            String _url, String login, String pwd,
+            String fileParamName, Map<String, String> otherParams) {
+        String boundary = "===" + System.currentTimeMillis() + "===";
+        String result = "";
+        try {
+            URL url = new URL(_url);
+            HttpURLConnection con = (HttpURLConnection) url.openConnection();
+            con.setRequestMethod("POST");
 
-			if(login!=null && login.length()>0) {
-				String auth = login + ":" + pwd;
-				byte[] encodedAuth = Base64.encodeBase64(auth.getBytes(StandardCharsets.UTF_8));
-				String authHeaderValue = "Basic " + new String(encodedAuth);
-				con.setRequestProperty("Authorization", authHeaderValue);
-			}
+            if(login!=null && login.length()>0) {
+                String auth = login + ":" + pwd;
+                byte[] encodedAuth = Base64.encodeBase64(auth.getBytes(StandardCharsets.UTF_8));
+                String authHeaderValue = "Basic " + new String(encodedAuth);
+                con.setRequestProperty("Authorization", authHeaderValue);
+            }
 
-			con.setUseCaches(false);
-			con.setDoOutput(true); // indicates POST method
-			con.setDoInput(true);
-			con.setRequestProperty("Content-Type", "multipart/form-data;boundary=" + boundary+"");
-
-
-			OutputStream outputStream = con.getOutputStream();
-			PrintWriter writer = new PrintWriter(new OutputStreamWriter(outputStream, StandardCharsets.UTF_8), true);
-
-			for(String paramName : otherParams.keySet()) {
-				logger.error("Setting param '"+paramName+"' with value : '" + otherParams.get(paramName)+"'");
-				addFormField(paramName, otherParams.get(paramName), boundary, writer);
-			}
-			writer.append(LINE_FEED).flush();
-			writer.append("--").append(boundary).append(LINE_FEED).flush();
-			writer.append("Content-Disposition: form-data; name=\"").append(fileParamName).append("\"; filename=\"").append("f.epc").append("\"")
-					.append(LINE_FEED).flush();
-			writer.append("Content-Type: application/octet-stream")
-					.append(LINE_FEED).flush();
-
-			f_epc_writer.accept(outputStream);
-
-			writer.append(LINE_FEED).flush();
-
-			result = finish(con, boundary, writer);
-		} catch (ConnectException e) {
-			Gson gson = new Gson();
-			result = gson.toJson(e);
-			SessionUtility.log(session, new ServerLogMessage(MessageType.DEBUG, "Http was sending post request but receive a connection exception", SessionUtility.EDITOR_NAME));
-		} catch (Exception e) {
-			logger.error(e.getMessage(), e);
-			Gson gson = new Gson();
-			result = gson.toJson(e);
-		}
-		return result;
-	}
-
-	public static void sendfileWithPostRequest_NoFileName(
-			HttpSession session,
-			List<String> filesContent,
-			String _url, String login, String pwd,
-			String fileParamName, HashMap<String, String> otherParams) {
-		sendfileWithPostRequest(session, filesContent.stream().map(x -> new Pair<>("fileName", x)).collect(Collectors.toList()),
-				_url, login, pwd,
-				fileParamName, otherParams);
-	}
+            con.setUseCaches(false);
+            con.setDoOutput(true); // indicates POST method
+            con.setDoInput(true);
+            con.setRequestProperty("Content-Type", "multipart/form-data;boundary=" + boundary+"");
 
 
-	public static InputStream sendGet(HttpSession session, String get_url, String login, String pwd, Map<String, String> parameters) {
-		try {
-			StringBuilder urlWithParameters = new StringBuilder(get_url);
+            OutputStream outputStream = con.getOutputStream();
+            PrintWriter writer = new PrintWriter(new OutputStreamWriter(outputStream, StandardCharsets.UTF_8), true);
 
-			if(parameters.size()>0) {
-				urlWithParameters.append("?");
-			}
-			for(String key: parameters.keySet()) {
-				urlWithParameters.append(key).append("=").append(parameters.get(key)).append("&");
-			}
+            for(String paramName : otherParams.keySet()) {
+                logger.error("Setting param '"+paramName+"' with value : '" + otherParams.get(paramName)+"'");
+                addFormField(paramName, otherParams.get(paramName), boundary, writer);
+            }
+            writer.append(LINE_FEED).flush();
+            writer.append("--").append(boundary).append(LINE_FEED).flush();
+            writer.append("Content-Disposition: form-data; name=\"").append(fileParamName).append("\"; filename=\"").append("f.epc").append("\"")
+                    .append(LINE_FEED).flush();
+            writer.append("Content-Type: application/octet-stream")
+                    .append(LINE_FEED).flush();
 
-			URL url = new URL(urlWithParameters.toString());
-			HttpURLConnection con = (HttpURLConnection) url.openConnection();
+            f_epc_writer.accept(outputStream);
 
-			if(login!=null && login.length()>0) {
-				String auth = login + ":" + pwd;
-				byte[] encodedAuth = Base64.encodeBase64(auth.getBytes(StandardCharsets.UTF_8));
-				String authHeaderValue = "Basic " + new String(encodedAuth);
-				con.setRequestProperty("Authorization", authHeaderValue);
-			}
+            writer.append(LINE_FEED).flush();
 
-			con.setRequestMethod("GET");
-			con.setDoOutput(true);
+            result = finish(con, boundary, writer);
+        } catch (ConnectException e) {
+            Gson gson = new Gson();
+            result = gson.toJson(e);
+            SessionUtility.log(session, new ServerLogMessage(MessageType.DEBUG, "Http was sending post request but receive a connection exception", SessionUtility.EDITOR_NAME));
+        } catch (Exception e) {
+            logger.error(e.getMessage(), e);
+            Gson gson = new Gson();
+            result = gson.toJson(e);
+        }
+        return result;
+    }
 
-			int responseCode = con.getResponseCode();
-			logger.info("GET Response Code :: " + responseCode);
-			if (responseCode == HttpURLConnection.HTTP_OK) { // success
-				return con.getInputStream();
+    public static void sendfileWithPostRequest_NoFileName(
+            HttpSession session,
+            List<String> filesContent,
+            String _url, String login, String pwd,
+            String fileParamName, HashMap<String, String> otherParams) {
+        sendfileWithPostRequest(session, filesContent.stream().map(x -> new Pair<>("fileName", x)).collect(Collectors.toList()),
+                _url, login, pwd,
+                fileParamName, otherParams);
+    }
 
-			} else {
-				logger.info("GET request not worked");
-			}
-		} catch (ConnectException e) {
-			SessionUtility.log(session, new ServerLogMessage(MessageType.DEBUG, "Workspace database connection exception", SessionUtility.EDITOR_NAME));
-		} catch (Exception e) {
-			logger.error(e.getMessage(), e);
-		}
-		return null;
-	}
 
-	public static WorkspaceContent readFile(final HttpSession session, InputStream input, String fileName) {
+    public static InputStream sendGet(HttpSession session, String get_url, String login, String pwd, Map<String, String> parameters) {
+        try {
+            StringBuilder urlWithParameters = new StringBuilder(get_url);
+
+            if(parameters.size()>0) {
+                urlWithParameters.append("?");
+            }
+            for(String key: parameters.keySet()) {
+                urlWithParameters.append(key).append("=").append(parameters.get(key)).append("&");
+            }
+
+            URL url = new URL(urlWithParameters.toString());
+            HttpURLConnection con = (HttpURLConnection) url.openConnection();
+
+            if(login!=null && login.length()>0) {
+                String auth = login + ":" + pwd;
+                byte[] encodedAuth = Base64.encodeBase64(auth.getBytes(StandardCharsets.UTF_8));
+                String authHeaderValue = "Basic " + new String(encodedAuth);
+                con.setRequestProperty("Authorization", authHeaderValue);
+            }
+
+            con.setRequestMethod("GET");
+            con.setDoOutput(true);
+
+            int responseCode = con.getResponseCode();
+            logger.info("GET Response Code :: " + responseCode);
+            if (responseCode == HttpURLConnection.HTTP_OK) { // success
+                return con.getInputStream();
+
+            } else {
+                logger.info("GET request not worked");
+            }
+        } catch (ConnectException e) {
+            SessionUtility.log(session, new ServerLogMessage(MessageType.DEBUG, "Workspace database connection exception", SessionUtility.EDITOR_NAME));
+        } catch (Exception e) {
+            logger.error(e.getMessage(), e);
+        }
+        return null;
+    }
+
+    public static WorkspaceContent readFile(final HttpSession session, InputStream input, String fileName) {
         WorkspaceContent result = new WorkspaceContent();
 
         if (!input.markSupported()) {
@@ -472,42 +472,49 @@ public class HttpSender {
     }
 
 
-	public static void writeEpcAsRequestResponse(HttpServletResponse response, WorkspaceContent workspace, String filePath, ExportVersion exportVersion, String mimeType){
-		try {
-                ByteArrayOutputStream bos = new ByteArrayOutputStream();
-                exportEPCFile(bos,
-                        workspace,
-                        exportVersion);
-                byte[] bos_bytes = bos.toByteArray();
-
-                if (mimeType == null) {
-                    // set to binary type if MIME mapping not found
-                    mimeType = "application/octet-stream";
-                }
-
-                response.setContentType(mimeType);
-//                response.setContentLength((int) downloadFile.length());
-                response.setContentLength(bos_bytes.length);
-
-                // forces download
-                String headerKey = "Content-Disposition";
-                String headerValue = String.format("attachment; filename=\"%s\"", filePath);
-                response.setHeader(headerKey, headerValue);
-
-                // obtains response's output stream
-                OutputStream outStream = response.getOutputStream();
-
-                for(int chunk=0; chunk<bos_bytes.length; chunk+= 4096){
-                    outStream.write(bos_bytes, chunk, Math.min(4096, bos_bytes.length-chunk));
-                }
-
-                outStream.close();
-            } catch (Exception e) {
-                logger.error(e.getMessage(), e);
+    public static void writeFileAsRequestResponse(HttpServletResponse response, String filePath, String mimeType, ByteArrayOutputStream bos){
+        byte[] bos_bytes = bos.toByteArray();
+        try {
+            if (mimeType == null) {
+                // set to binary type if MIME mapping not found
+                mimeType = "application/octet-stream";
             }
-	}
 
-	public static void exportEPCFile(OutputStream out,
+            response.setContentType(mimeType);
+//                response.setContentLength((int) downloadFile.length());
+            response.setContentLength(bos_bytes.length);
+
+            // forces download
+            String headerKey = "Content-Disposition";
+            String headerValue = String.format("attachment; filename=\"%s\"", filePath);
+            response.setHeader(headerKey, headerValue);
+
+            // obtains response's output stream
+            OutputStream outStream = response.getOutputStream();
+
+            for(int chunk=0; chunk<bos_bytes.length; chunk+= 4096){
+                outStream.write(bos_bytes, chunk, Math.min(4096, bos_bytes.length-chunk));
+            }
+
+            outStream.close();
+        } catch (Exception e) {
+            logger.error(e.getMessage(), e);
+        }
+    }
+    public static void writeEpcAsRequestResponse(HttpServletResponse response, WorkspaceContent workspace, String filePath, ExportVersion exportVersion, String mimeType){
+        try {
+            ByteArrayOutputStream bos = new ByteArrayOutputStream();
+            exportEPCFile(bos,
+                    workspace,
+                    exportVersion);
+            writeFileAsRequestResponse(response, filePath, mimeType, bos);
+        } catch (Exception e) {
+            logger.error(e.getMessage(), e);
+        }
+
+    }
+
+    public static void exportEPCFile(OutputStream out,
                                      WorkspaceContent workspace,
                                      ExportVersion exportVersion){
         logger.info("@exportEPCFile");

@@ -15,7 +15,10 @@ limitations under the License.
 */
 package com.geosiris.webstudio.servlet.editing;
 
+import com.geosiris.energyml.utils.EPCGenericManager;
+import com.geosiris.energyml.utils.ExportVersion;
 import com.geosiris.webstudio.servlet.Editor;
+import com.geosiris.webstudio.utils.HttpSender;
 import com.geosiris.webstudio.utils.SessionUtility;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.MultipartConfig;
@@ -27,6 +30,7 @@ import jakarta.servlet.http.HttpSession;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.util.Map;
@@ -60,17 +64,28 @@ public class GetObjectAsXml extends HttpServlet {
 
         Map<String, Object> map = SessionUtility.getResqmlObjects(session);
         String uuid = request.getParameter("uuid");
-        String answer = "";
+
         if(map.containsKey(uuid)) {
             Object energymlObj = map.get(uuid);
-            answer = Editor.pkgManager.marshal(energymlObj);
+            String answer = Editor.pkgManager.marshal(energymlObj);
+            if("true".equals(request.getParameter("download"))){
+                ByteArrayOutputStream bos = new ByteArrayOutputStream();
+                bos.write(answer.getBytes());
+                HttpSender.writeFileAsRequestResponse(response, EPCGenericManager.genPathInEPC(energymlObj, ExportVersion.CLASSIC), "application/xml", bos);
+            }else {
+                PrintWriter out = response.getWriter();
+                response.setContentType("application/xml");
+                response.setCharacterEncoding("UTF-8");
+                out.write(answer);
+                out.flush();
+            }
+        }else{
+            PrintWriter out = response.getWriter();
+            response.setContentType("application/xml");
+            response.setCharacterEncoding("UTF-8");
+            out.write("Unknown uuid : " + uuid);
+            out.flush();
         }
-        // SessionUtility.log(session, new ServerLogMessage(MessageType.LOG, answer, SessionUtility.EDITOR_NAME));
-        PrintWriter out = response.getWriter();
-        response.setContentType("application/xml");
-        response.setCharacterEncoding("UTF-8");
-        out.write(answer);
-        out.flush();
     }
 
     /**

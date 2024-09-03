@@ -16,6 +16,7 @@ limitations under the License.
 <div class="modal fade" id="modal_PropertiesDict" >
 	<script type="module">
 		import {filterJsonDictUI, refreshPropertyDictVue} from "/ressources/script/modules/UI/modals/propertiesVue.js";
+		import {onEnterPressed} from "/ressources/script/modules/UI/htmlUtils.js";
 
 		document.getElementById("FilterPropertiesDict").onkeypress = function(event){
 			onEnterPressed(event, function(){

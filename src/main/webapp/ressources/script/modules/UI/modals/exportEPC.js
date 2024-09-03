@@ -65,7 +65,7 @@ export function checkAllRelations(uuid, relations, checkboxesName, checkedValue,
                             uuidStack.push(r_up.uuid);
                         }
                     }catch(e){
-                        console.log(e)
+                        console.log(e);
                     }
                 }
             }

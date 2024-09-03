@@ -172,6 +172,11 @@ export function loadUrisIn3DVue(){
                     }catch(exception){
                         console.log(fileContent);
                         console.log(exception);
+                        appendConsoleMessage(__ID_CONSOLE__, {
+                            severity: __ENUM_CONSOLE_MSG_SEVERITY_TOAST__,
+                            originator: "3D Vue",
+                            message: "Error while importing 3D object " + obj["uuid"]
+                        });
                     }
                 });
             }catch(exception){

@@ -46,6 +46,7 @@ import java.lang.reflect.InvocationTargetException;
 import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.UUID;
 
 /**
  * Servlet implementation class ObjectEdit
@@ -160,6 +161,8 @@ public class ObjectEdit extends HttpServlet {
         if (rootUUID != null)
             resqmlObj = map.get(rootUUID);
 
+        logger.info("commande d'objectEdit : " + command + " root uuid : " + rootUUID + " " + resqmlObj);
+
         String response = "Object edit failed '" + rootUUID + "' " + resqmlObj;
 
         if (command.toLowerCase().compareTo("update") == 0) { // edition
@@ -211,26 +214,50 @@ public class ObjectEdit extends HttpServlet {
         } else if (command.toLowerCase().compareTo("create") == 0) {
 
             if (subPath == null) { // On crée un nouvel objet racine
-                logger.debug("#creation of root object : " + type);
 
-                EPCPackage pkg = Editor.pkgManager.getMatchingPackage(type);
-                if (pkg != null) {
+                if(resqmlObj != null){
+                    String originUUID = (String) ObjectController.getObjectAttributeValue(resqmlObj, "uuid");
+                    String newUUID = UUID.randomUUID().toString();
+                    logger.debug("#Copy of root object : " + originUUID);
+
+                    Object clone = Editor.pkgManager.unmarshal(Editor.pkgManager.marshal(resqmlObj)).getValue();
                     try {
-                        Class<?> objClass = Class.forName(type);
-                        logger.debug("creating object '" + objClass + "'");
-                        if (EPCGenericManager.isRootClass(objClass)) {
-                            Object newObj = Editor.pkgManager.createInstance(type, map, null, userName, false);
-                            String objUuid = ObjectController.getObjectAttributeValue(newObj, "Uuid") + "";
-                            map.put(objUuid, newObj);
-                            SessionUtility.getWorkspaceContent(session).setReadObjects(map);
-                            response = "Object created with uuid " + objUuid;
-                            LoadWorkspace.updateWorkspace(session, objUuid);
-                        }
+                        ObjectController.editObjectAttribute(clone, "uuid", newUUID);
                     } catch (Exception e) {
-                        logger.error(e.getMessage(), e);
+                        logger.error(e);
                     }
-                } else {
-                    logger.error("#ERR no matching package for '" + type + "'");
+
+                    try {
+                        ObjectController.editObjectAttribute(clone, "Citation.Title", "Copy of " + originUUID);
+                    } catch (Exception e) {
+                        logger.error(e);
+                    }
+                    map.put(newUUID, clone);
+                    SessionUtility.getWorkspaceContent(session).setReadObjects(map);
+                    response = "Object created with uuid " + newUUID;
+                    LoadWorkspace.updateWorkspace(session, newUUID);
+                }else {
+                    logger.debug("#creation of root object : " + type);
+
+                    EPCPackage pkg = Editor.pkgManager.getMatchingPackage(type);
+                    if (pkg != null) {
+                        try {
+                            Class<?> objClass = Class.forName(type);
+                            logger.debug("creating object '" + objClass + "'");
+                            if (EPCGenericManager.isRootClass(objClass)) {
+                                Object newObj = Editor.pkgManager.createInstance(type, map, null, userName, false);
+                                String objUuid = ObjectController.getObjectAttributeValue(newObj, "Uuid") + "";
+                                map.put(objUuid, newObj);
+                                SessionUtility.getWorkspaceContent(session).setReadObjects(map);
+                                response = "Object created with uuid " + objUuid;
+                                LoadWorkspace.updateWorkspace(session, objUuid);
+                            }
+                        } catch (Exception e) {
+                            logger.error(e.getMessage(), e);
+                        }
+                    } else {
+                        logger.error("#ERR no matching package for '" + type + "'");
+                    }
                 }
             } else if (type != null) { // On cree des sous-elements de type objectType
                 Class<?> objClassToCreate = null;

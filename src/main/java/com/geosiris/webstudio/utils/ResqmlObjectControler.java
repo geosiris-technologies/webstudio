@@ -15,22 +15,26 @@ limitations under the License.
 */
 package com.geosiris.webstudio.utils;
 
+import com.geosiris.energyml.pkg.EPCPackage;
 import com.geosiris.energyml.utils.EPCGenericManager;
 import com.geosiris.energyml.utils.ObjectController;
+import com.geosiris.energyml.utils.Pair;
+import com.geosiris.energyml.utils.Utils;
 import com.geosiris.etp.utils.ETPUri;
+import com.geosiris.webstudio.model.WorkspaceContent;
 import com.geosiris.webstudio.property.ConfigurationType;
 import com.geosiris.webstudio.servlet.Editor;
 import com.geosiris.webstudio.servlet.global.ResqmlAccessibleTypes;
+import energyml.witsml2_1.Tubular;
 import jakarta.servlet.http.HttpSession;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
+import javax.xml.datatype.XMLGregorianCalendar;
 import java.lang.reflect.Method;
+import java.lang.reflect.Modifier;
 import java.lang.reflect.ParameterizedType;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.stream.Collectors;
 
 
@@ -40,17 +44,22 @@ public class ResqmlObjectControler {
 
     public static void modifyResqmlObjectFromParameter(HttpSession session, Object resqmlObj, String paramPath,
                                                        ModficationType modifType, Object value,
-                                                       Map<String, Object> epcObjects
+                                                       Map<String, Object> epcObjectsSource
     ) throws Exception {
-        modifyResqmlObjectFromParameter(session, resqmlObj, paramPath, modifType, value, epcObjects, paramPath, resqmlObj);
+        //        TODO: le code suivant ne marche pas car l'additional object est un propertyDict et donc l'uuid des porpsKind n'apparait pas directement dans la map
+        //        Map<String, Object> epcObjects = new HashMap<>();
+        //        epcObjects.putAll(epcObjectsSource);
+        //        epcObjects.putAll(GetAdditionalObjects.ADDITIONAL_ENERGYML_OBJECTS);
+        modifyResqmlObjectFromParameter(session, resqmlObj, paramPath, modifType, value, epcObjectsSource, paramPath, resqmlObj);
     }
 
-    public static void modifyResqmlObjectFromParameter(HttpSession session, Object resqmlObj, String paramPath,
+    private static void modifyResqmlObjectFromParameter(HttpSession session, Object resqmlObj, String paramPath,
                                                        ModficationType modifType, Object value,
                                                        Map<String, Object> epcObjects,
                                                        String completePath,
                                                        Object rootObject
     ) throws Exception {
+
         if (resqmlObj != null) {
             Class<?> objClass = resqmlObj.getClass();
             if (paramPath.startsWith(".")) {
@@ -409,4 +418,118 @@ public class ResqmlObjectControler {
 
     public enum ModficationType {ADD_LIST_ELT, REMOVE_LIST_ELT, CREATE_ELT, EDITION}
 
+    public static Object randomizecontent(Class<?> objClass, WorkspaceContent wc){
+        return createInstance(objClass, wc, null, null);
+    }
+
+    private static final Random RANDOMIZER = new Random();
+    private static Map<String, String> extTypes = Editor.pkgManager.getExtTypesAsJson(SessionUtility.wsProperties.getDirPathToExtTypes());
+
+    public static Object createInstance(Class<?> objClass, WorkspaceContent wc, Object parent, String thisAttributeName){
+        if(objClass.getName().compareToIgnoreCase("java.lang.Object") == 0) return null;
+        if(objClass.isEnum()){
+            return objClass.getEnumConstants()[RANDOMIZER.nextInt(objClass.getEnumConstants().length)];
+        }else{
+            if(Number.class.isAssignableFrom(objClass)){
+                Integer rand = RANDOMIZER.nextInt(100);
+                try {
+                    return objClass.getMethod("valueOf", String.class).invoke(null, String.valueOf(rand));
+                } catch (Exception e) {e.printStackTrace();}
+            }else if(Boolean.class.isAssignableFrom(objClass)){
+                int rand = RANDOMIZER.nextInt(2);
+                return rand != 0;
+            }else if(objClass.isPrimitive()){
+                Integer rand = RANDOMIZER.nextInt(100);
+                try {
+                    return createInstance(
+                            Class.forName("java.lang." + objClass.getSimpleName().substring(0,1).toUpperCase() + objClass.getSimpleName().substring(1)),
+                            wc, parent, thisAttributeName
+                    );
+                } catch (ClassNotFoundException e) {e.printStackTrace();}
+            }else if(String.class.isAssignableFrom(objClass)){
+                if(thisAttributeName != null){
+                    String refClass = (parent!=null?parent.getClass().getName():objClass.getName()).toLowerCase();
+                    if(refClass.endsWith("ext")) refClass = refClass.substring(0,refClass.length()-3);
+                    String attribPath = ( refClass + "." + thisAttributeName).toLowerCase();
+
+                    if(thisAttributeName.compareToIgnoreCase("uuid") == 0
+                            || thisAttributeName.compareToIgnoreCase("uid") == 0
+                    ){
+                        return UUID.randomUUID().toString();
+                    }else if(extTypes.containsKey(attribPath)){
+                        try {
+                            String enumClassName = extTypes.get(attribPath);
+                            if(enumClassName.toLowerCase().endsWith("ext")) enumClassName = enumClassName.substring(0,enumClassName.length()-3);
+                            return String.valueOf(
+                                    createInstance(
+                                            Class.forName(enumClassName),
+                                            wc, parent, thisAttributeName
+                                    )
+                            );
+
+                        } catch (ClassNotFoundException e) {
+                            e.printStackTrace();
+                            return "Randomization of " + thisAttributeName + "(" + RANDOMIZER.nextInt() + ") ExtEnum value failed to generate";
+                        }
+                    }else{
+                        return "Randomization of " + thisAttributeName + "(" + RANDOMIZER.nextInt() + ") ";// + attribPath;
+                    }
+                }else{
+                    return "A random value (" + RANDOMIZER.nextInt() + ")";
+                }
+            }else if(objClass.getSimpleName().compareToIgnoreCase("DataObjectReference") == 0){
+                // TODO
+            }else if(XMLGregorianCalendar.class.isAssignableFrom(objClass)){
+                return Utils.getCalendarForNow();
+            }else if(Collection.class.isAssignableFrom(objClass)){
+                try {
+                    Collection objInstance = (Collection) (!Modifier.isAbstract(objClass.getModifiers()) ? objClass.getDeclaredConstructor().newInstance(): new ArrayList<>());
+
+                    for(int i=0; i<RANDOMIZER.nextInt(2) + 2; i++){
+                        objInstance.add(createInstance(ObjectController.getClassTemplatedTypeofSubParameter(parent.getClass(), thisAttributeName).get(0), wc, objInstance, thisAttributeName));
+                    }
+                    return objInstance;
+                } catch (Exception e) {e.printStackTrace();}
+            }else{
+                if(Modifier.isAbstract(objClass.getModifiers())) {
+                    EPCPackage energymlPkg = Editor.pkgManager.getMatchingPackage(objClass);
+                    List<Class<?>> possibleClasses = ObjectController.getResqmlInheritorClasses(objClass.getName(), energymlPkg.getPkgClasses());
+                    return createInstance(
+                            possibleClasses.get(RANDOMIZER.nextInt(possibleClasses.size())),
+                            wc, parent, thisAttributeName
+                    );
+                }else {
+                    try {
+                        Object objInstance = objClass.getDeclaredConstructor().newInstance();
+                        for (Pair<Class<?>, String> param : ObjectController.getClassAttributes(objClass)) {
+                            Object paramInstance = createInstance(param.l(), wc, objInstance, param.r());
+                            if(Collection.class.isAssignableFrom(param.l())) {
+                                ((Collection<?>)ObjectController.getObjectAttributeValue(objInstance, param.r())).addAll((Collection)paramInstance);
+                            }else{
+                                ObjectController.editObjectAttribute(objInstance, param.r(), paramInstance);
+                            }
+                        }
+                        return objInstance;
+                    } catch (Exception e) {
+                        System.err.println("Failed to instanciate class " + objClass + " for attribute " + thisAttributeName);
+                        e.printStackTrace();
+                    }
+                }
+            }
+        }
+        return null;
+    }
+
+    public static void main(String[] argv){
+//        System.out.println(createInstance(WellboreType.class, null, null, null));
+//        System.out.println(createInstance(Double.class, null, null, null));
+//        System.out.println(createInstance(double.class, null, null, null));
+//        System.out.println(createInstance(Integer.class, null, null, null));
+//        System.out.println(createInstance(String.class, null, null, null));
+
+        for(String pkg: extTypes.keySet()){
+            System.out.println(pkg);
+        }
+        System.out.println(Editor.pkgManager.marshal(randomizecontent(Tubular.class, null)));
+    }
 }

@@ -25,7 +25,7 @@ export function refreshPropertyDictVue(){
     return updateJsonDictUI("/GetAdditionalObjects", 'container_PropertiesDict', 
                     'modal_PropertiesDict_progressBar', "counter_PropertiesDict", 
                     true,
-                    null).then(x => endTask()).catch(() => endTask());
+                    null).then(x => endTask()).catch((e) =>{console.log(e); endTask()});
 }
 
 export function refreshWorkspaceDictVue(){
@@ -91,7 +91,7 @@ export function updateJsonDictUI(uri, containerId, progressBarId, counterId, pri
             addJsonData(objectList, container, printListIdx, f_applyOnKey);
             document.getElementById(progressBarId).style.display = "none";
             updateCountViewableJsonDictUI(containerId, counterId);
-    });
+    }).catch((e) => {console.log(e); document.getElementById(progressBarId).style.display = "none";});
 }
 
 export function filterJsonDictUI(containerId, counterId, filter, caseSensitive, splitPhraseInWords){

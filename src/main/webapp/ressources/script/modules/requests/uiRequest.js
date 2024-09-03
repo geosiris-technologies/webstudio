@@ -50,7 +50,7 @@ export function exportAndClose(fileName){
         console.log("closing file");
         endTask();
         sendGetURLAndReload('FileReciever?close=true', false);
-    }).catch(() => endTask());;
+    }).catch(() => endTask());
 
 }
 
@@ -159,6 +159,16 @@ export function openResqmlObjectContent(    uuid,
                     window.open("/GetObjectAsJson?uuid=" + uuid, '_blank').focus()
                 };
 
+                var butPrintDownloadJSON = document.createElement("button");
+                butPrintDownloadJSON.appendChild(document.createTextNode("Download JSON"));
+                butPrintDownloadJSON.className += " btn btn-outline-success objButtonAction";
+                butPrintDownloadJSON.id = "but_Download_json_" + uuid;
+                divBtnGrp.appendChild(butPrintDownloadJSON);
+
+                butPrintDownloadJSON.onclick = function(){
+                    downloadGetURL_Promise("/GetObjectAsJson?uuid=" + uuid + "&download=true",  uuid + ".json")
+                };
+
                 var butPrintXml = document.createElement("button");
                 butPrintXml.appendChild(document.createTextNode("Xml"));
                 butPrintXml.className += " btn btn-outline-success objButtonAction";
@@ -169,6 +179,16 @@ export function openResqmlObjectContent(    uuid,
                     window.open("/GetObjectAsXml?uuid=" + uuid, '_blank').focus()
                 };
 
+                var butPrintDownloadXML = document.createElement("button");
+                butPrintDownloadXML.appendChild(document.createTextNode("Download XML"));
+                butPrintDownloadXML.className += " btn btn-outline-success objButtonAction";
+                butPrintDownloadXML.id = "but_Download_xml_" + uuid;
+                divBtnGrp.appendChild(butPrintDownloadXML);
+
+                butPrintDownloadXML.onclick = function(){
+                    downloadGetURL_Promise("/GetObjectAsXml?uuid=" + uuid + "&download=true", uuid + ".xml")
+                };
+
                 var butAutoCorrect = document.createElement("button");
                 butAutoCorrect.appendChild(document.createTextNode("Auto-correct"));
                 butAutoCorrect.className += " btn btn-outline-info objButtonAction";
@@ -177,6 +197,17 @@ export function openResqmlObjectContent(    uuid,
 
                 butAutoCorrect.onclick = function(){
                     resquestCorrection(idConsoleElt, uuid, "dor").then(function(){resqmlElt.refresh();});
+                };
+
+                var butClone = document.createElement("button");
+                butClone.appendChild(document.createTextNode("Clone"));
+                butClone.className += " btn btn-outline-success objButtonAction";
+                butClone.id = "but_Clone_" + uuid;
+                butClone.title = "Clone this object to create a copy with an other uuid. The copy's title contains the original object uuid.";
+                divBtnGrp.appendChild(butClone);
+
+                butClone.onclick = function(){
+                    sendGetURLAndReload("/ObjectEdit?command=create&Root_UUID=" + uuid, false)
                 };
 
                 // Root uuid parameter
