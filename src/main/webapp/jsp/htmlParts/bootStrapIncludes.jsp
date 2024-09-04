@@ -42,12 +42,19 @@ limitations under the License.
 
 <!--  fin bootstrap -->
 
+<!-- highlight.js -->
+<script
+  src="//cdnjs.cloudflare.com/ajax/libs/highlight.js/11.10.0/highlight.min.js"
+  ></script>
+<link rel="stylesheet" href="/ressources/css/highlight/styles/dark.css">
+<script>hljs.highlightAll();</script>
 <!-- Threejs -->
 <script type="importmap">
     {
         "imports": {
             "three": "https://unpkg.com/three@0.147.0/build/three.module.js",
-            "three/addons/": "https://unpkg.com/three@0.147.0/examples/jsm/"
+            "three/addons/": "https://unpkg.com/three@0.147.0/examples/jsm/",
+            "hljs": "https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.10.0/highlight.min.js"
         }
     }
 </script>

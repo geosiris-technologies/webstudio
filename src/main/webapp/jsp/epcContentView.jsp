@@ -59,7 +59,7 @@ public Boolean restrictedExperiment(String prod_type){
 <script type="module">
 	import {initWebStudioView} from "/ressources/script/modules/main.js";
 	import {filterTable} from "/ressources/script/modules/UI/table.js";
-	import {onEnterPressed} from "/ressources/script/modules/UI/htmlUtils.js";
+	import {onEnterPressed, createEditableHighlighted} from "/ressources/script/modules/UI/htmlUtils.js";
 	import {setUserName, initSessionTimeOut} from "/ressources/script/modules/UI/ui.js";
 
 	$(window).on('load', initWebStudioView);
@@ -103,6 +103,8 @@ public Boolean restrictedExperiment(String prod_type){
 			//out.print("initSessionTimeOut(null);");
 		}
 		%>
+	    // document.getElementById("rws__EPC_TABS_CONTAINER__").appendChild(createEditableHighlighted('{"test": "coucou", "a": [0,1,12]}', "json"));
+	    // document.getElementById("rws__EPC_TABS_CONTAINER__").appendChild(createEditableHighlighted('<ns2:HorizonInterpretation xmlns="http://www.energistics.org/energyml/data/commonv2" xmlns:ns2="http://www.energistics.org/energyml/data/resqmlv2" xmlns:ns3="http://www.energistics.org/energyml/data/witsmlv2" uuid="8bc7e14e-90b3-4ee2-93d3-13f60e22dde4" schemaVersion="2.2"><Citation><Title>ShetLand JFR</Title><Originator>Geosiris user : JFR</Originator><Creation>2024-08-20T08:39:33.334Z</Creation><Format>Geosiris WebStudio</Format><Editor>Katalyst</Editor><LastUpdate>2024-08-20T08:58:46.923Z</LastUpdate></Citation><ns2:InterpretedFeature><Uuid>fa55b157-6308-4b16-95ed-1250e984fbea</Uuid><QualifiedType>resqml22.BoundaryFeature</QualifiedType><Title>Shetland_GP</Title></ns2:InterpretedFeature></ns2:HorizonInterpretation>', "xml"));
 
 	});
 </script>

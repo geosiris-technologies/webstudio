@@ -29,7 +29,7 @@ export class JsonTableColumnizer{
     getDomElt(obj, parent){
         var elt = this._getDomElt(obj);
         if(this.cursor != null){
-            elt.style.cursor = this.cursor;   
+            elt.style.cursor = this.cursor;
         }
         if(parent != null){
             if(this.mouseListener != null){
@@ -49,7 +49,7 @@ export class JsonTableColumnizer{
         return elt;
     }
     getColumnTitleElt(){
-        var elt = this._getColumnTitleElt(); 
+        var elt = this._getColumnTitleElt();
         if(this.mouseListener_title != null){
             add_mouse_event_listener(elt, (event) => this.mouseListener_title(event, this));
         }
@@ -70,7 +70,7 @@ export class JsonTableColumnizer_DotAttrib extends JsonTableColumnizer{
         this.attrib = attrib;
     }
     getSortAttribute(){return this.attrib;}
-    _getDomElt(obj){ 
+    _getDomElt(obj){
         var span = document.createElement("span");
         span.appendChild(document.createTextNode(getAttribute(obj, this.attrib)));
         return span;
@@ -110,7 +110,7 @@ export class JsonTableColumnizer_Checkbox extends JsonTableColumnizer{
         check_obj.value = this.f_value(obj);
         check_obj.name = this.name;
         check_obj.className = this.class_id;
-        check_obj.addEventListener('change', 
+        check_obj.addEventListener('change',
             (event) => {
                 var check_title = document.getElementById(this.class_id + "-title");
                 check_title.update();
@@ -133,14 +133,14 @@ export class JsonTableColumnizer_Checkbox extends JsonTableColumnizer{
         check_title.type = "checkbox";
         check_title.name = this.name;
         check_title.id = this.class_id + "-title";
-        
+
         const check_title_label = document.createElement("label");
         div_check.appendChild(check_title_label);
         check_title_label.className = "form-check-label";
         check_title_label.appendChild(document.createTextNode("[0]"));
 
         /* Title checkbox is toggled */
-        check_title.addEventListener('change', 
+        check_title.addEventListener('change',
             (event) => {
                 var parent = check_title;
                 while(parent.tagName.toLowerCase() != "table" && parent.parent != null){
@@ -298,7 +298,7 @@ export function toTable(
     );
 
     _table.appendChild(_table_body);
-    
+
     return _table;
 }
 
@@ -313,7 +313,7 @@ export function sample(){
     }
 
     const f_cols = []
-    
+
     f_cols.push(new JsonTableColumnizer_Checkbox("sample_check", (obj) => getAttribute(obj, "uuid")));
     f_cols.push(new JsonTableColumnizer_Radio("sample_radio", (obj) => getAttribute(obj, "uuid")));
     f_cols.push(new JsonTableColumnizer_Icon("far fa-trash-alt ", "fas fa-trash-alt "));

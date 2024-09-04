@@ -208,11 +208,13 @@ export function rws_addConsoleMessageFilter(console_id){
         div_checkboxes.appendChild(check);
     }
 
-    // Event lors de l'ajout d'un message
-    for(let lu_msg of console_elt.getElementsByClassName(__CL_CONSOLE_UL__)){
-        lu_msg.addEventListener("DOMNodeInserted", 
-            function (event) {
-                var target = event.target;
+    // Options de l'observateur (quelles sont les mutations à observer)
+    var config = { attributes: true, childList: true };
+
+    function callback(mutationsList) {
+        for (var mutation of mutationsList) {
+            if(mutation.type == "childList"){
+                var target = mutation.target;
                 const check_msg_type = console_elt.getElementsByClassName(check_classes);
                 for (let checkboxDiv of check_msg_type) {
                     var checkbox = checkboxDiv;
@@ -227,10 +229,18 @@ export function rws_addConsoleMessageFilter(console_id){
                         }
                     }
                 }
-            }, 
-            false);
+            }
+        }
+
     }
 
+    // Créé une instance de l'observateur lié à la fonction de callback
+    var observer = new MutationObserver(callback);
+
+    // Event lors de l'ajout d'un message
+    for(let lu_msg of console_elt.getElementsByClassName(__CL_CONSOLE_UL__)){
+        observer.observe(lu_msg, config);
+    }
 
     // Creation du clear button
     var clear_but = document.createElement("span");

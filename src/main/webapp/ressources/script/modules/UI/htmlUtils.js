@@ -16,6 +16,9 @@ limitations under the License.
 
 import {openResqmlObjectContentByUUID} from "../main.js"
 import {deleteResqmlObject} from "../requests/uiRequest.js"
+import {appendConsoleMessage} from "../logs/console.js";
+import {__ENUM_CONSOLE_MSG_SEVERITY_TOAST__, __ID_CONSOLE__} from "../common/variables.js";
+
 
 
 export const MOUSE_EVENT_LIST = ["click", "contextmenu", "dblclick", "mousedown", "mouseenter", "mouseleave", "mousemove", "mouseout", "mouseover", "mouseup"]
@@ -579,3 +582,121 @@ export function sleep(milliseconds) {
 export function randomColor(){
     return "#" + Math.floor(Math.random()*16777215).toString(16);
 }
+
+export function createEditableHighlighted(content, language="xml"){
+    const const_language = language;
+
+    var pre = document.createElement("pre");
+    pre.style.height = "100%";
+    pre.style.overflow = "hidden";
+    pre.style.paddingBottom = "50px";
+
+    const code = document.createElement("code");
+    code.style.height = "100%";
+    code.style.overflow = "auto";
+
+    const but_highlight = document.createElement("button");
+    pre.appendChild(but_highlight);
+    but_highlight.className = "btn btn-primary form-control";
+    but_highlight.style.width = "fit-content";
+    but_highlight.appendChild(document.createTextNode("highlight"));
+    but_highlight.addEventListener("click", function(e) {
+        if(code._content != code.innerText){
+            // Highlight
+            code._content != code.innerText;
+            code.removeAttribute('data-highlighted');
+            hljs.highlightElement(code);
+        }
+
+    });
+
+    var but_reformat = document.createElement("button");
+    pre.appendChild(but_reformat);
+    but_reformat.className = "btn btn-dark form-control";
+    but_reformat.style.width = "fit-content";
+    but_reformat.appendChild(document.createTextNode("reformat"));
+    but_reformat.addEventListener("click", function(e) {
+        try{
+            if(const_language.toLowerCase() == "xml"){
+                code.textContent = prettifyXml(code.innerText);
+            }else if (const_language.toLowerCase() == "json"){
+                var parsed = JSON.parse(code.innerText);
+                code.textContent = JSON.stringify(parsed, null, 4);
+            }
+            but_highlight.click();
+        }catch(e){
+            appendConsoleMessage(
+                __ID_CONSOLE__, {
+                severity: __ENUM_CONSOLE_MSG_SEVERITY_TOAST__,
+                originator: "code editor",
+                message: e.message + "\n" + e.stack
+            });
+        }
+    });
+
+    code.className = "language-" + language;
+    pre.appendChild(code);
+    code.appendChild(document.createTextNode(content));
+
+    code._content = content;
+    code.contentEditable = "true"
+    hljs.highlightElement(code);
+
+    code.addEventListener("keydown", (e) => {
+        if( e.which == 9 ) {  // Tab
+            e.preventDefault();
+            insertTextAtCaret("\t");
+        }
+    });
+
+    return pre;
+}
+
+export function prettifyXml(sourceXml)
+{
+    var xmlDoc = new DOMParser().parseFromString(sourceXml, 'application/xml');
+    const errorNode = xmlDoc.querySelector("parsererror");
+    if (errorNode) {
+        // parsing failed
+        throw new Error('Failed to parse xml.\n' + errorNode);
+    } else {
+        // parsing succeeded
+        var xsltDoc = new DOMParser().parseFromString([
+            // describes how we want to modify the XML - indent everything
+            '<xsl:stylesheet xmlns:xsl="http://www.w3.org/1999/XSL/Transform">',
+            '  <xsl:strip-space elements="*"/>',
+            '  <xsl:template match="para[content-style][not(text())]">', // change to just text() to strip space in text nodes
+            '    <xsl:value-of select="normalize-space(.)"/>',
+            '  </xsl:template>',
+            '  <xsl:template match="node()|@*">',
+            '    <xsl:copy><xsl:apply-templates select="node()|@*"/></xsl:copy>',
+            '  </xsl:template>',
+            '  <xsl:output indent="yes"/>',
+            '</xsl:stylesheet>',
+        ].join('\n'), 'application/xml');
+
+        var xsltProcessor = new XSLTProcessor();
+        xsltProcessor.importStylesheet(xsltDoc);
+        var resultDoc = xsltProcessor.transformToDocument(xmlDoc);
+        var resultXml = new XMLSerializer().serializeToString(resultDoc);
+        return resultXml;
+    }
+};
+
+function insertTextAtCaret(text) {
+    var sel, range;
+    if (window.getSelection) {
+        sel = window.getSelection();
+        if (sel.getRangeAt && sel.rangeCount) {
+            range = sel.getRangeAt(0);
+            range.deleteContents();
+            range.insertNode( document.createTextNode(text) );
+            sel.collapseToEnd();
+        }
+    } else if (document.selection && document.selection.createRange) {
+        document.selection.createRange().text = text;
+        document.selection.collapseToEnd();
+    }
+}
+
+

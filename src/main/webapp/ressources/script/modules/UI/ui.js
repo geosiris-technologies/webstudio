@@ -14,11 +14,11 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-import {call_after_DOM_updated, createDeleteResqmlButton, createDropDownDivider, createRadio, createSplitter} from "./htmlUtils.js"
+import {call_after_DOM_updated, createDeleteResqmlButton, createDropDownDivider, createRadio, createSplitter, createEditableHighlighted} from "./htmlUtils.js"
 import {hasBeenDisconnected, refreshWorkspace, rws_addEventListeners} from "./eventHandler.js"
 import {appendConsoleMessage} from "../logs/console.js"
 import {getAllOpendedObjects, deleteResqmlObject} from "../requests/uiRequest.js"
-import {sendGetWorkspaceObjectsList} from "../requests/requests.js"
+import {sendGetWorkspaceObjectsList, sendGetURL_Promise} from "../requests/requests.js"
 import {compare, copyOtherTableSortingParams, createTableFromData, highlightTableCellFromClass, highlightTableLineFromTdText, transformTab_AddColumn} from "./table.js"
 import {getAttribute, compareVersionNumber} from "../common/utils.js"
 import {openResqmlObjectContentByUUID} from "../main.js"
@@ -335,6 +335,23 @@ export function highlightExistingElt(jsonObjectList){
     });
 }
 
+export function edit_file(uuid){
+    sendGetURL_Promise("/GetObjectAsXml?uuid=" + uuid).then(
+        function (file_content) {
+            if(file_content != null && file_content.length > 0){
+                const parent_in_editor = $("#modal_file_editor_content")[0];
+                while(parent_in_editor.firstChild){
+                    parent_in_editor.firstChild.remove();
+                }
+                parent_in_editor.appendChild(createEditableHighlighted(file_content, "xml"));
+                $('#modal_file_editor').modal();
+            }else{
+                console.log("Error opening editor for " + uuid);
+            }
+        }
+    ).catch((e) => console.log(e));
+}
+
 export function createTable(jsonList,
         idTable, idObjectList, idTabHeader, idConsoleElt,
         idTabContainer, classObjectContent, 
@@ -426,9 +443,9 @@ export function initRootEltSelector(typeSelector){
     const radioIdPrefix = "modal_createRootElt_radioVersion_";
 
     var countPackage = 0;
-    for(var pkg in mapPackageToVersionToTypes){
-        const constPkg = pkg;
-        const pkgMapVersionToType = mapPackageToVersionToTypes[pkg];
+
+    for(const constPkg of Object.keys(mapPackageToVersionToTypes).sort().values()){
+        const pkgMapVersionToType = mapPackageToVersionToTypes[constPkg];
 
         const pkgTypesDiv = document.createElement("div");
         pkgTypesDiv.name = constPkg+"_versions";
@@ -438,7 +455,7 @@ export function initRootEltSelector(typeSelector){
         const radioPkgVersionName = radioIdPrefix + constPkg;
 
         var countType = 0;
-        var versionListSorted = Object.keys(mapPackageToVersionToTypes[pkg]).sort(compareVersionNumber).reverse();
+        var versionListSorted = Object.keys(pkgMapVersionToType).sort(compareVersionNumber).reverse();
         versionListSorted.forEach(version => {
             const constVersion = version;
             var found = version.match(rgxPkg);

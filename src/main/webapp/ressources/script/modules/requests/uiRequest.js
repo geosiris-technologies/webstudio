@@ -15,7 +15,7 @@ limitations under the License.
 */
 
 import {createTabulation, openTabulation, saveAllResqmlObject_promise} from "../UI/tabulation.js";
-import {beginTask, endTask, refreshHighlightedOpenedObjects} from "../UI/ui.js";
+import {beginTask, endTask, refreshHighlightedOpenedObjects, edit_file} from "../UI/ui.js";
 import {sendGetURLAndReload, sendPostFormAndReload} from "../UI/eventHandler.js";
 import {downloadGetURL_Promise, sendGetURL, sendGetURL_Promise, getJsonObjectFromServer} from "./requests.js";
 import {genObjectContentDivElementId, genObjectContentElementId, genObjectPropertyElementId, resquestCorrection, resquestObjectCopy, resquestValidation} from "../energyml/epcContentManager.js";
@@ -169,7 +169,7 @@ export function openResqmlObjectContent(    uuid,
                     downloadGetURL_Promise("/GetObjectAsJson?uuid=" + uuid + "&download=true",  uuid + ".json")
                 };
 
-                var butPrintXml = document.createElement("button");
+                /*var butPrintXml = document.createElement("button");
                 butPrintXml.appendChild(document.createTextNode("Xml"));
                 butPrintXml.className += " btn btn-outline-success objButtonAction";
                 butPrintXml.id = "but_Print_xml_" + uuid;
@@ -177,6 +177,16 @@ export function openResqmlObjectContent(    uuid,
 
                 butPrintXml.onclick = function(){
                     window.open("/GetObjectAsXml?uuid=" + uuid, '_blank').focus()
+                };*/
+
+                var butRawEditXml = document.createElement("button");
+                butRawEditXml.appendChild(document.createTextNode("Edit raw XML"));
+                butRawEditXml.className += " btn btn-outline-info objButtonAction";
+                butRawEditXml.id = "butRawEditXml_" + uuid;
+                divBtnGrp.appendChild(butRawEditXml);
+
+                butRawEditXml.onclick = function(){
+                    edit_file(uuid);
                 };
 
                 var butPrintDownloadXML = document.createElement("button");

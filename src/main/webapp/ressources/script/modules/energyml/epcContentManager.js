@@ -17,13 +17,15 @@ import {sendGetURLAndReload, refreshWorkspace} from "../UI/eventHandler.js"
 import {__USER_NAME__, beginTask, endTask, getVueOrientation, setVueOrientation, initRootEltSelector, highlightExistingElt} from "../UI/ui.js"
 import {createCheck} from "../UI/htmlUtils.js"
 import {closeResqmlObjectContentByUUID} from "../main.js"
+import {getAttribute} from "../common/utils.js"
 import {sendGetURL, getJsonObjectFromServer, sendPostRequestJson} from "../requests/requests.js"
 import {getAllOpendedObjects} from "../requests/uiRequest.js"
 import {appendConsoleMessage} from "../logs/console.js"
-import {__ENUM_CONSOLE_MSG_SEVERITY_INFO__, __ENUM_CONSOLE_MSG_SEVERITY_WARNING__, 
-        __ENUM_CONSOLE_MSG_SEVERITY_ERROR__, __RWS_CLIENT_NAME__, __RWS_SERVER_NAME__, 
+import {__ENUM_CONSOLE_MSG_SEVERITY_INFO__, __ENUM_CONSOLE_MSG_SEVERITY_WARNING__,
+        __ENUM_CONSOLE_MSG_SEVERITY_ERROR__, __RWS_CLIENT_NAME__, __RWS_SERVER_NAME__,
         getSeverityEnum, REGEX_ENERGYML_FILE_NAME, CLASS_HIGHLIGHT_EXISTING_OBJECT,
         getObjectTableCellClass} from "../common/variables.js"
+import {JsonTableColumnizer_Checkbox, JsonTableColumnizer_Radio, JsonTableColumnizer_Icon, JsonTableColumnizer_DotAttrib, toTable} from "../UI/jsonToTable.js"
 
 /**********************************************************/
 /** Do not forget to access in map with LOWERCASE key !! **/
@@ -94,7 +96,7 @@ export function resquestObjectCopy(idConsoleElt, rootUUID){
     {
         url += "?Root_UUID=" + rootUUID + "&command=copy&version=2.3";
     }
-    
+
     sendGetURLAndReload(url, false);
 }
 
@@ -105,7 +107,7 @@ export function resquestValidation(idConsoleElt, rootUUID){
     {
         url += "?uuid=" + rootUUID;
     }
-    
+
     getJsonObjectFromServer(url).then(
         function(jsonValidationMessages){
             var msgList = [];
@@ -139,7 +141,7 @@ export function resquestValidation(idConsoleElt, rootUUID){
             }else{
                 message += "success"
             }
-            msgList.push({ 
+            msgList.push({
                 severity: __ENUM_CONSOLE_MSG_SEVERITY_INFO__,
                 originator: __RWS_CLIENT_NAME__,
                 message: message
@@ -170,7 +172,7 @@ export function resquestCorrection(idConsoleElt, rootUUID, correctionType){
             function(correctionJSON){
                 var msgList = [];
                 msgList.push(
-                    { 
+                    {
                         severity: __ENUM_CONSOLE_MSG_SEVERITY_INFO__,
                         originator: __RWS_CLIENT_NAME__,
                         message: "CORRECTIONS : " + correctionJSON.length + "\n"
@@ -178,14 +180,14 @@ export function resquestCorrection(idConsoleElt, rootUUID, correctionType){
 
                 for(var validMsgIdx=0; validMsgIdx<correctionJSON.length; validMsgIdx++){
                     var msgCorrect = correctionJSON[validMsgIdx];
-                    var msgContent = msgCorrect.date + " : " + msgCorrect.title 
-                                    + " for " +  msgCorrect.rootType 
-                                    + " with uuid " + msgCorrect.rootUUID 
+                    var msgContent = msgCorrect.date + " : " + msgCorrect.title
+                                    + " for " +  msgCorrect.rootType
+                                    + " with uuid " + msgCorrect.rootUUID
                                     + " and title " + msgCorrect.rootTitle
                                     + "\n";
                     msgContent += "\t" + msgCorrect.msg +"\n";
                     msgList.push(
-                        { 
+                        {
                             severity: __ENUM_CONSOLE_MSG_SEVERITY_WARNING__,
                             originator: __RWS_SERVER_NAME__,
                             message: msgContent
@@ -240,7 +242,7 @@ export function updateVueFromPreferences(){
 
 export function savePreferences(){
     var url = "Preferences";
-    
+
     return sendPostRequestJson(url, {
         "vueOrientation": getVueOrientation()
     });
@@ -252,10 +254,10 @@ export function savePreferences(){
 export const XSLT_XML_TO_SIMPLE_JSON = `
 <xsl:transform xmlns:xsl="http://www.w3.org/1999/XSL/Transform" version="2.0"
     xmlns:eml="http://www.energistics.org/energyml/data/commonv2">
-    
+
     <xsl:output indent="no" omit-xml-declaration="yes" method="text" encoding="utf-8"/>
     <xsl:strip-space elements="*"/>
-    
+
     <xsl:template match="/">
         <xsl:text>{&#xa;</xsl:text>
         <xsl:text>"uuid": "</xsl:text>
@@ -321,10 +323,44 @@ export function read_file(file, action_on_content_and_name, sub_path){
         //reader.readAsDataURL(f);
     }
 }
+
+export function read_file_mapper(file, action_on_content_and_name, sub_path){
+    if(file.name.toLowerCase().endsWith(".epc")){
+        return JSZip.loadAsync(file)
+            .then(function(zip) {
+                var promiseList = []
+                if(sub_path != null){
+                    promiseList.push(zip.files[sub_path].async('text').then((content) =>{
+                        action_on_content_and_name(content, sub_path);
+                        return [content, sub_path];
+                    }));
+                }else{
+                    zip.forEach(async function (relativePath, zipEntry) {
+                        if(zipEntry.name.match(REGEX_ENERGYML_FILE_NAME)){
+                            promiseList.push(zipEntry.async("text").then( (file_content) => {
+                                action_on_content_and_name(file_content, zipEntry.name);
+                                return [file_content, zipEntry.name];
+                            }));
+                        }
+                    });
+                }
+                return promiseList;
+            }, function (e) {
+                result.appendChild(document.createTextNode( "Error reading " + f.name + ": " + e.message))
+            });
+    }else{
+        const reader = new FileReader();
+        reader.addEventListener('load', (event) => {
+            action_on_content_and_name(event.target.result, file.name);
+        });
+        return Promise.resolve(reader.readAsText(file));
+        //reader.readAsDataURL(f);
+    }
+}
 //highlightExistingElt
 export function epc_partial_importer(input_elt, parent, idConsoleElt, f_eraseWorkspace=()=>false){
     const attrib_list = ["title", "uuid", "type", "path"];
-
+    console.log(input_elt);
     var files = input_elt.files;
     const epc_importer_div = document.createElement("div");
     parent.appendChild(epc_importer_div)
@@ -338,7 +374,7 @@ export function epc_partial_importer(input_elt, parent, idConsoleElt, f_eraseWor
         const title = document.createElement("h4");
         title.appendChild(document.createTextNode(f.name));
         file_div.appendChild(title);
-        
+
         var import_but = document.createElement("input");
         import_but.value = "Import";
         import_but.style.maxWidth = "100px";
@@ -359,7 +395,7 @@ export function epc_partial_importer(input_elt, parent, idConsoleElt, f_eraseWor
                         });
                 }else{
                     return new Promise((resolve, reject) => {
-                        var reader = new FileReader();  
+                        var reader = new FileReader();
                         reader.onload = resolve;  // CHANGE to whatever function you want which would eventually call resolve
                         reader.onerror = reject;
                         reader.readAsText(f);
@@ -368,72 +404,49 @@ export function epc_partial_importer(input_elt, parent, idConsoleElt, f_eraseWor
             })).then((contents) => importMultipleFilesToWorkspace(contents, idConsoleElt, f_eraseWorkspace()));
         }
 
-        const doc_range = document.createRange();
-
-        const table_frag = doc_range.createContextualFragment(
-            `<table class="table-striped table-bordered table-hover table-fixed table-top-fixed">
-                <thead><tr></tr></thead>
-                <tbody></tbody>
-            </table>`
-        );
-
-        const table = table_frag.firstChild;
-        const t_head = table.getElementsByTagName("thead")[0];
-        const t_body = table.getElementsByTagName("tbody")[0];
-
-        const all_line_checkbox = [];
-        const global_check = createCheck("", "", `partial_import`, function(checked, value){
-            for(var ci=0; ci<all_line_checkbox.length; ci++){
-                all_line_checkbox[ci].querySelector("input[type=checkbox]").checked = checked;
-            }
-        });
-
-        global_check._updateCheck = function (){
-            var oneUnchecked = false;
-            for(var ci=0; ci<all_line_checkbox.length; ci++){
-                oneUnchecked = !all_line_checkbox[ci].querySelector("input[type=checkbox]").checked;
-                if (oneUnchecked){
-                    break;
-                }
-            }
-            global_check.querySelector("input[type=checkbox]").checked = !oneUnchecked;
-        }
-        var th_check = document.createElement("th");
-        th_check.appendChild(global_check);
-        t_head.firstChild.appendChild(th_check);
-
-        attrib_list.forEach( (attrib) =>{
-            var th_elt = document.createElement("th");
-            th_elt.appendChild(document.createTextNode(attrib.substring(0, 1).toUpperCase() + attrib.substring(1)));
-            t_head.firstChild.appendChild(th_elt);
-        });
+        const dataTableContent = [];
 
         function addEntryLine(file_content, file_name){
             const json_obj = energyml_file_to_json_simple(file_content, XSLT_XML_TO_SIMPLE_JSON);
             json_obj["path"] = file_name;
-            var tr_elt = document.createElement("tr");
-            t_body.appendChild(tr_elt);
-            tr_elt.className = getObjectTableCellClass(json_obj["uuid"]) + " " + CLASS_HIGHLIGHT_EXISTING_OBJECT;
-
-            var td_check_elt = document.createElement("td");
-            tr_elt.appendChild(td_check_elt);
-            var currentCheckDiv = createCheck("", file_name, name_id, () => global_check._updateCheck());
-            all_line_checkbox.push(currentCheckDiv);
-            td_check_elt.appendChild(currentCheckDiv);
-
-            attrib_list.forEach( (attrib) =>{
-                var td_elt = document.createElement("td");
-                td_elt.appendChild(document.createTextNode(json_obj[attrib]));
-                tr_elt.appendChild(td_elt);
-            });
+            dataTableContent.push(json_obj);
         }
 
-        read_file(f, addEntryLine).then((v) =>{
-            highlightExistingElt();
-        });
+        read_file_mapper(f, addEntryLine).then((ddd)=> {
 
-        file_div.appendChild(table);
-        epc_importer_div.appendChild(file_div);
+            Promise.all(ddd).then( (ddd_0) => {
+                var read_objects = ddd_0.map( file_content_n_name => Object.assign({}, energyml_file_to_json_simple(file_content_n_name[0], XSLT_XML_TO_SIMPLE_JSON), {"path": file_content_n_name[1]}) );
+                console.log(read_objects);
+//                read_objects["path"] = file_name;
+                const f_cols = []
+
+                f_cols.push(new JsonTableColumnizer_Checkbox(name_id, (obj) => getAttribute(obj, "path")));
+
+                attrib_list.forEach(
+                    (attrib) => {
+                        f_cols.push(
+                            new JsonTableColumnizer_DotAttrib(
+                                attrib.substring(0, 1).toUpperCase() + attrib.substring(1),
+                                attrib,
+                                function(event, elt){
+                                    if(event.type == "click"){
+                                        openResqmlObjectContentByUUID(elt['uuid']);
+                                    }
+                                },
+                                null,
+                                (elt)=>elt["uuid"]+ "-tab",
+                                null,
+                                "pointer"
+                            )
+                        );
+                    }
+                );
+                var table = toTable(read_objects, f_cols);
+                table.className += " table-striped table-bordered table-hover table-fixed table-top-fixed";
+                file_div.appendChild(table);
+                epc_importer_div.appendChild(file_div);
+            });
+        });
     }
     return epc_importer_div;
 }
@@ -442,16 +455,22 @@ export function importMultipleFilesToWorkspace(fileContentAndNameList, idConsole
     const f_n_list = fileContentAndNameList;
     var formData = new FormData();
 
-    f_n_list.forEach(fileAndNamePair => {
-        var file = fileAndNamePair[0];
+    f_n_list.forEach((fileAndNamePair) => {
+        var file = null;
         var fileName = "default.xml";
-        var extension = "xml";
 
-        try{
-            var extension = fileName.substring(fileName.lastIndexOf(".") + 1)
-            var fileName = fileAndNamePair[1];
-        }catch(exception){console.log(e);}
+        if(typeof fileAndNamePair == "string"){
+            file = fileAndNamePair;
+        }else{
+            file = fileAndNamePair[0];
+            try{
+                if(fileAndNamePair[1] != null && fileAndNamePair[1].length > 2){
+                    fileName = fileAndNamePair[1];
+                }
+            }catch(exception){console.log(e);}
+        }
 
+        var extension = fileName.substring(fileName.lastIndexOf(".") + 1)
         if(typeof file == "string"){
             var blob = new Blob([file], { type: `text/${extension}` });
             file = new File([blob], fileName, {type: `text/${extension}`});
