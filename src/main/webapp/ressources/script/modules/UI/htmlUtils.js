@@ -188,7 +188,7 @@ export function createRadio(labelTxt, value, radioName, checkableOnclickFunc_Wit
     radio.type = "radio";
     radio.name = radioName;
     radio.value = value;
-    //radio.className = "form-check-input"; // create bug for the DOR interface
+    radio.className = "form-check-input"; // create bug for the DOR interface
     if(checked!=null){
         radio.checked = checked;
     }
@@ -231,6 +231,8 @@ export function createCheck(labelTxt, value, checkName, checkableOnclickFunc_Wit
     check.name = checkName;
     check.checked = checked;
     check.value = value;
+    check.className = "form-check-input";
+    
     if(checkableOnclickFunc_With_Checked_and_Value_as_Param!=null){
         check.onclick = function(){
             checkableOnclickFunc_With_Checked_and_Value_as_Param(check.checked, value);
@@ -239,14 +241,13 @@ export function createCheck(labelTxt, value, checkName, checkableOnclickFunc_Wit
     var result = check;
 
     if(ENABLE_CUSTOM_CHECK_WITH_EMPTY_LABEL || (labelTxt!= null && labelTxt.length>0) ){
-        check.className = "custom-control-input";
         // Si a un label alors on l'ajoute
         var label = document.createElement("label");
         label.appendChild(document.createTextNode(labelTxt));
-        label.className = "custom-control-label";
+        label.className = "form-check-label";
 
         var divCheck = document.createElement("div");
-        divCheck.className = "custom-control custom-checkbox";
+        divCheck.className = "form-check form-check-inline";
 
         var countIdUnique = 0;
         var valueRefactored = value.replace(/[^0-9a-z-A-Z]/g,'');
@@ -291,7 +292,7 @@ export function createSplitter(idFirst, idSecond, fistPercent, secPercent, orien
     });
 }
 export function createCollapser(eltHead, eltCollapsable){
-    eltHead.style.display = 'inline';
+    //eltHead.style.display = 'inline';
 
 
     const spanArrow = document.createElement("span");
@@ -493,7 +494,7 @@ export function createDropDownButton(htmlEltMenuList, id, menu_class){
     button.onmouseout = function(){button.className = button.className.replace(/far/g,'fas');}
     //button.type="button";
     button.id = id;
-    button.setAttribute("data-toggle", "dropdown");
+    button.setAttribute("data-bs-toggle", "dropdown");
     button.setAttribute("aria-haspopup", "true");
     button.setAttribute("aria-expanded", "false");
     //button.appendChild(document.createTextNode("+"));
@@ -604,7 +605,7 @@ export function createEditableHighlighted(content, language="xml"){
         if(code._content != code.innerText){
             // Highlight
             code._content != code.innerText;
-            code.removeAttribute('data-highlighted');
+            code.removeAttribute('data-bs-highlighted');
             hljs.highlightElement(code);
         }
 

@@ -16,7 +16,7 @@ limitations under the License.
 
 import {call_after_DOM_updated, createCheck, createEltAndSubs, createInputGroup, createRadio, findFirstTextNodeValue, onEnterPressed} from "./htmlUtils.js"
 import {beginTask, endTask} from "./ui.js"
-import {getObjectTableCellClass} from "../common/variables.js"
+import {getObjectTableCellClass, CLASS_TABLE_FIXED} from "../common/variables.js"
 
 
 export function geosiris_applyTableSort(divTable, dataTableEltIndices, dataCellClassPrefix){
@@ -119,7 +119,7 @@ export function createTableFromData(dataTable, dataTableEltIndices, dataTableHea
     }
 
 
-    divTable.className = "table-striped table-bordered table-hover table-fixed table-top-fixed";
+    divTable.className = CLASS_TABLE_FIXED;
 
     const dataCellClassPrefix = "colName_"; // Any modification here needs modification in @copyOtherTableSortingParams
 
@@ -358,7 +358,7 @@ export function createTableFilterInput(elt_table, placeholder){
 
     // -- CaseSensitive Checkbox
 
-    inputCheckSensitive.className = "custom-control-input";
+    inputCheckSensitive.className = "form-check-input";
     inputCheckSensitive.typeName = "checkbox";
 
     // -- Text input
@@ -392,11 +392,11 @@ export function createTableFilterInput(elt_table, placeholder){
     div_check.className = "input-group-text form-control";
 
     var div_check_form_grp = document.createElement("div");
-    div_check_form_grp.className = "custom-control custom-checkbox";
+    div_check_form_grp.className = "form-check form-check-inline";
     div_check.appendChild(div_check_form_grp);
 
     var labelCheck = document.createElement("label");
-    labelCheck.className = "custom-control-label";
+    labelCheck.className = "form-check-label";
     labelCheck.appendChild(inputCheckSensitive);
     labelCheck.appendChild(document.createTextNode("Case sensitive"))
     div_check_form_grp.appendChild(labelCheck);

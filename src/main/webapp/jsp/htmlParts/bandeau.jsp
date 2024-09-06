@@ -79,37 +79,37 @@ limitations under the License.
 		<ul class="navbar-nav">
 			<li class="nav-item dropdown">
 				<a class="nav-link dropdown-toggle" href="#" id="navbarDropdown"
-				role="button" data-toggle="dropdown" aria-haspopup="true"
+				role="button" data-bs-toggle="dropdown" aria-haspopup="true"
 				aria-expanded="false"> File </a>
-				<div class="dropdown-menu" aria-labelledby="navbarDropdown">
-					<a class="dropdown-item" data-toggle="modal" data-target="#modal_import_partialEPC">Import file in workspace (EPC/XML/...) [ctrl + i]</a>
-					<a class="dropdown-item" data-toggle="modal" data-target="#modal_exportEPC">Export workspace to EPC file [ctrl + e]</a>
-          <a class="dropdown-item" data-toggle="modal" data-target="#modal_WorkspaceDict">Show workspace tree</a>
-					
-					<div class="dropdown-divider"></div>
+				<ul class="dropdown-menu" aria-labelledby="navbarDropdown">
+                    <li><a class="dropdown-item" data-bs-toggle="modal" data-bs-target="#modal_import_partialEPC">Import file in workspace (EPC/XML/...) [ctrl + i]</a></li>
+                    <li><a class="dropdown-item" data-bs-toggle="modal" data-bs-target="#modal_exportEPC">Export workspace to EPC file [ctrl + e]</a></li>
+                    <li><a class="dropdown-item" data-bs-toggle="modal" data-bs-target="#modal_WorkspaceDict">Show workspace tree</a></li>
 
-					<a class="dropdown-item" id="but_validate_workspace" onclick="">Validate workspace</a>
-					<a class="dropdown-item" id="but_save_all_Open_Objects">Save all open elements [ctrl + s]</a>
-					<a class="dropdown-item" data-toggle="modal" data-target="#modal_closeEPC">Clear workspace (remove all loaded data)</a>
+                    <li><div class="dropdown-divider"></div></li>
 
-					<div class="dropdown-divider"></div>
+                        <li><a class="dropdown-item" id="but_validate_workspace" onclick="">Validate workspace</a></li>
+                            <li><a class="dropdown-item" id="but_save_all_Open_Objects">Save all open elements [ctrl + s]</a></li>
+                                <li><a class="dropdown-item" data-bs-toggle="modal" data-bs-target="#modal_closeEPC">Clear workspace (remove all loaded data)</a></li>
 
-                	<a class="dropdown-item" data-toggle="modal" data-target="#modal_3D_view">3D View</a>
-                	<a class="dropdown-item" data-toggle="modal" data-target="#modal_FIRPView">FIRP view</a>
-					<a class="dropdown-item" data-toggle="modal" data-target="#modal_ETP">ETP requests</a>
-                	<a class="dropdown-item" data-toggle="modal" data-target="#modal_PropertiesDict">Show Common properties dictionary</a>
-					<div class="dropdown-divider"></div>
+                                    <li><div class="dropdown-divider"></div></li>
 
-				</div>
+                                    <li><a class="dropdown-item" data-bs-toggle="modal" data-bs-target="#modal_3D_view">3D View</a></li>
+                                    <li><a class="dropdown-item" data-bs-toggle="modal" data-bs-target="#modal_FIRPView">FIRP view</a></li>
+                                    <li><a class="dropdown-item" data-bs-toggle="modal" data-bs-target="#modal_ETP">ETP requests</a></li>
+                                    <li><a class="dropdown-item" data-bs-toggle="modal" data-bs-target="#modal_PropertiesDict">Show Common properties dictionary</a></li>
+                                    <li><div class="dropdown-divider"></div></li>
+
+                </ul>
 			</li>
 		</ul>
 		<ul class="navbar-nav">
 			<li class="nav-item dropdown">
 				<a class="nav-link dropdown-toggle" href="#" id="navbarDropdown_Operations"
-				role="button" data-toggle="dropdown" aria-haspopup="true"
+				role="button" data-bs-toggle="dropdown" aria-haspopup="true"
 				aria-expanded="false"> Edit </a>
 				<div class="dropdown-menu" aria-labelledby="navbarDropdown_Operations">
-					<a class="dropdown-item" data-toggle="modal" data-target="#modal_changeDorReference">Change DOR references</a>
+					<a class="dropdown-item" data-bs-toggle="modal" data-bs-target="#modal_changeDorReference">Change DOR references</a>
 					<a class="dropdown-item" id="action-correction-dor">Auto-correct DOR informations</a>
 					<a class="dropdown-item" id="action-correction-versionString">Remove VersionString</a>
 					<a class="dropdown-item" id="action-correction-schemaVersion">Correct SchemaVersion</a>
@@ -123,29 +123,29 @@ limitations under the License.
 
 		<ul class="navbar-nav ">
 			<li  class="nav-item">
-				<a data-toggle="collapse" class="nav-link" id="rws__CL_CONSOLE_TOGGLE_BUT"
-				data-target="#rws__ID_CONSOLE_MODAL__" 
+				<a data-bs-toggle="collapse" class="nav-link" id="rws__CL_CONSOLE_TOGGLE_BUT"
+				data-bs-target="#rws__ID_CONSOLE_MODAL__" 
 				onclick='if(this.textContent.includes("Hide")){this.textContent = "Show Console";}else{this.textContent = "Hide Console";}'>Show Console</a> 
 			</li>
 			<li  class="nav-item">
-				<a data-toggle="modal"  class="nav-link"
-				data-target="#modal_resqmlGraphView">EPC graph</a>
+				<a data-bs-toggle="modal"  class="nav-link"
+				data-bs-target="#modal_resqmlGraphView">EPC graph</a>
 			</li>
 		</ul>
 
-		<ul class="navbar-nav">
+		<ul class="navbar-nav me-auto">
 			<li class="nav-item dropdown">
 				<a class="nav-link dropdown-toggle" href="#" id="navbarDropdown_About"
-				role="button" data-toggle="dropdown" aria-haspopup="true"
+				role="button" data-bs-toggle="dropdown" aria-haspopup="true"
 				aria-expanded="false"> About </a>
 				<div class="dropdown-menu" aria-labelledby="navbarDropdown_About">
-					<a class="nav-link fab fa-github" href="https://github.com/geosiris-technologies/webstudio-platform" target="_blank">WebStudio platform</a>
-					<a class="nav-link fab fa-github" href="https://github.com/geosiris-technologies/webstudio" target="_blank">WebStudio</a>
+					<a class="nav-link dropdown-item fab fa-github" href="https://github.com/geosiris-technologies/webstudio-platform" target="_blank">WebStudio platform</a>
+					<a class="nav-link dropdown-item fab fa-github" href="https://github.com/geosiris-technologies/webstudio" target="_blank">WebStudio</a>
 				</div>
 			</li>
 		</ul>
 
-        <ul class="navbar-nav ml-auto">
+        <ul class="navbar-nav me-auto">
         	<li class="nav-item navbar-text" id="sessionCounter_item">
         		<span class="nav-link fas fa-users" style="display: none" id="sessionCounter" title="Other connected users count"></a>
         		</li>
@@ -159,7 +159,7 @@ limitations under the License.
         		</div>
         	</li>
         </ul>
-        <ul class="navbar-nav ml-auto">
+        <ul class="navbar-nav me-2">
         	<li class="nav-item"><img alt="img_geosiris" height=30
         		src="/ressources/img/logos/logo_geosiris.png">
         	</li>
@@ -177,11 +177,11 @@ limitations under the License.
 				<span class="navbar-text" id="ws_sessionMetrics"></span>
 			</li>
           
-			<a class="nav-link" data-toggle="modal" data-target="#modal_bug_report"><span class="fas fa-bug"></span> Report bug</a>
+			<a class="nav-link" data-bs-toggle="modal" data-bs-target="#modal_bug_report"><span class="fas fa-bug"></span> Report bug</a>
 			
       <li class="nav-item dropdown" id="sessionInfo">
 				<a class="nav-link dropdown-toggle fas fa-user" href="#"
-				role="button" data-toggle="dropdown" aria-haspopup="true"
+				role="button" data-bs-toggle="dropdown" aria-haspopup="true"
 				aria-expanded="false"
 				id="sessionInfoBut"></a>
 				<div class="dropdown-menu dropdown-menu-right" aria-labelledby="navbarDropdown" id="sessionInfoMenu">

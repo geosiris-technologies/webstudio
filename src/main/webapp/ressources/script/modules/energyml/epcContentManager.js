@@ -23,6 +23,7 @@ import {getAllOpendedObjects} from "../requests/uiRequest.js"
 import {appendConsoleMessage} from "../logs/console.js"
 import {__ENUM_CONSOLE_MSG_SEVERITY_INFO__, __ENUM_CONSOLE_MSG_SEVERITY_WARNING__,
         __ENUM_CONSOLE_MSG_SEVERITY_ERROR__, __RWS_CLIENT_NAME__, __RWS_SERVER_NAME__,
+        CLASS_TABLE_FIXED,
         getSeverityEnum, REGEX_ENERGYML_FILE_NAME, CLASS_HIGHLIGHT_EXISTING_OBJECT,
         getObjectTableCellClass} from "../common/variables.js"
 import {JsonTableColumnizer_Checkbox, JsonTableColumnizer_Radio, JsonTableColumnizer_Icon, JsonTableColumnizer_DotAttrib, toTable} from "../UI/jsonToTable.js"
@@ -360,7 +361,7 @@ export function read_file_mapper(file, action_on_content_and_name, sub_path){
 //highlightExistingElt
 export function epc_partial_importer(input_elt, parent, idConsoleElt, f_eraseWorkspace=()=>false){
     const attrib_list = ["title", "uuid", "type", "path"];
-    console.log(input_elt);
+//    console.log(input_elt);
     var files = input_elt.files;
     const epc_importer_div = document.createElement("div");
     parent.appendChild(epc_importer_div)
@@ -383,23 +384,25 @@ export function epc_partial_importer(input_elt, parent, idConsoleElt, f_eraseWor
 
         import_but.type = "button";
         import_but.onclick = function(event){
-            Promise.all($('input[name="' + name_id + '"]').filter(':checked').map(function(e, v) {
+            Promise.all($('input[name="' + name_id + '"]').filter(':checked').filter(':not([id$="title"])').map(function(e, v) {
                 return v.value;
             }).get().map( (path) => {
-                if(f.name.toLowerCase().endsWith(".epc")){
-                    return JSZip.loadAsync(f)
-                        .then(function(zip) {
-                            return zip.files[path].async('text').then(content=> [content, path]);
-                        }, function (e) {
-                            console.log( "Error reading " + f.name + ": " + e.message);
-                        });
-                }else{
-                    return new Promise((resolve, reject) => {
-                        var reader = new FileReader();
-                        reader.onload = resolve;  // CHANGE to whatever function you want which would eventually call resolve
-                        reader.onerror = reject;
-                        reader.readAsText(f);
-                    }).then(event => [event.target.result, f.name]);
+                if(path != null){
+                    if(f.name.toLowerCase().endsWith(".epc")){
+                        return JSZip.loadAsync(f)
+                            .then(function(zip) {
+                                return zip.files[path].async('text').then(content=> [content, path]);
+                            }, function (e) {
+                                console.log( "Error reading " + f.name + ": " + e.message);
+                            });
+                    }else{
+                        return new Promise((resolve, reject) => {
+                            var reader = new FileReader();
+                            reader.onload = resolve;  // CHANGE to whatever function you want which would eventually call resolve
+                            reader.onerror = reject;
+                            reader.readAsText(f);
+                        }).then(event => [event.target.result, f.name]);
+                    }
                 }
             })).then((contents) => importMultipleFilesToWorkspace(contents, idConsoleElt, f_eraseWorkspace()));
         }
@@ -416,7 +419,7 @@ export function epc_partial_importer(input_elt, parent, idConsoleElt, f_eraseWor
 
             Promise.all(ddd).then( (ddd_0) => {
                 var read_objects = ddd_0.map( file_content_n_name => Object.assign({}, energyml_file_to_json_simple(file_content_n_name[0], XSLT_XML_TO_SIMPLE_JSON), {"path": file_content_n_name[1]}) );
-                console.log(read_objects);
+//                console.log(read_objects);
 //                read_objects["path"] = file_name;
                 const f_cols = []
 
@@ -442,7 +445,7 @@ export function epc_partial_importer(input_elt, parent, idConsoleElt, f_eraseWor
                     }
                 );
                 var table = toTable(read_objects, f_cols);
-                table.className += " table-striped table-bordered table-hover table-fixed table-top-fixed";
+                table.className += CLASS_TABLE_FIXED;
                 file_div.appendChild(table);
                 epc_importer_div.appendChild(file_div);
             });

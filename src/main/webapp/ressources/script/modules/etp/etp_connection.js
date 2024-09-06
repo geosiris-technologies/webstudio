@@ -21,23 +21,23 @@ import {__RWS_ETP_LOGIN__, __RWS_ETP_PWD__, __RWS_ETP_URI__, set__RWS_ETP_LOGIN_
 export function geosiris_createETP_connector_form(fun_isConnected, fun_isDisconnected, callpre_func, callback_func){
     var HAS_BEEN_CONNECTED_ONCE = false;
 
-    const form = document.createElement('form');
+    /*const form = document.createElement('form');
     form.action = 'ETPConnexion';
     form.method = 'post';
-    form.className ='ETPConnexion_form';
+    form.className ='ETPConnexion_form row gy-2 gx-3 align-items-center';
 
     var div_form = document.createElement('div');
     div_form.className = "form-row";
     form.appendChild(div_form);
 
     const div_inputs = document.createElement('div');
-    div_inputs.className = "form-row";
+    div_inputs.className = "col-auto input-group";
     div_inputs.style = "width:100%";
     div_form.appendChild(div_inputs);
 
     // IP
     var d0 = document.createElement("div");
-    d0.className = "form-group col-md-3";
+    d0.className = "col-auto";
     div_inputs.appendChild(d0);
 
     var lbl0 = document.createElement("label");
@@ -92,11 +92,76 @@ export function geosiris_createETP_connector_form(fun_isConnected, fun_isDisconn
     d_err.style = "color:red";
     d_err.style.display = 'none';
     d_err.appendChild(document.createTextNode("Please fill host and port before trying to connect"))
-    div_inputs.appendChild(d_err);
+    div_inputs.appendChild(d_err);*/
+
+    const form = document.createElement('form');
+    form.setAttribute('action', 'ETPConnexion');
+    form.setAttribute('method', 'post');
+    form.classList.add('ETPConnexion_form');
+
+    const inputGroup = document.createElement('div');
+    inputGroup.classList.add('input-group');
+
+    const serverAddressLabel = document.createElement('label');
+    serverAddressLabel.classList.add('input-group-text');
+    serverAddressLabel.setAttribute('type', 'label');
+    serverAddressLabel.textContent = 'Server address';
+    inputGroup.appendChild(serverAddressLabel);
+
+    const serverAddressInput = document.createElement('input');
+    serverAddressInput.classList.add('form-control');
+    serverAddressInput.setAttribute('type', 'text');
+    serverAddressInput.setAttribute('name', 'etp-server-uri');
+    serverAddressInput.setAttribute('placeholder', 'e.g. xxx.xxx.xxx.xxx or mydomain.com');
+    inputGroup.appendChild(serverAddressInput);
+
+    const usernameLabel = document.createElement('label');
+    usernameLabel.classList.add('input-group-text');
+    usernameLabel.setAttribute('type', 'label');
+    usernameLabel.textContent = 'Username';
+    inputGroup.appendChild(usernameLabel);
+
+    const usernameInput = document.createElement('input');
+    usernameInput.classList.add('form-control');
+    usernameInput.setAttribute('type', 'text');
+    usernameInput.setAttribute('name', 'etp-server-username');
+    usernameInput.setAttribute('placeholder', 'Username');
+    usernameInput.setAttribute('autocomplete', 'on');
+    inputGroup.appendChild(usernameInput);
+
+    const passwordLabel = document.createElement('label');
+    passwordLabel.classList.add('input-group-text');
+    passwordLabel.textContent = 'Password';
+    inputGroup.appendChild(passwordLabel);
+
+    const passwordInput = document.createElement('input');
+    passwordInput.classList.add('form-control');
+    passwordInput.setAttribute('type', 'password');
+    passwordInput.setAttribute('name', 'etp-server-password');
+    passwordInput.setAttribute('autocomplete', 'on');
+    inputGroup.appendChild(passwordInput);
+
+    form.appendChild(inputGroup);
+
+    const connectButton = document.createElement('input');
+    connectButton.setAttribute('type', 'button');
+    connectButton.setAttribute('name', 'request-type');
+    connectButton.setAttribute('value', 'Establish etp connexion');
+    connectButton.classList.add('btn', 'btn-primary');
+
+    const d_err = document.createElement('p');
+    d_err.style.color = 'red';
+    d_err.style.display = 'none';
+    d_err.textContent = 'Please fill host and port before trying to connect';
+
+    const inreq = document.createElement('input');
+    inreq.setAttribute('type', 'text');
+    inreq.setAttribute('name', 'request-type');
+    inreq.setAttribute('hidden', '');
 
 
     // BTN CONNECT
-    var d4 = document.createElement("div");
+    /*var d4 = document.createElement("div");
     d4.className = "form-group col-md-6";
     div_form.appendChild(d4);
 
@@ -105,7 +170,7 @@ export function geosiris_createETP_connector_form(fun_isConnected, fun_isDisconn
     inreq.name = 'request-type';
     inreq.value = 'connect';
     inreq.hidden = "hidden";
-    d4.appendChild(inreq);
+    d4.appendChild(inreq);*/
 
     const cst_fun_isConnected = fun_isConnected;
     const cst_fun_isDisconnected = fun_isDisconnected;
@@ -114,10 +179,10 @@ export function geosiris_createETP_connector_form(fun_isConnected, fun_isDisconn
 
     const func_update_btn_view = function(btnConn, input_req, isConnected){
         cst_callpre_func();
-        
+
             if(isConnected){
 
-                // we retake informations about the connexion. 
+                // we retake informations about the connexion.
                 // It is important if the page has been reload with an active etp
                 // connexion, to be able to send the connexion infos to activity launcher
                 // or to the 3D vue model importer (server-visu)
@@ -138,18 +203,18 @@ export function geosiris_createETP_connector_form(fun_isConnected, fun_isDisconn
                         }
                     }
                 );
-                
+
 
                 HAS_BEEN_CONNECTED_ONCE = true;
                 btnConn.value = "Close ETP connection";
                 btnConn.className = "btn btn-danger";
                 input_req.value="disconnect";
-                div_inputs.style.display = 'none';
+                inputGroup.style.display = 'none';
                 if(cst_fun_isConnected != null){
                     cst_fun_isConnected();
                 }
             }else{
-                if(in0.value != null && in0.value.length>0){
+                if(serverAddressInput.value != null && serverAddressInput.value.length>0){
                     set__RWS_ETP_URI__("");
                     set__RWS_ETP_LOGIN__("");
                     set__RWS_ETP_PWD__("");
@@ -157,7 +222,7 @@ export function geosiris_createETP_connector_form(fun_isConnected, fun_isDisconn
                 btnConn.value = "Establish etp connexion";
                 btnConn.className = "btn btn-primary";
                 input_req.value="connect";
-                div_inputs.style.display = '';
+                inputGroup.style.display = '';
                 if(HAS_BEEN_CONNECTED_ONCE && cst_fun_isDisconnected != null){
                     cst_fun_isDisconnected();
                 }
@@ -165,16 +230,16 @@ export function geosiris_createETP_connector_form(fun_isConnected, fun_isDisconn
         update_dataspaces_inputs(cst_callback_func);
     }
     form.updateView = function(isConnected){
-        func_update_btn_view(btnConnect, inreq, isConnected);
+        func_update_btn_view(connectButton, inreq, isConnected);
     }
 
-    const btnConnect = document.createElement("input");
+  /*  const btnConnect = document.createElement("input");
     btnConnect.type = "button";
     btnConnect.name = 'request-type';
     btnConnect.value = 'Establish etp connexion';
     btnConnect.className = "btn btn-primary";
     btnConnect.onclick = function(){
-        if(inreq.value=="disconnect" || in0.value.length>0 ){
+        if(inreq.value=="disconnect" || serverAddressInput.value.length>0 ){
             sendPostForm_Promise(form, "ETPConnexion", false).then(
                 function(){
                     dataspace_reset_timer();
@@ -185,9 +250,33 @@ export function geosiris_createETP_connector_form(fun_isConnected, fun_isDisconn
         }else{
             d_err.style.display = '';
         }
-        
+
     }
     d4.appendChild(btnConnect);
+*/
+
+
+    connectButton.onclick = function(){
+        if(inreq.value=="disconnect" || serverAddressInput.value.length>0 ){
+            sendPostForm_Promise(form, "ETPConnexion", false).then(
+                function(){
+                    dataspace_reset_timer();
+                    update_etp_connexion_views();
+                }
+            )
+            d_err.style.display = 'none';
+        }else{
+            d_err.style.display = '';
+        }
+
+    }
+
+    form.appendChild(connectButton);
+
+    form.appendChild(d_err);
+
+    form.appendChild(inreq);
+
 
     return form;
 }

@@ -18,7 +18,7 @@ import {getJsonObjectFromServer} from "../../requests/requests.js"
 import {openResqmlObjectContentByUUID} from "../../main.js"
 import {createCollapser} from "../htmlUtils.js"
 import {mapResqmlTypeToSubtypes} from "../../energyml/epcContentManager.js"
-import {getObjectTableCellClass} from "../../common/variables.js"
+import {getObjectTableCellClass, CLASS_TABLE_FIXED} from "../../common/variables.js"
 import {refreshHighlightedOpenedObjects} from "../ui.js"
 
 const __organizationType__ = [];
@@ -52,7 +52,7 @@ export function __getObjectCitation(objUUID){
                 citationContainer.appendChild(title);
                 
                 var table = document.createElement("table");
-                table.className = "table-striped table-bordered table-hover table-fixed table-top-fixed";
+                table.className = CLASS_TABLE_FIXED;
 
                 var tableBody = document.createElement("tbody");
                 table.appendChild(tableBody);

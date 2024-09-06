@@ -62,7 +62,7 @@ limitations under the License.
 					style="display: none">
 					<span class="sr-only">Importing...</span>
 				</div>
-				<button type="button" class="close" data-dismiss="modal">&times;</button>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
 			</div>
 
 			<div class="form-check">
@@ -72,13 +72,13 @@ limitations under the License.
 
 			<ul class="nav nav-tabs">
 			    <li class="nav-item">
-			        <a class="nav-link active" data-toggle="tab" href="#importFileFromDisk">Import EPC from disk</a>
+			        <a class="nav-link active" data-bs-toggle="tab" href="#importFileFromDisk">Import EPC from disk</a>
 			    </li>
 			    <li class="nav-item">
-			        <a class="nav-link" data-toggle="tab" href="#import_partialEPC_FromURL">Import EPC from URL</a>
+			        <a class="nav-link" data-bs-toggle="tab" href="#import_partialEPC_FromURL">Import EPC from URL</a>
 			    </li>
 			    <li class="nav-item">
-			        <a class="nav-link" data-toggle="tab" href="#import_partialEPC_FromDisk">Import Partial EPC from disk</a>
+			        <a class="nav-link" data-bs-toggle="tab" href="#import_partialEPC_FromDisk">Import Partial EPC from disk</a>
 			    </li>
 			</ul>
 
@@ -89,7 +89,7 @@ limitations under the License.
 						<div class="modal-body">
 							<input type="text" name="import" value="true" hidden="hidden">
 							<label  name="epcInputLabel">EPC file path</label> 
-							<input class="form-control-file border" type="file" required name="epcInputFile" accept=".epc, .xml" multiple>
+							<input class="form-control border" type="file" required name="epcInputFile" accept=".epc, .xml" multiple>
 						</div>
 						<div class="modal-body">
 							<input class="btn btn-primary" name="submit" type="button"
@@ -105,7 +105,7 @@ limitations under the License.
 						<div class="modal-body">
 							<input type="text" name="import" value="true" hidden="hidden">
 							<label name="epcInputLabel">EPC file url location</label> 
-							<input class="form-control-file border" type="url" 
+							<input class="form-control border" type="url" 
        										placeholder="https://example.com?file=myEpc.epc" name="epcInputURL">
 						</div>
 						<div class="modal-body">
@@ -119,7 +119,7 @@ limitations under the License.
 				<div id="import_partialEPC_FromDisk" class="container tab-pane"><br>
 					<div class="modal-body">
 						<label name="epcInputLabel">EPC file</label> 
-						<input id="import_partialEPC_FromDisk_inputFile" class="form-control-file border" type="file" name="epcInputURL" multiple>
+						<input id="import_partialEPC_FromDisk_inputFile" class="form-control border" type="file" name="epcInputURL" multiple>
 						<p>Element highlighted are already present in your workspace</p>
 					</div>
 					<div class="modal-body" id="import_partialEPC_FromDisk_inputFile_content">

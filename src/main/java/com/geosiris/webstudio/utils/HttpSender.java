@@ -397,8 +397,6 @@ public class HttpSender {
                         pkgIdAndVersion = EPCGenericManager.getDomainAndVersionFromContentType(contentTypeFound);
                     }
 
-                    logger.info(new String(entry.getValue(), StandardCharsets.UTF_8));
-
                     if(pkgIdAndVersion != null){
                         for(EPCPackage pkg: Editor.pkgManager.PKG_LIST){
                             if(pkg.getDomain().compareToIgnoreCase(pkgIdAndVersion.l()) == 0

@@ -55,7 +55,7 @@ limitations under the License.
 			<div class="modal-header">
 				<h4 class="modal-title">Common properties</h4>
 				<div id="rolling_PropertiesDict" class="spinner-border text-success" role="status" style="display: none"> </div>
-				<button type="button" class="close" data-dismiss="modal">&times;</button>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
 				
 			</div>
 
@@ -74,34 +74,25 @@ limitations under the License.
 				
 					<div class="container-fluid">
 						<div class="input-group mb-3">
-							<div class="input-group-prepend">
-								<span class="form-control" style="max-width: 160px;">Nb elements :</span>
-							</div>
-							<span class="form-control" id="counter_PropertiesDict" style="max-width: 100px;">0</span>
-							<span class="form-control" style="max-width: 190px;">Filter contents :</span>
-							<input class="form-control" id="FilterPropertiesDict" type="search" placeholder="Filter by content" /> 
+                            <span class="input-group-text" style="max-width: 160px;">Nb elements :</span>
+							<span class="form-control" id="counter_PropertiesDict" style="max-width: 100px;" type="text">0</span>
+							<span class="input-group-text" style="max-width: 190px;">Filter contents :</span>
+							<input class="form-control" id="FilterPropertiesDict" type="search" placeholder="Filter by content">
 							<span class="inputTextClearBut fas fa-times-circle" id="FilterPropertiesDict_clear"></span>
-							<div class="input-group-append">
-								<div class="input-group-text form-control">
-									<div class="custom-control custom-checkbox">
-										<input type="checkbox" class="custom-control-input" id="splitWords_PropertiesDict" >
-										<label class="custom-control-label" for="splitWords_PropertiesDict">Split phrase in words</label>
+							<div class="input-group-text">
+									<div class="form-check form-check-inline">
+										<input type="checkbox" class="form-check-input" id="splitWords_PropertiesDict">
+										<label class="form-check-label" for="splitWords_PropertiesDict">Split phrase in words</label>
 									</div>
 								</div>
-							</div>
-							<div class="input-group-append">
-								<div class="input-group-text form-control">
-									<div class="custom-control custom-checkbox">
-										<input type="checkbox" class="custom-control-input" id="caseSenstive_PropertiesDict" >
-										<label class="custom-control-label" for="caseSenstive_PropertiesDict">Case sensitive</label>
+							<div class="input-group-text">
+									<div class="form-check form-check-inline">
+										<input type="checkbox" class="form-check-input" id="caseSenstive_PropertiesDict">
+										<label class="form-check-label" for="caseSenstive_PropertiesDict">Case sensitive</label>
 									</div>
 								</div>
-							</div>
-							<div class="input-group-append">
-								<button class="btn btn-success form-control" 
-									id="but_FilterPropertiesDict">Go
+							<button class="btn btn-success" id="but_FilterPropertiesDict">Go
 								</button>
-							</div>
 						</div>
 					</div>
 					<div class="containerJsonTree" id="container_PropertiesDict"></div>

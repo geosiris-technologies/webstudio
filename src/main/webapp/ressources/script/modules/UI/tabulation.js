@@ -109,7 +109,7 @@ export function createTabulation(uuid, content, idTabHeader, idTabContainer, res
     linkToClick.appendChild(document.createTextNode(h_txt));
     linkToClick.href = "#tabulation_id_" + uuid; 
     linkToClick.className = "nav-link";
-    linkToClick.setAttribute("data-toggle", "tab");
+    linkToClick.setAttribute("data-bs-toggle", "tab");
     linkToClick.title = getResqmlEltTitleText(resqmlElt);
 /*
     linkToClick.onclick = function(){

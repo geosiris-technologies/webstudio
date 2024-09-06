@@ -242,7 +242,9 @@ table a {
 	color : #0060e0;
 }
 
-
+.btn-group{
+  flex-wrap: wrap;
+}
 .btn-secondary{
 	padding : 2px;
 	margin : 1px;
@@ -289,10 +291,6 @@ table a {
 	cursor: default!important;
 }
 
-.custom-checkbox{
-	display: inline;
-}
-
 .hdfViewIcon{
 	width  : 40px;
 	padding: 5px;
@@ -322,14 +320,14 @@ table a {
 	color : mediumslateblue;
 }
 
-input + label {
+/*input + label {
 	margin-left: 5px;
 	margin-right: 5px;
 }
 label + input {
 	margin-left: 5px;
 	margin-right: 5px;
-}
+}*/
 
 #modal_createRootElt_versionChooserDiv{
 	margin: 0 auto;
@@ -415,6 +413,10 @@ label + input {
 .colorCircle {
   border: 2px solid black;
   border-radius: 50%;
+}
+
+.toast-container{
+    z-index: 3000;
 }
 
 /**************** 		Blink 	  ***************/
@@ -605,6 +607,9 @@ label + input {
 	border-color: #dee2e6 #dee2e6 #f8f9fa;
 	color: #817c7d;
 }
+#container_PropertiesDict{
+    /*display: content;*/
+}
 
 .warningMSG{
 	color : #ca8302;
@@ -639,6 +644,11 @@ label + input {
 	margin-right : 5px;
 	overflow-y: auto;
 	height: 100%;
+}
+
+
+#graphElementChecked ul {
+    list-style: none;
 }
 
 

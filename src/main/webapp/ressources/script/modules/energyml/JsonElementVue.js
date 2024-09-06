@@ -25,18 +25,23 @@ export function isComplexObject(obj){
 export function addJsonData(jsObject, jsonEltVue, printListIdx, f_applyOnKey){
     if(isComplexObject(jsObject)){
         var jsObject_keys = Object.keys(jsObject);
-        jsObject_keys.sort();
+        jsObject_keys.sort((a, b) => {
+            try{
+                return jsObject[a].citation.title.localeCompare(jsObject[b].citation.title);
+            }catch(e){}
+            return a.localeCompare(b);
+        });
         jsObject_keys.forEach(i => {
             var spanTitle = null;
             if(!Array.isArray(jsObject) || printListIdx){
                 // besoin d'un title
-                var title = i;
+                var title = "";
                 if (i.match(UUID_REGEX_raw)){
                     try{
-                        title += " \"" + jsObject[i].citation.title + "\"";
+                        title += " \"" + jsObject[i].citation.title + "\" ";
                     }catch(e){}
                 }
-                title += " :";
+                title += i + " :";
                 spanTitle = document.createElement("span");
                 spanTitle.appendChild(document.createTextNode(title));
             }

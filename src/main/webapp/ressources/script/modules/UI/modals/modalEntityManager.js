@@ -52,7 +52,7 @@ export function createModal(idModal, title, content, onCloseFunction){
     var closeBut = document.createElement("button");
     closeBut.name = "close_" + idModal;
     closeBut.className = "close";
-    closeBut.setAttribute("data-dismiss", "modal");
+    closeBut.setAttribute("data-bs-dismiss", "modal");
     closeBut.appendChild(document.createTextNode("x"));
 
     const const_idModal = idModal;
@@ -89,8 +89,8 @@ export function openModal(idModal, title, content, onCloseFunction){
     var modalElt = createModal(idModal, title, content, onCloseFunction);
     var linkOpener = document.createElement("a");
     linkOpener.hidden = "hidden";
-    linkOpener.setAttribute("data-toggle", "modal");
-    linkOpener.setAttribute("data-target", "#" + idModal);
+    linkOpener.setAttribute("data-bs-toggle", "modal");
+    linkOpener.setAttribute("data-bs-target", "#" + idModal);
 
     var divContainer = document.createElement("div");
     divContainer.id = containerId;
@@ -111,8 +111,8 @@ export function openExistingModal(modalElt, idModal){
 
     var linkOpener = document.createElement("a");
     linkOpener.hidden = "hidden";
-    linkOpener.setAttribute("data-toggle", "modal");
-    linkOpener.setAttribute("data-target", "#" + idModal);
+    linkOpener.setAttribute("data-bs-toggle", "modal");
+    linkOpener.setAttribute("data-bs-target", "#" + idModal);
 
     var divContainer = document.createElement("div");
     divContainer.id = containerId;

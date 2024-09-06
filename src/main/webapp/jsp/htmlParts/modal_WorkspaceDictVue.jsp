@@ -61,7 +61,7 @@ limitations under the License.
 			<div class="modal-header">
 				<h4 class="modal-title">Workspace tree</h4>
 				<div id="rolling_WorkspaceDict" class="spinner-border text-success" role="status" style="display: none"> </div>
-				<button type="button" class="close" data-dismiss="modal">&times;</button>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
 				
 			</div>
 
@@ -89,17 +89,17 @@ limitations under the License.
 							<span class="inputTextClearBut fas fa-times-circle" id="FilterWorkspaceDict_clear"></span>
 							<div class="input-group-append">
 								<div class="input-group-text form-control">
-									<div class="custom-control custom-checkbox">
-										<input type="checkbox" class="custom-control-input" id="splitWords_WorkspaceDict" >
-										<label class="custom-control-label" for="splitWords_WorkspaceDict">Split phrase in words</label>
+									<div class="form-check form-check-inline">
+										<input type="checkbox" class="form-check-input" id="splitWords_WorkspaceDict" >
+										<label class="form-check-label" for="splitWords_WorkspaceDict">Split phrase in words</label>
 									</div>
 								</div>
 							</div>
 							<div class="input-group-append">
 								<div class="input-group-text form-control">
-									<div class="custom-control custom-checkbox">
-										<input type="checkbox" class="custom-control-input" id="caseSenstive_WorkspaceDict" >
-										<label class="custom-control-label" for="caseSenstive_WorkspaceDict">Case sensitive</label>
+									<div class="form-check form-check-inline">
+										<input type="checkbox" class="form-check-input" id="caseSenstive_WorkspaceDict" >
+										<label class="form-check-label" for="caseSenstive_WorkspaceDict">Case sensitive</label>
 									</div>
 								</div>
 							</div>

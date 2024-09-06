@@ -28,7 +28,7 @@ limitations under the License.
 			<div class="modal-header">
 				<h4 class="modal-title">Relations view</h4>
 				<div id="rolling_FIRPView" class="spinner-border text-success" role="status" style="display: none"> </div>
-				<button type="button" class="close" data-dismiss="modal">&times;</button>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
 				
 			</div>
 

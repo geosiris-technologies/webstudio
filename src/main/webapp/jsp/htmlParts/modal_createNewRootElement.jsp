@@ -31,7 +31,7 @@ limitations under the License.
 					style="display: none">
 					<span class="sr-only">creating root element...</span>
 				</div>
-				<button type="button" class="close" data-dismiss="modal">&times;</button>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
 			</div>
 			
 			<div class="modal-body">

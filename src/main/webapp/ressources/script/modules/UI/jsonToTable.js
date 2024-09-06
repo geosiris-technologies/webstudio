@@ -15,6 +15,7 @@ limitations under the License.
 */
 import {add_mouse_event_listener} from "./htmlUtils.js"
 import {getAttribute} from "../common/utils.js"
+import {CLASS_TABLE_FIXED} from "../common/variables.js"
 
 
 export class JsonTableColumnizer{
@@ -109,7 +110,7 @@ export class JsonTableColumnizer_Checkbox extends JsonTableColumnizer{
         check_obj.type = "checkbox";
         check_obj.value = this.f_value(obj);
         check_obj.name = this.name;
-        check_obj.className = this.class_id;
+        check_obj.className = this.class_id + " form-check-input";
         check_obj.addEventListener('change',
             (event) => {
                 var check_title = document.getElementById(this.class_id + "-title");
@@ -244,7 +245,7 @@ export function toTable(
     list_JsonTableColumnizer
 ){
     const _table = document.createElement("table");
-    _table.className = "table-striped table-bordered table-hover table-fixed table-top-fixed";
+    _table.className = CLASS_TABLE_FIXED;
 
     const _table_head = document.createElement("thead");
     _table.appendChild(_table_head);
@@ -341,7 +342,7 @@ export function sample(){
     );
 
     new_table = toTable(in_text, f_cols);
-    new_table.className += " table-striped table-bordered table-hover table-fixed table-top-fixed";
+    new_table.className += CLASS_TABLE_FIXED;
     new_table.id = "epcTableContent";
     div_result.appendChild(new_table);
 }

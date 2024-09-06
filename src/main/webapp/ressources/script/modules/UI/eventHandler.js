@@ -14,7 +14,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-import {createSnackBar} from "./snackbar.js"
+import {createSnackBar, createToast} from "./snackbar.js"
 import {appendConsoleMessage} from "../logs/console.js"
 import {beginTask, endTask, refreshHighlightedOpenedObjects} from "./ui.js"
 import {closeResqmlObjectContentByUUID, loadResqmlData} from "../main.js"
@@ -35,7 +35,20 @@ export function rws_addEventListeners(eventTag, f_onMessage, f_onError){
         rws_eventSource.onerror = (e) => {
             if(!hasBeenDisconnected){
                 hasBeenDisconnected = true;
-                createSnackBar(rws_eventSource.readyState + "] Connexion lost with the server. Please try to refresh the page", -1);
+                var msg = rws_eventSource.readyState + "] Connexion lost with the server. Please try to refresh the page";
+                // createSnackBar(msg, -1);
+                createToast(
+                    {
+                        title: "Event handler",
+                        time: (new Date(Date.now())).toLocaleTimeString('en-US'),
+                        body: msg,
+                        option: {
+                          animation: true,
+                          autohide: false,
+                          delay: 10000
+                        }
+                    }
+                );
             }
             if(f_onError!=null){
                 f_onError(e);
@@ -62,7 +75,20 @@ export function rws_addEventListeners(eventTag, f_onMessage, f_onError){
     }catch(exception){
         console.log(exception);
         hasBeenDisconnected = true;
-        createSnackBar("Connexion lost with the server. Please try to refresh the page", -1);
+        var msg = "Connexion lost with the server. Please try to refresh the page";
+        // createSnackBar(msg, -1);
+        createToast(
+            {
+                title: "Event handler",
+                time: (new Date(Date.now())).toLocaleTimeString('en-US'),
+                body: msg,
+                option: {
+                  animation: true,
+                  autohide: false,
+                  delay: 10000
+                }
+            }
+        );
     }
 }
 

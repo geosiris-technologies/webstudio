@@ -24,11 +24,13 @@ import {getAttribute, compareVersionNumber} from "../common/utils.js"
 import {openResqmlObjectContentByUUID} from "../main.js"
 import {energymlRootTypes, savePreferences} from "../energyml/epcContentManager.js"
 import {JsonTableColumnizer_Checkbox, JsonTableColumnizer_Radio, JsonTableColumnizer_Icon, JsonTableColumnizer_DotAttrib, toTable} from "./jsonToTable.js"
+import {createToast} from "./snackbar.js"
 import {SEM_IS_LOADING_WORKSPACE,
     getObjectTableCellClass,
     setSEM_IS_LOADING_WORKSPACE,
     CLASS_HIGHLIGHT_EXISTING_OBJECT,
-    CLASS_HIGHLIGHT_EXISTING_OBJECT_ENABLED
+    CLASS_HIGHLIGHT_EXISTING_OBJECT_ENABLED,
+    CLASS_TABLE_FIXED
 } from "../common/variables.js"
 
 
@@ -183,9 +185,11 @@ export function initSessionTimeOut(spanTimeout_id){
         /////////////////
         // Event Listener 
         /////////////////
+        const session_warning_minutes_limit = 5;
+        var session_time_cache_minutes = 0;
+        const session_time_warning_toast_id = "session_time_warning";
 
         const evt_list_onMessage = function(event) {
-            //console.log("updating " + event.data)
             var timeSinceSessionClose = parseInt(event.data);
             var minutes = Math.trunc(timeSinceSessionClose/60000);
             var secondes = Math.trunc( (timeSinceSessionClose - minutes*60000) / 1000) ;
@@ -207,6 +211,25 @@ export function initSessionTimeOut(spanTimeout_id){
                         timeOutText += minutes + " min";
                     }
                     cst_spanTimeOut.innerHTML = timeOutText;
+
+                    if(minutes <= session_warning_minutes_limit && session_time_cache_minutes > session_warning_minutes_limit){
+                        createToast(
+                            {
+                                identifier:session_time_warning_toast_id,
+                                title: "Event handler",
+                                time: (new Date(Date.now())).toLocaleTimeString('en-US'),
+                                body: timeOutText + ". Please do something to re-init the session duration.",
+                                option: {
+                                  animation: true,
+                                  autohide: true,
+                                  delay: 300000
+                                }
+                            }
+                        );
+                    }else if(minutes > session_warning_minutes_limit && session_time_cache_minutes < session_warning_minutes_limit){
+                        $('#' + session_time_warning_toast_id).remove();
+                    }
+                    session_time_cache_minutes = minutes;
 
                 }catch(e){console.log(e)}
             }else{    // On recharge la page si la session est fini pour ne pas laisser l'utilisateur faire des manipulations
@@ -344,7 +367,7 @@ export function edit_file(uuid){
                     parent_in_editor.firstChild.remove();
                 }
                 parent_in_editor.appendChild(createEditableHighlighted(file_content, "xml"));
-                $('#modal_file_editor').modal();
+                $('#modal_file_editor').modal('show');
             }else{
                 console.log("Error opening editor for " + uuid);
             }
@@ -543,8 +566,8 @@ export function getResqmlObjectTable(dataTableContent, dataTableColumn, oldTable
 
     /*-----------------*/
     const f_cols = []
-    
-    /*f_cols.push(new JsonTableColumnizer_Checkbox("sample_check", (obj) => getAttribute(obj, "uuid")));*/
+
+    f_cols.push(new JsonTableColumnizer_Checkbox("epc_table_checkboxes", (obj) => getAttribute(obj, "uuid")));
     /*f_cols.push(new JsonTableColumnizer_Radio("sample_radio", (obj) => getAttribute(obj, "uuid")));*/
     f_cols.push(new JsonTableColumnizer_Icon(
         "far fa-trash-alt deleteButton", 
@@ -586,7 +609,7 @@ export function getResqmlObjectTable(dataTableContent, dataTableColumn, oldTable
     );
 
     var table = toTable(dataTableContent, f_cols);
-    table.className += " table-striped table-bordered table-hover table-fixed table-top-fixed";
+    table.className += CLASS_TABLE_FIXED;
     /*-----------------*/
     copyOtherTableSortingParams(table, oldTable, dataTableColumn);
 

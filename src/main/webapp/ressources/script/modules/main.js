@@ -206,8 +206,11 @@ export function getOpenObjectsUuid(){
 
 export function init3DVue(parentElt){
     const fileDiv = document.createElement("div");
+    fileDiv.class = "input-group";
     const fileInput = document.createElement("input");
+    fileInput.class = "form-control";
     const fileBut = document.createElement("button");
+    fileBut.class = "btn btn-info";
 
     fileInput.type = "file";
 

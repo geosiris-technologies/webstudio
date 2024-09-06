@@ -10,15 +10,15 @@
 }
 
 .table-top-fixed {
-	border-collapse: separate;
-  	border-spacing: 0;
+	/*border-collapse: separate;
+	border-spacing: 0;*/
 	white-space: nowrap;
 }
 .table-top-fixed td, .table-top-fixed th{
-	max-width: 400px;
-    overflow: hidden;
-    padding-left: 10px;
-    padding-right: 10px;
+  max-width: 400px;
+  overflow: hidden;
+  padding-left: 10px;
+  padding-right: 10px;
 }
 
 .colName_num{
@@ -42,7 +42,7 @@
 }
 
 tr.formInputObjectTree, td.formInputObjectTree, th.formInputObjectTree,
-	table.formInputObjectTree {
+table.formInputObjectTree {
 	/*border:  1px solid black;*/
 	border: none;
 }

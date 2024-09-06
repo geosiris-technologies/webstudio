@@ -130,30 +130,24 @@ public Boolean restrictedExperiment(String prod_type){
 				<div>
 	 				<div class="container-fluid">
 						<div class="input-group mb-3">
-							<div class="input-group-prepend">
-								<button class="btn btn-primary form-control" style="padding: revert;" data-toggle="modal" data-target="#modal_createRootElt">
-									<span class="fas fa-plus-circle" style="font-size: 20pt;" title="Create new root element"></span>
-								</button>
-							</div>
-							<input class="form-control" id="tableFilter_EPCView" type="search" placeholder="Filter by title, uuid, type or version" /> 
+                            <button class="btn btn-primary" type="button" style="padding: revert;" data-bs-toggle="modal" data-bs-target="#modal_createRootElt">
+                                <span class="fas fa-plus-circle" style="font-size: 20pt;" title="Create new root element"></span>
+                            </button>
+							<input class="form-control" id="tableFilter_EPCView" type="search" placeholder="Filter by title, uuid, type or version" />
 							<span id="searchclear" class="inputTextClearBut fas fa-times-circle" 
 									onclick="document.getElementById('tableFilter_EPCView').value=''; document.getElementById('filter_tableFilter_EPCView').click();"
 									onmouseover="this.className = this.className.replace(/fas/g,'far')"
 									onmouseout="this.className = this.className.replace(/far/g,'fas')"
 							></span>
-							<div class="input-group-append">
-								<div class="input-group-text form-control">
-									<div class="custom-control custom-checkbox">
-										<input type="checkbox" class="custom-control-input" id="caseSenstive_EPCView" >
-										<label class="custom-control-label" for="caseSenstive_EPCView">Case sensitive</label>
-									</div>
-								</div>
-							</div>
-							<div class="input-group-append">
-								<button class="btn btn-success form-control" 
-									id="filter_tableFilter_EPCView">Go
-								</button>
-							</div>
+                            <div class="input-group-text">
+                                <div class="form-check form-check-inline">
+                                    <input type="checkbox" class="form-check-input" id="caseSenstive_EPCView" >
+                                    <label class="form-check-label" for="caseSenstive_EPCView">Case sensitive</label>
+                                </div>
+                            </div>
+                            <button class="btn btn-success"
+                                id="filter_tableFilter_EPCView" type="button">Go
+                            </button>
 						</div>
 					</div>
 				</div>
@@ -178,6 +172,8 @@ public Boolean restrictedExperiment(String prod_type){
     
     
 	<%@ include file="/jsp/htmlParts/console.jsp" %>
+
+	<div class="toast-container position-absolute bottom-0 end-0 p-3" id="rws__CL_TOAST_CONTAINER__" style="z-index: 3000"></div>
 
 </body>
 </html>

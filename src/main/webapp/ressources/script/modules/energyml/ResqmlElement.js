@@ -1122,7 +1122,7 @@ export class ResqmlElement{
 
 		// Tableau
 		var propTable = document.createElement("table");
-		propTable.className+="table-striped table-bordered table-hover propertyTable";
+		propTable.className += "propertyTable";
 		
 		if(this.properties != null){
 			for(var prop=0; prop<this.properties.length; prop++){
