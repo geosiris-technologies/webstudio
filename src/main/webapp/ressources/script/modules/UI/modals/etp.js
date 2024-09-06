@@ -57,6 +57,7 @@ export function init_etp_forms(){
         function(){document.getElementById('rolling_ETP').style.display = "none"});
 
     document.getElementById("modal_ETP_form_div").appendChild(modal_ETP_form_connection);
+    document.getElementById("modal_ETP_form_div").append(create_dataspace_input(null, ["etp_dataspace_values"]));
 
     // Initiate
 
@@ -74,7 +75,11 @@ export function init_etp_forms(){
 
     for(var f_idx in  form_ids){
         var f_elt = form_ids[f_idx];
-        f_elt.insertBefore(create_dataspace_input(), f_elt.firstChild);
+        var dataspace_value_hidden = document.createElement("input");
+        dataspace_value_hidden.name = "dataspace";
+        dataspace_value_hidden.hidden = "hidden";
+        dataspace_value_hidden.className = "etp_dataspace_values";
+        f_elt.insertBefore(dataspace_value_hidden, f_elt.firstChild);
     }
 }
 

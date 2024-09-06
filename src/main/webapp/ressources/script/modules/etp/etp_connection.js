@@ -21,79 +21,6 @@ import {__RWS_ETP_LOGIN__, __RWS_ETP_PWD__, __RWS_ETP_URI__, set__RWS_ETP_LOGIN_
 export function geosiris_createETP_connector_form(fun_isConnected, fun_isDisconnected, callpre_func, callback_func){
     var HAS_BEEN_CONNECTED_ONCE = false;
 
-    /*const form = document.createElement('form');
-    form.action = 'ETPConnexion';
-    form.method = 'post';
-    form.className ='ETPConnexion_form row gy-2 gx-3 align-items-center';
-
-    var div_form = document.createElement('div');
-    div_form.className = "form-row";
-    form.appendChild(div_form);
-
-    const div_inputs = document.createElement('div');
-    div_inputs.className = "col-auto input-group";
-    div_inputs.style = "width:100%";
-    div_form.appendChild(div_inputs);
-
-    // IP
-    var d0 = document.createElement("div");
-    d0.className = "col-auto";
-    div_inputs.appendChild(d0);
-
-    var lbl0 = document.createElement("label");
-    lbl0.name = "etp-server-uri";
-    lbl0.appendChild(document.createTextNode("Server address"))
-    const in0 = document.createElement("input");
-    in0.className = "form-control";
-    in0.type = "text";
-    in0.name = "etp-server-uri";
-    in0.style = "width:100%";
-    in0.placeholder = 'e.g. xxx.xxx.xxx.xxx or mydomain.com';
-    d0.appendChild(lbl0);
-    d0.appendChild(in0);
-
-    // UserName
-    var d2 = document.createElement("div");
-    d2.className = "form-group col-md-2";
-    div_inputs.appendChild(d2);
-
-    var lbl2 = document.createElement("label");
-    lbl2.name = "etp-server-username";
-    lbl2.appendChild(document.createTextNode("Username"))
-    var in2 = document.createElement("input");
-    in2.className = "form-control";
-    in2.type = "text";
-    in2.name = "etp-server-username";
-    in2.style = "width:100%";
-    in2.placeholder = 'Username';
-    in2.autocomplete = "on";
-    d2.appendChild(lbl2);
-    d2.appendChild(in2);
-
-    // PASSWORD
-    var d3 = document.createElement("div");
-    d3.className = "form-group col-md-2";
-    div_inputs.appendChild(d3);
-
-    var lbl3 = document.createElement("label");
-    lbl3.name = "etp-server-password";
-    lbl3.appendChild(document.createTextNode("Password"))
-    var in3 = document.createElement("input");
-    in3.className = "form-control";
-    in3.type = "password";
-    in3.name = "etp-server-password";
-    in3.style = "width:100%";
-    in3.autocomplete = "on";
-    d3.appendChild(lbl3);
-    d3.appendChild(in3);
-
-    // Err show
-    const d_err = document.createElement("p");
-    d_err.style = "color:red";
-    d_err.style.display = 'none';
-    d_err.appendChild(document.createTextNode("Please fill host and port before trying to connect"))
-    div_inputs.appendChild(d_err);*/
-
     const form = document.createElement('form');
     form.setAttribute('action', 'ETPConnexion');
     form.setAttribute('method', 'post');
@@ -159,19 +86,6 @@ export function geosiris_createETP_connector_form(fun_isConnected, fun_isDisconn
     inreq.setAttribute('name', 'request-type');
     inreq.setAttribute('hidden', '');
 
-
-    // BTN CONNECT
-    /*var d4 = document.createElement("div");
-    d4.className = "form-group col-md-6";
-    div_form.appendChild(d4);
-
-    const inreq = document.createElement("input");
-    inreq.type = "text";
-    inreq.name = 'request-type';
-    inreq.value = 'connect';
-    inreq.hidden = "hidden";
-    d4.appendChild(inreq);*/
-
     const cst_fun_isConnected = fun_isConnected;
     const cst_fun_isDisconnected = fun_isDisconnected;
     const cst_callpre_func = callpre_func;
@@ -208,7 +122,7 @@ export function geosiris_createETP_connector_form(fun_isConnected, fun_isDisconn
                 HAS_BEEN_CONNECTED_ONCE = true;
                 btnConn.value = "Close ETP connection";
                 btnConn.className = "btn btn-danger";
-                input_req.value="disconnect";
+                input_req.value = "disconnect";
                 inputGroup.style.display = 'none';
                 if(cst_fun_isConnected != null){
                     cst_fun_isConnected();
@@ -221,7 +135,7 @@ export function geosiris_createETP_connector_form(fun_isConnected, fun_isDisconn
                 }
                 btnConn.value = "Establish etp connexion";
                 btnConn.className = "btn btn-primary";
-                input_req.value="connect";
+                input_req.value = "connect";
                 inputGroup.style.display = '';
                 if(HAS_BEEN_CONNECTED_ONCE && cst_fun_isDisconnected != null){
                     cst_fun_isDisconnected();
@@ -232,29 +146,6 @@ export function geosiris_createETP_connector_form(fun_isConnected, fun_isDisconn
     form.updateView = function(isConnected){
         func_update_btn_view(connectButton, inreq, isConnected);
     }
-
-  /*  const btnConnect = document.createElement("input");
-    btnConnect.type = "button";
-    btnConnect.name = 'request-type';
-    btnConnect.value = 'Establish etp connexion';
-    btnConnect.className = "btn btn-primary";
-    btnConnect.onclick = function(){
-        if(inreq.value=="disconnect" || serverAddressInput.value.length>0 ){
-            sendPostForm_Promise(form, "ETPConnexion", false).then(
-                function(){
-                    dataspace_reset_timer();
-                    update_etp_connexion_views();
-                }
-            )
-            d_err.style.display = 'none';
-        }else{
-            d_err.style.display = '';
-        }
-
-    }
-    d4.appendChild(btnConnect);
-*/
-
 
     connectButton.onclick = function(){
         if(inreq.value=="disconnect" || serverAddressInput.value.length>0 ){
@@ -272,11 +163,8 @@ export function geosiris_createETP_connector_form(fun_isConnected, fun_isDisconn
     }
 
     form.appendChild(connectButton);
-
     form.appendChild(d_err);
-
     form.appendChild(inreq);
-
 
     return form;
 }
@@ -291,21 +179,36 @@ export function update_etp_connexion_views(){
     });
 }
 
-export function create_dataspace_input(callback_func){
+export function create_dataspace_input(callback_func, inputs_classes_to_update){
     var div = document.createElement("div");
-    div.class = "form-control";
-
+    div.className = "input-group mb-3 mt-3";
 
     var label = document.createElement("label");
     label.for = "dataspace";
     label.appendChild(document.createTextNode("Dataspace :"));
     label.style.display = 'ruby-base';
+    label.className = "input-group-text";
+    label.type = "label";
     div.appendChild(label);
 
     const selectDataspace = document.createElement("select");
     selectDataspace.name = 'dataspace';
-    selectDataspace.className += 'form-control etp_select_dataspace';
-    selectDataspace.style.width = 'max-content';
+    selectDataspace.className += 'form-select etp_select_dataspace';
+//    selectDataspace.style.width = 'max-content';
+
+    const const_inputs_classes_to_update = inputs_classes_to_update;
+
+
+    selectDataspace.addEventListener("change", function(event){
+         if(const_inputs_classes_to_update != null){
+            if(Array.isArray(const_inputs_classes_to_update)){
+                const_inputs_classes_to_update.forEach(cl => $((cl.startsWith(".") ? "" : ".") + cl).each((i, _elt) => _elt.value = event.target.value));
+            }else{
+                $("."+const_inputs_classes_to_update).each((i, _elt) => _elt.value = event.target.value);
+            }
+        }
+    });
+
 
     selectDataspace.update = function (dataspacesNamesArray){
         var selectedValue = null;
@@ -331,7 +234,6 @@ export function create_dataspace_input(callback_func){
             selectDataspace.appendChild(option);
         });
 
-
         if(callback_func != null){
             callback_func();
         }
@@ -344,7 +246,7 @@ export function create_dataspace_input(callback_func){
         }
     };
     selectDataspace.update([]);
-    label.appendChild(selectDataspace);
+    div.appendChild(selectDataspace);
 
     return div;
 }

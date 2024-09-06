@@ -144,34 +144,30 @@ limitations under the License.
                         <br>
                         <div class="modal_tab_pane_content">
                             <div id="ETPRequest_getRelated_FormRequest">
-                                <input class="btn btn-primary geosiris-btn-etp" name="submit" type="button" value="Get Related" 
-                                        id="submit_getRelated">
-                                <form id="ETPRequest_getRelated_Form" name="ETPForm" method="post" action="ETPRequest" accept-charset="utf-8"> 
-                                    <input type="text" required name="request" value="getrelated" hidden="hidden" />
-                                    <div class="form-row">
-                                        <label><input class="checkbox form-check-input" type="checkbox" name="ask_aknowledge">Ask acknowledge</label>
-                                    </div>
+                                <div class="input-group">
+                                    <form id="ETPRequest_getRelated_Form" name="ETPForm" method="post" action="ETPRequest" accept-charset="utf-8">
+                                        <input type="text" required="" name="request" value="getrelated" hidden="hidden">
+                                        <div class="form-row">
+                                            <label><input class="checkbox form-check-input" type="checkbox" name="ask_aknowledge">Ask acknowledge</label>
+                                        </div>
 
-                                    <div class="form-row">
-                                        <div class="form-group col-md-6">
-                                            <label name="ETPRequest_getRelated_scopekind">Scope kind</label>
+                                        <div class="input-group">
+                                            <label name="ETPRequest_getRelated_scopekind" class="input-group-text" type="label">Scope kind</label>
                                             <select class="form-control" id="ETPRequest_getRelated_scopekind" name="scope">
                                                 <option value="sources">Sources</option>
                                                 <option value="targets">Targets</option>
                                                 <option value="sourcesOrSelf">Sources or Self</option>
                                                 <option value="targetsOrSelf">Targets or Self</option>
                                             </select>
-                                        </div>
-                                        <div class="form-group col-md-6">
-                                            <label name="ETPRequest_getRelated_depth">Depth</label>
+                                            <label name="ETPRequest_getRelated_depth" class="input-group-text" type="label">Depth</label>
                                             <input class="form-control" type="number" name="depth" id="ETPRequest_getRelated_depth" value="1" min="1">
-                                        </div>
-                                    </div>
-                                    <div class="modal_tab_table" id="ETPRequest_getRelated_workspace_objList"></div>
-                                </form>
+                                        <input class="btn btn-primary geosiris-btn-etp" name="submit" type="button" value="Get Related" id="submit_getRelated" title=""></div>
+                                        <div class="modal_tab_table" id="ETPRequest_getRelated_workspace_objList"></div>
+                                    </form>
+                                </div>
 
                                 <h3>Related Objects</h3>
-                                <form id="ETPRequest_ImportRelated_Form" name="ETPForm" method="post" action="ETPRequest" accept-charset="utf-8" style="display: none"> 
+                                <form id="ETPRequest_ImportRelated_Form" name="ETPForm" method="post" action="ETPRequest" accept-charset="utf-8" style="display: none">
                                     <input class="form-control" type="text" required name="request"value="import" hidden="hidden" />
                                     <div id="ETPRequest_getRelated_objList"></div>
 

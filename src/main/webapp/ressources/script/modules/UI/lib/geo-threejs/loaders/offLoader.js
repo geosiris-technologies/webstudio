@@ -50,16 +50,9 @@ export class OffLoader extends SurfaceLoader{
                         pointsStart = true;
                         this.points.push([parseFloat(matchPoints.groups["x"]), parseFloat(matchPoints.groups["y"]), parseFloat(matchPoints.groups["z"])]);
                     }else if(pointsStart) {
-                        //console.log("pointsStart", pointsStart);
-                        pointsFinished = true;
-                        var matchTriangle = __off_tr_regexp__.exec(line);
-                        if(matchTriangle != null){
-                            this.trianglesIdx.push([parseInt(matchTriangle.groups["p0"]), parseInt(matchTriangle.groups["p1"]), parseInt(matchTriangle.groups["p2"])]);
-                        }else{
-                            /*console.log("|"+line+"| ");
-                            console.log(__off_tr_regexp__.exec(line));
-                            console.log(__XYZ_POINT_REGEXP__.exec(line));*/
-                        }
+                        var integers = [...line.matchAll("\\d+")].flat();
+                        var nbFacePoint = Number(integers[0]);
+                        this.trianglesIdx.push(integers.slice(1).map(i => parseInt(i)));
                     }else{
                         /*console.log("===");
                         console.log("|"+line+"|");

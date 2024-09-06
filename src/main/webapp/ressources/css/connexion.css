@@ -1,10 +1,15 @@
 html, body{
 	background-color: #242939; 
 	color: #48465b;
-	font-family: "Courier New", Courier, "Liberation Mono", monospace;
+	/*font-family: "Courier New", Courier, "Liberation Mono", monospace;*/
 	/*font-family: Monaco, "DejaVu Sans Mono", "Lucida Console", "Andale Mono", monospace;*/
 	height: 100%;
 }
+
+table{
+	font-family: "Courier New", Courier, "Liberation Mono", monospace;
+}
+
 .ws_title:before{
 	background-image: url("ressources/img/logos/logoWS_hd.png");
 	background-size: 40px auto;
