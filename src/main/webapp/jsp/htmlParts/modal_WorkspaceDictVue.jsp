@@ -80,34 +80,26 @@ limitations under the License.
 				
 					<div class="container-fluid">
 						<div class="input-group mb-3">
-							<div class="input-group-prepend">
-								<span class="form-control" style="max-width: 160px;">Nb elements :</span>
-							</div>
-							<span class="form-control" id="counter_WorkspaceDict" style="max-width: 100px;">0</span>
-							<span class="form-control" style="max-width: 190px;">Filter contents :</span>
-							<input class="form-control" id="FilterWorkspaceDict" type="search" placeholder="Filter by content" /> 
+                            <span class="input-group-text" style="max-width: 160px;">Nb elements :</span>
+							<span class="input-group-text" id="counter_WorkspaceDict" style="max-width: 100px;">0</span>
+							<span class="input-group-text" style="max-width: 190px;">Filter contents :</span>
+							<input class="input-group-text" id="FilterWorkspaceDict" type="search" placeholder="Filter by content" />
 							<span class="inputTextClearBut fas fa-times-circle" id="FilterWorkspaceDict_clear"></span>
-							<div class="input-group-append">
-								<div class="input-group-text form-control">
-									<div class="form-check form-check-inline">
-										<input type="checkbox" class="form-check-input" id="splitWords_WorkspaceDict" >
-										<label class="form-check-label" for="splitWords_WorkspaceDict">Split phrase in words</label>
-									</div>
-								</div>
-							</div>
-							<div class="input-group-append">
-								<div class="input-group-text form-control">
-									<div class="form-check form-check-inline">
-										<input type="checkbox" class="form-check-input" id="caseSenstive_WorkspaceDict" >
-										<label class="form-check-label" for="caseSenstive_WorkspaceDict">Case sensitive</label>
-									</div>
-								</div>
-							</div>
-							<div class="input-group-append">
-								<button class="btn btn-success form-control" 
-									id="but_FilterWorkspaceDict">Go
-								</button>
-							</div>
+                            <div class="form-control">
+                                <div class="form-check form-check-inline">
+                                    <input type="checkbox" class="form-check-input" id="splitWords_WorkspaceDict" >
+                                    <label class="form-check-label" for="splitWords_WorkspaceDict">Split phrase in words</label>
+                                </div>
+                            </div>
+                            <div class="input-group-text">
+                                <div class="form-check form-check-inline">
+                                    <input type="checkbox" class="form-check-input" id="caseSenstive_WorkspaceDict" >
+                                    <label class="form-check-label" for="caseSenstive_WorkspaceDict">Case sensitive</label>
+                                </div>
+                            </div>
+                            <button class="btn btn-success"
+                                id="but_FilterWorkspaceDict">Go
+                            </button>
 						</div>
 					</div>
 					<div class="containerJsonTree" id="container_WorkspaceDict"></div>

@@ -22,10 +22,12 @@ import {call_after_DOM_updated, createSelector} from "../htmlUtils.js";
 import {sendPostForm_Promise, sendPostRequestJson_Promise, sendPostRequest} from "../../requests/requests.js";
 import {resquestValidation} from "../../energyml/epcContentManager.js";
 import {createTableFromData, transformTabToFormCheckable} from "../table.js";
+import {JsonTableColumnizer_Checkbox, JsonTableColumnizer_DotAttrib, toTable} from "../jsonToTable.js";
 import {checkAllRelations} from "./exportEPC.js";
 import {refreshHighlightedOpenedObjects} from "../ui.js";
-import {REGEX_ETP_URI, __ENUM_CONSOLE_MSG_SEVERITY_TOAST__, __ID_CONSOLE__, __RWS_CLIENT_NAME__} from "../../common/variables.js";
-import {geo3DVue} from "../../main.js";
+import {REGEX_ETP_URI, __ENUM_CONSOLE_MSG_SEVERITY_TOAST__, __ID_CONSOLE__, __RWS_CLIENT_NAME__, CLASS_TABLE_FIXED} from "../../common/variables.js";
+import {removeListDuplicatesByObjectKey, getAttribute} from "../../common/utils.js";
+import {geo3DVue, openResqmlObjectContentByUUID} from "../../main.js";
 
 
 var ETP_REQUEST_LAUNCH = 0
@@ -124,15 +126,15 @@ export function setEnableETPButtons(enableValue){
 export function launchActivity(ce_type_elt_id){
     var formETPObjectList = document.getElementById("ETPRequest_import_Form-etp_object_list")
     var dataspace = document.getElementById("etp_dataspace_import").value
-    var checkedUris = [...formETPObjectList.querySelectorAll(".form-check-inline input:checked")].map(elt => {
-        var uri = elt.value;
-        if(dataspace != null && dataspace.length > 0){
+    var checkedUris = $("#ETPRequest_import_Form-etp_object_list  input:checked").map((i,e) => $(e).val())
+    .toArray().map(uri => {
             if(!uri.includes("dataspace")){
-                uri = uri.replace("eml:///", "eml:///dataspace('" + dataspace + "')/")
+                if(dataspace != null && dataspace.length > 0){
+                    uri = uri.replace("eml:///", "eml:///dataspace('" + dataspace + "')/")
+                }
             }
-        }
-        return uri;
-    })
+            return uri;
+        });
     if(checkedUris != null && checkedUris.length > 0){
         var ce_type = document.getElementById(ce_type_elt_id).value;
         var data = {"uris": checkedUris, "ce-type": ce_type};
@@ -141,14 +143,14 @@ export function launchActivity(ce_type_elt_id){
     }
 
 }
-
+$("#ETPRequest_import_Form-etp_object_list  input:checked").map((i,e) => $(e).val()).toArray()
 export function loadUrisIn3DVue(){
     var formETPObjectList = document.getElementById("ETPRequest_import_Form-etp_object_list")
     var dataspace = document.getElementById("etp_dataspace_import").value
-    var checkedUris = [...formETPObjectList.querySelectorAll(".form-check-inline input:checked")].map(elt => {
-            var uri = elt.value;
-            if(dataspace != null && dataspace.length > 0){
-                if(!uri.includes("dataspace")){
+    var checkedUris = $("#ETPRequest_import_Form-etp_object_list  input:checked").map((i,e) => $(e).val())
+    .toArray().map(uri => {
+            if(!uri.includes("dataspace")){
+                if(dataspace != null && dataspace.length > 0){
                     uri = uri.replace("eml:///", "eml:///dataspace('" + dataspace + "')/")
                 }
             }
@@ -160,8 +162,10 @@ export function loadUrisIn3DVue(){
             try{
                 var jsonValueList = JSON.parse(fileContent);
                 console.log("3D vue is Loading " + jsonValueList.length + " entities");
+                console.log(jsonValueList);
                 jsonValueList.forEach(obj =>{
-                  console.log("EPSG : " + obj["epsgCode"]);
+                //console.log(obj);
+                    // console.log("EPSG : " + obj["epsgCode"]);
                     try{
                         geo3DVue.importSurface(
                           obj["data"],
@@ -215,14 +219,13 @@ export function loadETPObjectList(eltId_objectList, eltId_formRequest){
         formInputRequest.className = "geosiris-btn-etp"
         formImportETPobjects.appendChild(formInputRequest);
 
-        
 
         try{
             const formInputDataspace = document.createElement("input");
             formInputDataspace.id = "etp_dataspace_import";
             formInputDataspace.hidden = "hidden";
             formInputDataspace.name = "dataspace";
-            formInputDataspace.value = document.getElementById(eltId_formRequest).getElementsByClassName("etp_select_dataspace")[0].value;
+            formInputDataspace.value = document.getElementsByClassName("etp_select_dataspace")[0].value;
             formInputDataspace.className = "form-control geosiris-btn-etp";
             formInputDataspace.style.width = "fit-content";
             formImportETPobjects.appendChild(formInputDataspace);
@@ -322,87 +325,71 @@ export function loadETPObjectList(eltId_objectList, eltId_formRequest){
         endETPRequest();
     });
 }
+
+
 export function createETPImportObjects(urisAsTable){
-    // console.log(urisAsTable)
-    var tableETP = null;
+    var attrib_list = []
+    if(urisAsTable.resources != null){
+        urisAsTable = urisAsTable.resources;
+    }
+
+    urisAsTable = removeListDuplicatesByObjectKey(urisAsTable, "uri");
+
+    urisAsTable.forEach((item, i) => {
+        try{
+            item["storeCreated"] = (new Date(item["storeCreated"]*1000)).toGMTString();
+        }catch(exception){}
+        try{
+            item["storeLastWrite"] = (new Date(item["storeLastWrite"]*1000)).toGMTString();
+        }catch(exception){}
+
+        try{
+
+            for (const [key, value] of Object.entries(transformETPuriAsObj(item["uri"]))) {
+                item[key] = value;
+            }
+        }catch(exception){}
+    });
+
+
     if(urisAsTable!=null && urisAsTable.length > 0 && urisAsTable[0].related instanceof Array){
         // Si on est sur un tableau de related
-        const tableObjRelated = [];
-        urisAsTable.forEach( 
-            obj =>
-            {
-                obj.related.forEach(uri => {
-                    var tableUri = transformETPuriAsTable(uri)
-                    tableUri.push(obj.uri);
-                    tableObjRelated.push(tableUri);
-                });
-            }
-        );
+        attrib_list = ["title", "type", "uuid", "uri", "related", "storeCreated", "storeLastWrite", "pkg"];
 
-        const tableObjRelated_noDuplicates = [];
-
-        // removing duplicates and morphing epoch datetimes
-        tableObjRelated.forEach( 
-            related_obj_table => {
-                var found_uri_table = null;
-
-                for(var idx_p=0; idx_p<tableObjRelated_noDuplicates.length; idx_p++){
-                    if(tableObjRelated_noDuplicates[idx_p][3] == related_obj_table[3]){ // On compare les uri
-                        found_uri_table = tableObjRelated_noDuplicates[idx_p];
-                        break;
-                    }
-                }
-                if(found_uri_table == null){
-                    try{
-                        tableObjRelated_noDuplicates["storeCreated"] = (new Date(tableObjRelated_noDuplicates["storeCreated"]*1000)).toGMTString()
-                        tableObjRelated_noDuplicates["storeLastWrite"] = (new Date(tableObjRelated_noDuplicates["storeLastWrite"]*1000)).toGMTString()
-                    }catch(exception){
-                        console.log(exception);
-                    }
-                    tableObjRelated_noDuplicates.push(related_obj_table);
-                }else if(!found_uri_table[4].includes(related_obj_table[4])){
-                    found_uri_table[4] += " AND " + related_obj_table[4];
-                }
-            }
-        );
-
-        tableETP = createTableFromData(tableObjRelated_noDuplicates, 
-                        ["pkg", "type", "uuid", "uri", "related", "storeCreated", "storeLastWrite"], 
-                        ["Package", "Type", "UUID", "Uri", "Related to", "Store Created", "Store Last Write"], 
-                        null, null, null);
-
-        const cst_etpTable = tableETP;
-        transformTabToFormCheckable(tableETP, tableObjRelated_noDuplicates.map(elt => elt[3]), "etp_uri", 
-            (isChecked, uri) => {
-                etp_triggerViewUpdateOnResourceChecked(cst_etpTable, isChecked, uri);
-            });
     }else if(urisAsTable!=null && urisAsTable.resources != null){
-        //console.log("============")
-        //console.log(urisAsTable.resources.map(resources => [resources.name].concat(transformETPuriAsTable(resources.uri))
-        //    .concat([(new Date(resources.storeCreated*1000)).toGMTString(), (new Date(resources.storeLastWrite*1000)).toGMTString()])))
-        tableETP = createTableFromData(
-                        urisAsTable.resources.map(resources => [resources.name].concat(transformETPuriAsTable(resources.uri))
-                            .concat([(new Date(resources.storeCreated*1000)).toGMTString(), (new Date(resources.storeLastWrite*1000)).toGMTString()])), 
-                        ["title", "pkg", "type", "uuid", "uri", "storeCreated", "storeLastWrite"], 
-                        ["Title", "Package", "Type", "UUID", "Uri", "Store Created", "Store Last Write"], 
-                        null, null, null);
-        const cst_etpTable = tableETP;
-        transformTabToFormCheckable(tableETP, urisAsTable.resources.map(elt => elt.uri), "etp_uri", 
-            (isChecked, uri) => {
-                etp_triggerViewUpdateOnResourceChecked(cst_etpTable, isChecked, uri);
-            });
+        attrib_list = ["title", "type", "uuid", "uri", "storeCreated", "storeLastWrite", "pkg"];
+       
     }else if(urisAsTable!=null && urisAsTable.length > 0){
-        tableETP = createTableFromData(
-                        urisAsTable.map(uri => transformETPuriAsTable(uri)), 
-                        ["pkg", "type", "uuid", "uri"], 
-                        ["Package", "Type", "UUID", "Uri"], 
-                        null, null, null);
-        const cst_etpTable = tableETP;
-        transformTabToFormCheckable(tableETP, urisAsTable.map(elt => elt), "etp_uri", 
-            (isChecked, uri) => {
-                etp_triggerViewUpdateOnResourceChecked(cst_etpTable, isChecked, uri);
-            });
+        attrib_list = ["name", "type", "uuid", "storeLastWrite", "uri", "storeCreated", "pkg"];
     }
+
+    const f_cols = []
+
+    const name_id = "etp_uri";
+    const col_check = new JsonTableColumnizer_Checkbox(name_id, (obj) => getAttribute(obj, "uri"), null, (elt)=> elt["uuid"]+ "-tab",);
+    f_cols.push(col_check);
+
+    attrib_list.forEach(
+        (attrib) => {
+            f_cols.push(
+                new JsonTableColumnizer_DotAttrib(
+                    attrib=="name"?"Title":attrib.substring(0, 1).toUpperCase() + attrib.substring(1),
+                    attrib,
+                    function(event, elt){
+                        if(event.type == "click"){
+                            // openResqmlObjectContentByUUID(elt['uuid']);  // On ne veut pas ouvrir dans la vue arriere depuis la vue etp
+                        }
+                    },
+                    null,
+                    (elt)=>elt["uuid"]+ "-tab",
+                    null,
+                    "pointer"
+                )
+            );
+        }
+    );
+    var tableETP = toTable(urisAsTable, f_cols);
+    tableETP.className += CLASS_TABLE_FIXED;
 
     return tableETP;
 }
@@ -416,6 +403,22 @@ export function transformETPuriAsTable(uri){
 
     
     return ["--", "--", "--", "--"]
+}
+
+export function transformETPuriAsObj(uri){
+    var groups = uri.match(REGEX_ETP_URI).groups;
+
+    try { 
+        return {
+            "pkg": groups.domain + groups.domainVersion, 
+            "type": groups.objectType, 
+            "uuid": groups.uuid, 
+            "uri": uri
+        }
+    } catch(e) { console.log(e); }
+
+    
+    return {}
 }
 
 export function etp_triggerViewUpdateOnResourceChecked(etpTable, checkedStatus, uri){
@@ -468,24 +471,53 @@ export function updateExportToETPTableContent(relations){
 
         const checkboxesName = "exportToETP_UUID";
 
-        // on doit convertir en liste pour creer le tableau
-        const table = createExportToETPView(tableContent, checkboxesName, 
+        const f_cols = []
+
+        const col_check = new JsonTableColumnizer_Checkbox(
+            checkboxesName, (obj) => getAttribute(obj, "uuid"),
             function(checkedValue, uuid){
                 beginETPRequest();
                 if(checkedValue && relations[uuid] != null){
-                    checkAllRelations(uuid, relations, checkboxesName, checkedValue, 
-                                        "epcETPRequest_send_checkUpRelations", 
+                    checkAllRelations(uuid, relations, checkboxesName, checkedValue,
+                                        "epcETPRequest_send_checkUpRelations",
                                         "epcETPRequest_send_checkDownRelations");
                 }else{
                     // console.log("err > checkedValue " + checkedValue  + " -- " + uuid);
                 }
 
                 endETPRequest();
+            },
+            (elt)=> elt["uuid"]+ "-tab",
+        );
+        f_cols.push(col_check);
+
+        ["num", "type", "uuid", "schemaVersion"].forEach(
+            (attrib) => {
+                f_cols.push(
+                    new JsonTableColumnizer_DotAttrib(
+                        attrib=="name"?"Title":attrib.substring(0, 1).toUpperCase() + attrib.substring(1),
+                        attrib,
+                        function(event, elt){
+                            if(event.type == "click"){
+                                // openResqmlObjectContentByUUID(elt['uuid']);  // On ne veut pas ouvrir dans la vue arriere depuis la vue etp
+                            }
+                        },
+                        null,
+                        (elt)=>elt["uuid"]+ "-tab",
+                        null,
+                        "pointer"
+                    )
+                );
             }
         );
+        var tableETP = toTable(tableContent, f_cols);
+        tableETP.className += CLASS_TABLE_FIXED;
 
-        
-        elt_obj_list.appendChild(table);
+
+        elt_obj_list.appendChild(tableETP);
+
+        //return tableETP;
+
         refreshHighlightedOpenedObjects();
         endETPRequest();
         update_etp_connexion_views();

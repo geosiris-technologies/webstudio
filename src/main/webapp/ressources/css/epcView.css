@@ -279,7 +279,7 @@ table a {
 }
 
 .containerJsonTree{
-	height: calc(100% - 3em);;
+	max-height: calc(100% - 3em);;
 	align-content: center;
 	overflow: auto;
 }

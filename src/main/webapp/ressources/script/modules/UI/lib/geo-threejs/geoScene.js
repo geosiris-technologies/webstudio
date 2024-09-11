@@ -704,7 +704,7 @@ class GeoSceneUi {
 
         this.geo_scene._objectList.forEach( function(element, index) {
             var obj = new GeoObjectUi(element, const_this.geo_scene, const_this.sceneObj_list, "li");
-            obj.div.className = "border-bottom border-primary";
+            obj.div.className = "border-bottom border-primary pb-2";
         });
     }
 }

@@ -13,20 +13,21 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 */
-import {sendGetURLAndReload, refreshWorkspace} from "../UI/eventHandler.js"
-import {__USER_NAME__, beginTask, endTask, getVueOrientation, setVueOrientation, initRootEltSelector, highlightExistingElt} from "../UI/ui.js"
-import {createCheck} from "../UI/htmlUtils.js"
-import {closeResqmlObjectContentByUUID} from "../main.js"
-import {getAttribute} from "../common/utils.js"
-import {sendGetURL, getJsonObjectFromServer, sendPostRequestJson} from "../requests/requests.js"
-import {getAllOpendedObjects} from "../requests/uiRequest.js"
-import {appendConsoleMessage} from "../logs/console.js"
+import {sendGetURLAndReload, refreshWorkspace} from "../UI/eventHandler.js";
+import {__USER_NAME__, beginTask, endTask, getVueOrientation, setVueOrientation, initRootEltSelector, highlightExistingElt} from "../UI/ui.js";
+import {createCheck} from "../UI/htmlUtils.js";
+import {closeResqmlObjectContentByUUID} from "../main.js";
+import {getAttribute} from "../common/utils.js";
+import {sendGetURL, getJsonObjectFromServer, sendPostRequestJson} from "../requests/requests.js";
+import {getAllOpendedObjects} from "../requests/uiRequest.js";
+import {appendConsoleMessage} from "../logs/console.js";
 import {__ENUM_CONSOLE_MSG_SEVERITY_INFO__, __ENUM_CONSOLE_MSG_SEVERITY_WARNING__,
         __ENUM_CONSOLE_MSG_SEVERITY_ERROR__, __RWS_CLIENT_NAME__, __RWS_SERVER_NAME__,
         CLASS_TABLE_FIXED,
         getSeverityEnum, REGEX_ENERGYML_FILE_NAME, CLASS_HIGHLIGHT_EXISTING_OBJECT,
-        getObjectTableCellClass} from "../common/variables.js"
-import {JsonTableColumnizer_Checkbox, JsonTableColumnizer_Radio, JsonTableColumnizer_Icon, JsonTableColumnizer_DotAttrib, toTable} from "../UI/jsonToTable.js"
+        getObjectTableCellClass} from "../common/variables.js";
+import {JsonTableColumnizer_Checkbox, JsonTableColumnizer_Radio, JsonTableColumnizer_Icon, JsonTableColumnizer_DotAttrib, toTable} from "../UI/jsonToTable.js";
+
 
 /**********************************************************/
 /** Do not forget to access in map with LOWERCASE key !! **/

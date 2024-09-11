@@ -35,6 +35,7 @@ import org.eclipse.jetty.http.HttpURI;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.PrintWriter;
+import java.util.HashMap;
 import java.util.Locale;
 
 /**
@@ -151,7 +152,7 @@ public class ETPConnexion extends HttpServlet {
 
 		logger.info("#ETP : host " + host_uri);
 		logger.info(request.getSession(false));
-		ETPClient client = ETPUtils.establishConnexion(request.getSession(false), host_uri, userName, password, askConnection);
+		ETPClient client = ETPUtils.establishConnexion(request.getSession(false), host_uri, userName, password, null, new HashMap<>(), askConnection);
 
 		PrintWriter out = response.getWriter();
         response.setContentType("application/text");

@@ -25,6 +25,8 @@ import com.geosiris.webstudio.model.WorkspaceContent;
 import com.geosiris.webstudio.property.ConfigurationType;
 import com.geosiris.webstudio.servlet.Editor;
 import com.geosiris.webstudio.servlet.global.ResqmlAccessibleTypes;
+import energyml.common2_1.Activity;
+import energyml.common2_3.ActivityTemplate;
 import energyml.witsml2_1.Tubular;
 import jakarta.servlet.http.HttpSession;
 import org.apache.logging.log4j.LogManager;
@@ -336,52 +338,56 @@ public class ResqmlObjectControler {
 
                 // For each parameterTemplate, we create all real parameter in the activity
                 for (Object paramTempl : paramListTempl) {
-                    boolean isInput = Boolean.parseBoolean("" + ObjectController.getObjectAttributeValue(paramTempl, "isInput"));
+                    try {
+                        boolean isInput = Boolean.parseBoolean("" + ObjectController.getObjectAttributeValue(paramTempl, "isInput"));
 
-                    if (isInput) {
-                        long minOccurs = Long.parseLong("" + ObjectController.getObjectAttributeValue(paramTempl, "MinOccurs"));
-                        String title = (String) ObjectController.getObjectAttributeValue(paramTempl, "Title");
-                        List<String> paramKind = ((List<?>) ObjectController.getObjectAttributeValue(paramTempl, "AllowedKind"))
-                                .stream().map(x -> "" + x).collect(Collectors.toList());
+                        if (isInput) {
+                            long minOccurs = Long.parseLong("" + ObjectController.getObjectAttributeValue(paramTempl, "MinOccurs"));
+                            String title = (String) ObjectController.getObjectAttributeValue(paramTempl, "Title");
+                            List<String> paramKind = ((List<?>) ObjectController.getObjectAttributeValue(paramTempl, "AllowedKind"))
+                                    .stream().map(x -> "" + x).collect(Collectors.toList());
 
-                        List<Object> defaultValues = (List<Object>) ObjectController.getObjectAttributeValue(paramTempl, "DefaultValue");
+                            List<Object> defaultValues = (List<Object>) ObjectController.getObjectAttributeValue(paramTempl, "DefaultValue");
 
-                        for (String allowedK : paramKind) {
-                            logger.info("Allowed Kind : " + allowedK);
-                        }
-                        logger.info("ParamTempl : " + title + " minOc " + minOccurs);
-                        for (int cpt = 0; cpt < Math.max(minOccurs, 1); cpt++) {
-                            Class<?> activityParamClass = getClassMatchFromPrefix(paramKind.get(cpt % paramKind.size()), possibleParamType);
+                            for (String allowedK : paramKind) {
+                                logger.info("Allowed Kind : " + allowedK);
+                            }
+                            logger.info("ParamTempl : " + title + " minOc " + minOccurs);
+                            for (int cpt = 0; cpt < Math.max(minOccurs, 1); cpt++) {
+                                Class<?> activityParamClass = getClassMatchFromPrefix(paramKind.get(cpt % paramKind.size()), possibleParamType);
 
-                            Object defaultValue = null;
-                            for (Object defVal : defaultValues) {
-                                assert activityParamClass != null;
-                                logger.info("Compare default value class '" + activityParamClass.getName()
-                                        + "' with def val class : '" + defVal.getClass().getName() + "'");
-                                if (defVal.getClass().getName().compareTo(activityParamClass.getName()) == 0) {
-                                    defaultValue = defVal;
-                                    break;
+                                Object defaultValue = null;
+                                for (Object defVal : defaultValues) {
+                                    assert activityParamClass != null;
+                                    logger.info("Compare default value class '" + activityParamClass.getName()
+                                            + "' with def val class : '" + defVal.getClass().getName() + "'");
+                                    if (defVal.getClass().getName().compareTo(activityParamClass.getName()) == 0) {
+                                        defaultValue = defVal;
+                                        break;
+                                    }
                                 }
-                            }
 
-                            // If there are no default value
-                            if (defaultValue == null) {
-                                assert activityParamClass != null;
-                                defaultValue = Editor.pkgManager.createInstance(activityParamClass.getName(), new HashMap<>(), null);
-                            } else {
-                                logger.info("taking default value " + defaultValue);
-                                // If there is a default value, we copy it and add it to the activity parameter list
-                                defaultValue = ResQMLConverter.getCopy(session, defaultValue, new HashMap<>());
-                            }
-                            ResqmlObjectControler.modifyResqmlObjectFromParameter(session, defaultValue, "Title",
-                                    ModficationType.EDITION,
-                                    title, new HashMap<>());
-                            ResqmlObjectControler.modifyResqmlObjectFromParameter(session, defaultValue, "Index",
-                                    ModficationType.EDITION,
-                                    "" + cpt, new HashMap<>());
+                                // If there are no default value
+                                if (defaultValue == null) {
+                                    assert activityParamClass != null;
+                                    defaultValue = Editor.pkgManager.createInstance(activityParamClass.getName(), new HashMap<>(), null);
+                                } else {
+                                    logger.info("taking default value " + defaultValue);
+                                    // If there is a default value, we copy it and add it to the activity parameter list
+                                    defaultValue = ResQMLConverter.getCopy(session, defaultValue, new HashMap<>());
+                                }
+                                ResqmlObjectControler.modifyResqmlObjectFromParameter(session, defaultValue, "Title",
+                                        ModficationType.EDITION,
+                                        title, new HashMap<>());
+                                ResqmlObjectControler.modifyResqmlObjectFromParameter(session, defaultValue, "Index",
+                                        ModficationType.EDITION,
+                                        "" + cpt, new HashMap<>());
 
-                            ((List<Object>) ObjectController.getObjectAttributeValue(activity, ".Parameter")).add(defaultValue);
+                                ((List<Object>) ObjectController.getObjectAttributeValue(activity, ".Parameter")).add(defaultValue);
+                            }
                         }
+                    }catch (Exception e){
+                        logger.error(e);
                     }
                 }
 
@@ -389,7 +395,7 @@ public class ResqmlObjectControler {
                 logger.error(e.getMessage(), e);
             }
         } else {
-            logger.error("Activity '" + ObjectController.getObjectAttributeValue(activity, ".uuid") + "' allready has params");
+            logger.error("Activity '" + ObjectController.getObjectAttributeValue(activity, ".uuid") + "' already has params");
         }
     }
 
@@ -527,9 +533,15 @@ public class ResqmlObjectControler {
 //        System.out.println(createInstance(Integer.class, null, null, null));
 //        System.out.println(createInstance(String.class, null, null, null));
 
-        for(String pkg: extTypes.keySet()){
-            System.out.println(pkg);
-        }
-        System.out.println(Editor.pkgManager.marshal(randomizecontent(Tubular.class, null)));
+//        for(String pkg: extTypes.keySet()){
+//            System.out.println(pkg);
+//        }
+//        System.out.println(Editor.pkgManager.marshal(randomizecontent(Tubular.class, null)));
+
+        ActivityTemplate activityTemplate = (ActivityTemplate) Editor.pkgManager.unmarshal(Utils.readFileOrRessource("C:/Users/Cryptaro/Downloads/ActivityTemplate_c5d4277b-266d-4b78-bae4-af9d642f513b.xml")).getValue();
+        Object activity = new Activity();
+        System.out.println(activityTemplate);
+        prefillActivityFromTemplate(null, activityTemplate, activity);
+        System.out.println(Editor.pkgManager.marshal(activity));
     }
 }

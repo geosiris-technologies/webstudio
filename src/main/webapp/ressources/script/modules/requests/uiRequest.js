@@ -16,7 +16,7 @@ limitations under the License.
 
 import {createTabulation, openTabulation, saveAllResqmlObject_promise} from "../UI/tabulation.js";
 import {beginTask, endTask, refreshHighlightedOpenedObjects, edit_file} from "../UI/ui.js";
-import {sendGetURLAndReload, sendPostFormAndReload} from "../UI/eventHandler.js";
+import {sendGetURLAndReload, sendPostFormAndReload, refreshWorkspace} from "../UI/eventHandler.js";
 import {downloadGetURL_Promise, sendGetURL, sendGetURL_Promise, getJsonObjectFromServer} from "./requests.js";
 import {genObjectContentDivElementId, genObjectContentElementId, genObjectPropertyElementId, resquestCorrection, resquestObjectCopy, resquestValidation} from "../energyml/epcContentManager.js";
 import {ResqmlElement} from "../energyml/ResqmlElement.js";
@@ -334,6 +334,61 @@ export function sendUserSettings(form, passwordList, eltErr_pwd, eltErr_Missmatc
     var wrongPasswordLog = document.getElementById("err_pwd");
 
     sendUserFormWithPasswordValidation(form, pwds, wrongPasswordLog);
+}
+
+export function launch_deleteResqmlObjects(uuids){
+    const cst_uuids = uuids;
+    //if(beginTask(true)){
+
+        getJsonObjectFromServer("ResqmlEPCRelationship").then(
+            relations =>{
+                var res = {};
+                try{
+                    Object.keys(relations).forEach(function(key, index) {
+                        if(cst_uuids.includes(key)){
+                            if(!res.hasOwnProperty(key)) res[key] = [];
+                            res[key] = res[key].concat(relations[key].relationDown.filter(r => !cst_uuids.includes(r.uuid)));
+                        }
+                    });
+                }catch(ex){console.log(ex);}
+//                return res.filter(l => l.length > 0);
+//                return res;
+                return Object.keys(res)
+                    .filter(key => res[key] != null && res[key].length > 0)
+                    .reduce((obj, key) => {
+                            obj[key] = res[key];
+                            return obj;
+                        }, {}
+                    );
+            }
+        ).then(res => {
+            if(Object.keys(res).length > 0){
+                document.getElementById("modal_delete_warning").updateContent(cst_uuids, res);
+            }else{
+                deleteResqmlObject_list(cst_uuids);
+            }
+            return res;
+        }).then((res)=>{
+            console.log(res);
+            return res;
+        })
+        .then(res => endTask())
+        .catch(res => endTask());
+        //).then(res => console.log(res));
+    //}
+}
+
+export function deleteResqmlObject_list(uuids){
+    console.log(uuids);
+    beginTask(true);
+    Promise.all(
+        uuids.map((u) => {
+            sendGetURL_Promise("ObjectEdit?command=delete&Root_UUID=" + u).then(() => closeResqmlObjectContentByUUID(u))
+            })
+    ).then( () => {
+         refreshWorkspace();
+    }).then(() => endTask())
+    .catch(() => endTask());
 }
 
 export function deleteResqmlObject(uuid, type, title){

@@ -24,6 +24,7 @@ limitations under the License.
 <%@ include file="/jsp/htmlParts/modal_bugReport.jsp"%>
 <%@ include file="/jsp/htmlParts/modal_wellcome.jsp"%>
 <%@ include file="/jsp/htmlParts/modal_file_editor.jsp"%>
+<%@ include file="/jsp/htmlParts/other_modals.jsp"%>
 
 <%@ include file="/jsp/htmlParts/modal_FIRPView.jsp"%>
 <%@ include file="/jsp/htmlParts/modal_ETP.jsp"%>
@@ -68,7 +69,6 @@ limitations under the License.
 			method: 'POST',
 			body: formData
 		}).then( (response) => {
-			console.log(response);
 			refreshWorkspace();
 		});
 	}

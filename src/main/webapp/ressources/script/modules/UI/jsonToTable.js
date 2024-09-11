@@ -98,8 +98,8 @@ export class JsonTableColumnizer_Icon extends JsonTableColumnizer{
 }
 
 export class JsonTableColumnizer_Checkbox extends JsonTableColumnizer{
-    constructor(name, f_value, onChange) {
-        super(null, null, null, null, null);
+    constructor(name, f_value, onChange, f_className) {
+        super(null, null, null, f_className, null);
         this.f_value = f_value;
         this.name = name;
         this.onChange = onChange;
@@ -110,7 +110,7 @@ export class JsonTableColumnizer_Checkbox extends JsonTableColumnizer{
         check_obj.type = "checkbox";
         check_obj.value = this.f_value(obj);
         check_obj.name = this.name;
-        check_obj.className = this.class_id + " form-check-input";
+        check_obj.className = this.class_id + " form-check-input " + this.f_className;
         check_obj.addEventListener('change',
             (event) => {
                 var check_title = document.getElementById(this.class_id + "-title");
@@ -151,7 +151,9 @@ export class JsonTableColumnizer_Checkbox extends JsonTableColumnizer{
                     var countChecked = 0;
                     Array.prototype.forEach.call(document.getElementsByClassName(const_this.class_id),
                         (c) => {
-                            c.checked = check_title.checked;
+                            if(c.checkVisibility()){  // change only if it is visible
+                                c.checked = check_title.checked;
+                            }
                             countChecked += c.checked ? 1 : 0;
                         }
                     )

@@ -61,6 +61,7 @@ public Boolean restrictedExperiment(String prod_type){
 	import {filterTable} from "/ressources/script/modules/UI/table.js";
 	import {onEnterPressed, createEditableHighlighted} from "/ressources/script/modules/UI/htmlUtils.js";
 	import {setUserName, initSessionTimeOut} from "/ressources/script/modules/UI/ui.js";
+	import {launch_deleteResqmlObjects} from "/ressources/script/modules/requests/uiRequest.js";
 
 	$(window).on('load', initWebStudioView);
 
@@ -76,6 +77,10 @@ public Boolean restrictedExperiment(String prod_type){
 	}
 	document.getElementById("span_tabulationScroller_right").onclick = function(event){
 		document.getElementById(__ID_EPC_TABS_HEADER__).scrollLeft += 30;
+	}
+
+	document.getElementById("delete_tableFilter_EPCView").onclick = function(event){
+		launch_deleteResqmlObjects($("#epcTableContent > tbody > tr > td > input:checked").map((i,e) => $(e).val()).toArray());
 	}
 
 
@@ -139,15 +144,16 @@ public Boolean restrictedExperiment(String prod_type){
 									onmouseover="this.className = this.className.replace(/fas/g,'far')"
 									onmouseout="this.className = this.className.replace(/far/g,'fas')"
 							></span>
+                            <button class="btn btn-success"
+                                id="filter_tableFilter_EPCView" type="button">Go
+                            </button>
                             <div class="input-group-text">
                                 <div class="form-check form-check-inline">
                                     <input type="checkbox" class="form-check-input" id="caseSenstive_EPCView" >
                                     <label class="form-check-label" for="caseSenstive_EPCView">Case sensitive</label>
                                 </div>
                             </div>
-                            <button class="btn btn-success"
-                                id="filter_tableFilter_EPCView" type="button">Go
-                            </button>
+                            <button class="btn btn-danger" id="delete_tableFilter_EPCView" type="delete">Delete</button>
 						</div>
 					</div>
 				</div>

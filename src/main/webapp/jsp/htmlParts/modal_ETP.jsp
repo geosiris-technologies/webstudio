@@ -120,7 +120,7 @@ limitations under the License.
                         </div>
                         
                         <form id="ETPRequest_send_Form" name="ETPRequest_send_Form" method="POST" action="ETPRequest" enctype="multipart/form-data">
-                            <input class="form-control" type="text" required name="request"value="putdataobjects" hidden="hidden" />
+                            <input class="form-control" type="text" required name="request" value="putdataobjects" hidden="hidden" />
                             <div class="form-row">
                                 <label><input class="checkbox form-check-input" type="checkbox" name="ask_aknowledge">Ask acknowledge</label>
                             </div>

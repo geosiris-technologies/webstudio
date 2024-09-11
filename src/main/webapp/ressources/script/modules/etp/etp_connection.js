@@ -75,6 +75,7 @@ export function geosiris_createETP_connector_form(fun_isConnected, fun_isDisconn
     connectButton.setAttribute('name', 'request-type');
     connectButton.setAttribute('value', 'Establish etp connexion');
     connectButton.classList.add('btn', 'btn-primary');
+    connectButton.className += ' mt-2';
 
     const d_err = document.createElement('p');
     d_err.style.color = 'red';
@@ -134,7 +135,7 @@ export function geosiris_createETP_connector_form(fun_isConnected, fun_isDisconn
                     set__RWS_ETP_PWD__("");
                 }
                 btnConn.value = "Establish etp connexion";
-                btnConn.className = "btn btn-primary";
+                btnConn.className = "btn btn-primary mt-2";
                 input_req.value = "connect";
                 inputGroup.style.display = '';
                 if(HAS_BEEN_CONNECTED_ONCE && cst_fun_isDisconnected != null){

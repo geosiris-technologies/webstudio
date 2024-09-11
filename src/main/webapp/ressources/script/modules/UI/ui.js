@@ -554,20 +554,9 @@ export function initRootEltSelector(typeSelector){
 }
 
 export function getResqmlObjectTable(dataTableContent, dataTableColumn, oldTable){
-    /*var dataTableHeader = dataTableColumn.map(title => title[0].toUpperCase() + title.substring(1));
-    var table = createTableFromData(dataTableContent, dataTableColumn, dataTableHeader, 
-                                    dataTableContent.map(elt => [ function(){openResqmlObjectContentByUUID(elt['uuid'])} ]), 
-                                    null,
-                                    null); 
-                                        // On met le oldTable à null ici pour trier seulement apres l'ajout de la nouvelle colonne,
-                                        // sinon les boutons de suppressions ne seront pas en face des bons elements.
-
-    transformTab_AddColumn(table, "", 0, dataTableContent.map(elt => createDeleteResqmlButton(elt)), "colName_delete", "");*/
-
-    /*-----------------*/
     const f_cols = []
 
-    f_cols.push(new JsonTableColumnizer_Checkbox("epc_table_checkboxes", (obj) => getAttribute(obj, "uuid")));
+    f_cols.push(new JsonTableColumnizer_Checkbox("epc_table_checkboxes", (obj) => getAttribute(obj, "uuid", (elt)=>elt["uuid"]+ "-tab")));
     /*f_cols.push(new JsonTableColumnizer_Radio("sample_radio", (obj) => getAttribute(obj, "uuid")));*/
     f_cols.push(new JsonTableColumnizer_Icon(
         "far fa-trash-alt deleteButton", 
