@@ -31,7 +31,7 @@ limitations under the License.
 					style="display: none">
 					<span class="sr-only">changeDorReferenceing...</span>
 				</div>
-				<button type="button" class="close" data-dismiss="modal" id="closeBut_changeDorReference">&times;</button>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close" id="closeBut_changeDorReference"></button>
 			</div>
 
  			<div class="tab-content">

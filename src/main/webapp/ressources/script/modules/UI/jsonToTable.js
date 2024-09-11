@@ -15,6 +15,7 @@ limitations under the License.
 */
 import {add_mouse_event_listener} from "./htmlUtils.js"
 import {getAttribute} from "../common/utils.js"
+import {CLASS_TABLE_FIXED} from "../common/variables.js"
 
 
 export class JsonTableColumnizer{
@@ -29,7 +30,7 @@ export class JsonTableColumnizer{
     getDomElt(obj, parent){
         var elt = this._getDomElt(obj);
         if(this.cursor != null){
-            elt.style.cursor = this.cursor;   
+            elt.style.cursor = this.cursor;
         }
         if(parent != null){
             if(this.mouseListener != null){
@@ -49,7 +50,7 @@ export class JsonTableColumnizer{
         return elt;
     }
     getColumnTitleElt(){
-        var elt = this._getColumnTitleElt(); 
+        var elt = this._getColumnTitleElt();
         if(this.mouseListener_title != null){
             add_mouse_event_listener(elt, (event) => this.mouseListener_title(event, this));
         }
@@ -70,7 +71,7 @@ export class JsonTableColumnizer_DotAttrib extends JsonTableColumnizer{
         this.attrib = attrib;
     }
     getSortAttribute(){return this.attrib;}
-    _getDomElt(obj){ 
+    _getDomElt(obj){
         var span = document.createElement("span");
         span.appendChild(document.createTextNode(getAttribute(obj, this.attrib)));
         return span;
@@ -97,8 +98,8 @@ export class JsonTableColumnizer_Icon extends JsonTableColumnizer{
 }
 
 export class JsonTableColumnizer_Checkbox extends JsonTableColumnizer{
-    constructor(name, f_value, onChange) {
-        super(null, null, null, null, null);
+    constructor(name, f_value, onChange, f_className) {
+        super(null, null, null, f_className, null);
         this.f_value = f_value;
         this.name = name;
         this.onChange = onChange;
@@ -109,8 +110,8 @@ export class JsonTableColumnizer_Checkbox extends JsonTableColumnizer{
         check_obj.type = "checkbox";
         check_obj.value = this.f_value(obj);
         check_obj.name = this.name;
-        check_obj.className = this.class_id;
-        check_obj.addEventListener('change', 
+        check_obj.className = this.class_id + " form-check-input " + this.f_className;
+        check_obj.addEventListener('change',
             (event) => {
                 var check_title = document.getElementById(this.class_id + "-title");
                 check_title.update();
@@ -133,14 +134,14 @@ export class JsonTableColumnizer_Checkbox extends JsonTableColumnizer{
         check_title.type = "checkbox";
         check_title.name = this.name;
         check_title.id = this.class_id + "-title";
-        
+
         const check_title_label = document.createElement("label");
         div_check.appendChild(check_title_label);
         check_title_label.className = "form-check-label";
         check_title_label.appendChild(document.createTextNode("[0]"));
 
         /* Title checkbox is toggled */
-        check_title.addEventListener('change', 
+        check_title.addEventListener('change',
             (event) => {
                 var parent = check_title;
                 while(parent.tagName.toLowerCase() != "table" && parent.parent != null){
@@ -150,7 +151,9 @@ export class JsonTableColumnizer_Checkbox extends JsonTableColumnizer{
                     var countChecked = 0;
                     Array.prototype.forEach.call(document.getElementsByClassName(const_this.class_id),
                         (c) => {
-                            c.checked = check_title.checked;
+                            if(c.checkVisibility()){  // change only if it is visible
+                                c.checked = check_title.checked;
+                            }
                             countChecked += c.checked ? 1 : 0;
                         }
                     )
@@ -244,7 +247,7 @@ export function toTable(
     list_JsonTableColumnizer
 ){
     const _table = document.createElement("table");
-    _table.className = "table-striped table-bordered table-hover table-fixed table-top-fixed";
+    _table.className = CLASS_TABLE_FIXED;
 
     const _table_head = document.createElement("thead");
     _table.appendChild(_table_head);
@@ -298,7 +301,7 @@ export function toTable(
     );
 
     _table.appendChild(_table_body);
-    
+
     return _table;
 }
 
@@ -313,7 +316,7 @@ export function sample(){
     }
 
     const f_cols = []
-    
+
     f_cols.push(new JsonTableColumnizer_Checkbox("sample_check", (obj) => getAttribute(obj, "uuid")));
     f_cols.push(new JsonTableColumnizer_Radio("sample_radio", (obj) => getAttribute(obj, "uuid")));
     f_cols.push(new JsonTableColumnizer_Icon("far fa-trash-alt ", "fas fa-trash-alt "));
@@ -341,7 +344,7 @@ export function sample(){
     );
 
     new_table = toTable(in_text, f_cols);
-    new_table.className += " table-striped table-bordered table-hover table-fixed table-top-fixed";
+    new_table.className += CLASS_TABLE_FIXED;
     new_table.id = "epcTableContent";
     div_result.appendChild(new_table);
 }

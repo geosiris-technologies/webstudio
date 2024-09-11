@@ -41,7 +41,7 @@ limitations under the License.
 					style="display: none">
 					<span class="sr-only">generating...</span>
 				</div>
-				<button id="modal_getOSDUManifest_close" type="button" class="close" data-dismiss="modal">&times;</button>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close" id="modal_getOSDUManifest_close"></button>
 			</div>
 			
 			<div class="modal-body">

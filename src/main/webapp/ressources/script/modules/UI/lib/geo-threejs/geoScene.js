@@ -55,7 +55,7 @@ class GeoObject{
         }
 
         if(this.surface_loader.triangles != null && this.surface_loader.triangles.length > 0){
-            console.log("faceColor '" + faceColor + "'")
+            // console.log("faceColor '" + faceColor + "'")
             this.faces = createMesh(this.surface_loader.triangles);
 
           if(faceColor != null && faceColor.length > 0){
@@ -552,7 +552,8 @@ class GeoSceneUi {
 
     createUi(){
         const const_this = this;
-        this.div.style.border = "1px solid black";
+        // this.div.style.border = "1px solid black";
+        // this.div.className = "border-bottom-0 border-primary";
 
         var label = document.createTextNode("Scene");
         this.div.appendChild(label);
@@ -568,12 +569,11 @@ class GeoSceneUi {
         this.div.appendChild(scene_clear);
 
         // Up vector
-        var radioGrp = document.createElement("div");
-        radioGrp.className = "form-check";
-        radioGrp.appendChild(document.createTextNode("Camera Up vector"));
-
+        var radioInputGrp = document.createElement("div");
+        radioInputGrp.className = "input-group-text";
+        this.div.appendChild(radioInputGrp);
         
-        radioGrp.onchange = function f_changeCamUp(radioEvt){
+        radioInputGrp.onchange = function f_changeCamUp(radioEvt){
             if(radioEvt.target.value == "X")
                 const_this.changeCamUp([1,0,0]);
             if(radioEvt.target.value == "Y")
@@ -584,28 +584,32 @@ class GeoSceneUi {
 
         var currentCamUp = this.geo_scene._controls.object.up;
 
+        var titleSpan = document.createElement("span");
+        titleSpan.className = "form-label mb-0 me-2";
+        titleSpan.appendChild(document.createTextNode("Camera Up vector"));
+        radioInputGrp.appendChild(titleSpan);
+
         var radioX = createRadio("radio_scene_cam_up", "X", "X", currentCamUp.x == 1);
         radioX.style.color = "red";
         radioX.value = const_this.geo_scene.scaleFactors[0];
-        radioGrp.appendChild(radioX);
+        radioInputGrp.appendChild(radioX);
 
         var radioY = createRadio("radio_scene_cam_up", "Y", "Y", currentCamUp.y == 1);
         radioY.style.color = "green";
         radioY.value = const_this.geo_scene.scaleFactors[1];
-        radioGrp.appendChild(radioY);
+        radioInputGrp.appendChild(radioY);
 
         var radioZ = createRadio("radio_scene_cam_up", "Z", "Z", currentCamUp.z == 1);
         radioZ.style.color = "blue";
         radioZ.value = const_this.geo_scene.scaleFactors[2];
-        radioGrp.appendChild(radioZ);
-
-        this.div.appendChild(radioGrp);
+        radioInputGrp.appendChild(radioZ);
 
         // salers 
         {
             // scale X
-            const lbl_scaleX = document.createElement("label");
-            lbl_scaleX.appendChild(document.createTextNode("X"))
+            const lbl_scaleX = document.createElement("span");
+            lbl_scaleX.appendChild(document.createTextNode("X"));
+            lbl_scaleX.className = "form-label mb-0 ms-2 me-2";
             const in_scaleX = createScaler();
             in_scaleX.title = "Scale X";
             in_scaleX.onchange = function(){
@@ -619,8 +623,9 @@ class GeoSceneUi {
             };
 
             // scale Y
-            const lbl_scaleY = document.createElement("label");
-            lbl_scaleY.appendChild(document.createTextNode("Y"))
+            const lbl_scaleY = document.createElement("span");
+            lbl_scaleY.appendChild(document.createTextNode("Y"));
+            lbl_scaleY.className = "form-label mb-0 ms-2 me-2";
             const in_scaleY = createScaler();
             in_scaleY.title = "Scale Y";
             in_scaleY.onchange = function(){
@@ -633,8 +638,9 @@ class GeoSceneUi {
             };
 
             // scale Y
-            const lbl_scaleZ = document.createElement("label");
-            lbl_scaleZ.appendChild(document.createTextNode("Z"))
+            const lbl_scaleZ = document.createElement("span");
+            lbl_scaleZ.appendChild(document.createTextNode("Z"));
+            lbl_scaleZ.className = "form-label mb-0 ms-2 me-2";
             const in_scaleZ = createScaler();
             in_scaleZ.title = "Scale Z";
             in_scaleZ.onchange = function(){
@@ -655,17 +661,24 @@ class GeoSceneUi {
             });
 
             // scale group
-            const div_scale = document.createElement("div");
-            div_scale.className = "form-group";
-            div_scale.style.display = "inline";
-            div_scale.appendChild(in_scaleX);
-            div_scale.appendChild(lbl_scaleX);
-            div_scale.appendChild(in_scaleY);
-            div_scale.appendChild(lbl_scaleY);
-            div_scale.appendChild(in_scaleZ);
-            div_scale.appendChild(lbl_scaleZ);
+            // const div_scale = document.createElement("div");
+            // div_scale.className = "form-group";
+            // div_scale.style.display = "inline";
 
-            this.div.appendChild(div_scale);
+
+            var titleSpan = document.createElement("span");
+            titleSpan.className = "form-label mb-0 ms-2 me-2";
+            titleSpan.appendChild(document.createTextNode("Scale :"));
+            radioInputGrp.appendChild(titleSpan);
+
+
+            radioInputGrp.appendChild(in_scaleX);
+            radioInputGrp.appendChild(lbl_scaleX);
+            radioInputGrp.appendChild(in_scaleY);
+            radioInputGrp.appendChild(lbl_scaleY);
+            radioInputGrp.appendChild(in_scaleZ);
+            radioInputGrp.appendChild(lbl_scaleZ);
+
         }
 
 
@@ -674,18 +687,24 @@ class GeoSceneUi {
 
     updateUi(){
         const const_this = this;
-        while(this.sceneObj_list != null && this.sceneObj_list.firstChild){
-            this.sceneObj_list.firstChild.remove();
+//        while(this.sceneObj_list != null && this.sceneObj_list.firstChild){
+//            this.sceneObj_list.firstChild.remove();
+//        }
+        if(this.sceneObj_list != null){
+            this.sceneObj_list.remove();
         }
 
         // Scene objects
         this.sceneObj_list = document.createElement("ul");
-        this.sceneObj_list.style.border = "1px solid black";
+        this.sceneObj_list.style.listStyle = "none";
+        // this.sceneObj_list.style.border = "1px solid black";
+        this.sceneObj_list.className = "border rounded p-2"
         this.sceneObj_list.style.marginBottom  = "0px";
         this.div.appendChild(this.sceneObj_list);
 
         this.geo_scene._objectList.forEach( function(element, index) {
-            new GeoObjectUi(element, const_this.geo_scene, const_this.sceneObj_list, "li");
+            var obj = new GeoObjectUi(element, const_this.geo_scene, const_this.sceneObj_list, "li");
+            obj.div.className = "border-bottom border-primary pb-2";
         });
     }
 }
@@ -856,10 +875,18 @@ class GeoObjectUi{
         {
             var points_li = document.createElement("li");
             sub_part_elt.appendChild(points_li);
-            points_li.appendChild(document.createTextNode("Points : "));
+
+            var div_input_group = document.createElement("div");
+            div_input_group.className = "input-group";
+            points_li.appendChild(div_input_group)
+
+            var span_title = document.createElement("span");
+            span_title.className = "input-group-text";
+            span_title.appendChild(document.createTextNode("Points : "));
+            div_input_group.appendChild(span_title);
     
-            const points_toggler = createToggler("fas fa-dot-circle", "black", "red", ()=> {const_this.obj.togglePoints(true)},  ()=> {const_this.obj.togglePoints(false)}, const_this.obj.isPointsVisible());
-            points_li.appendChild(points_toggler);
+            const points_toggler = createToggler("fas fa-dot-circle input-group-text", "black", "red", ()=> {const_this.obj.togglePoints(true)},  ()=> {const_this.obj.togglePoints(false)}, const_this.obj.isPointsVisible());
+            div_input_group.appendChild(points_toggler);
             document.addEventListener(GeoObject.EVT_OBJ_POINTS_VISIBILITY, (e) => {
                 if(e.detail.obj == const_this.obj) {
                     points_toggler.toggleNoCallback(e.detail.value);
@@ -867,17 +894,18 @@ class GeoObjectUi{
             });
     
             const color_pick_points = document.createElement("input");
+            color_pick_points.className = "input-group-text form-control-color";
             color_pick_points.type = "color";
             color_pick_points.value = "#" + const_this.obj.points.material.color.getHexString();
             color_pick_points.title = "Points color";
             color_pick_points.style.cursor = 'pointer';
-            color_pick_points.style.margin = "2px";
             color_pick_points.onchange = function(){
                 const_this.obj.points.material.color = new THREE.Color(color_pick_points.value);
             };
-            points_li.appendChild(color_pick_points);
+            div_input_group.appendChild(color_pick_points);
     
             const point_size = document.createElement("input");
+            point_size.className = "form-control";
             point_size.type = "number";
             point_size.min = "0.1";
             point_size.max = "120";
@@ -885,11 +913,10 @@ class GeoObjectUi{
             point_size.value = const_this.obj.points.material.size;
             point_size.title = "Point size";
             point_size.style.cursor = 'pointer';
-            point_size.style.margin = "2px";
             point_size.onchange = function(){
                 const_this.obj.points.material.size = point_size.value;
             };
-            points_li.appendChild(point_size);
+            div_input_group.appendChild(point_size);
         }
 
 
@@ -897,10 +924,18 @@ class GeoObjectUi{
             // Lines
             var lines_li = document.createElement("li");
             sub_part_elt.appendChild(lines_li);
-            lines_li.appendChild(document.createTextNode("Lines : "));
 
-            const lines_toggler = createToggler("far fa-square", "black", "red", ()=> {const_this.obj.toggleLines(true)},  ()=> {const_this.obj.toggleLines(false)}, const_this.obj.isLinesVisible());
-            lines_li.appendChild(lines_toggler);
+            var div_input_group = document.createElement("div");
+            div_input_group.className = "input-group";
+            lines_li.appendChild(div_input_group)
+
+            var span_title = document.createElement("span");
+            span_title.className = "input-group-text";
+            span_title.appendChild(document.createTextNode("Lines : "));
+            div_input_group.appendChild(span_title);
+
+            const lines_toggler = createToggler("far fa-square input-group-text", "black", "red", ()=> {const_this.obj.toggleLines(true)},  ()=> {const_this.obj.toggleLines(false)}, const_this.obj.isLinesVisible());
+            div_input_group.appendChild(lines_toggler);
             document.addEventListener(GeoObject.EVT_OBJ_LINES_VISIBILITY, (e) => {
                 if(e.detail.obj == const_this.obj) {
                     lines_toggler.toggleNoCallback(e.detail.value);
@@ -908,15 +943,15 @@ class GeoObjectUi{
             });
 
             const color_pick_lines = document.createElement("input");
+            color_pick_lines.className = "input-group-text form-control-color";
             color_pick_lines.type = "color";
             color_pick_lines.value = "#" + const_this.obj.lines.material.color.getHexString();
             color_pick_lines.title = "Lines color";
             color_pick_lines.style.cursor = 'pointer';
-            color_pick_lines.style.margin = "2px";
             color_pick_lines.onchange = function(){
                 const_this.obj.lines.material.color = new THREE.Color(color_pick_lines.value);
             };
-            lines_li.appendChild(color_pick_lines);
+            div_input_group.appendChild(color_pick_lines);
 
             /*
             // Line width is always 1 due to webGL limitations
@@ -928,12 +963,11 @@ class GeoObjectUi{
             line_size.value = const_this.obj.lines.material.linewidth;
             line_size.title = "Point size";
             line_size.style.cursor = 'pointer';
-            line_size.style.margin = "2px";
             line_size.onchange = function(){
                 console.log(const_this.obj.lines.material);
                 const_this.obj.lines.material.linewidth = line_size.value;
             };
-            lines_li.appendChild(line_size);*/
+            div_input_group.appendChild(line_size);*/
         }
 
 
@@ -941,10 +975,18 @@ class GeoObjectUi{
             // Faces
             var faces_li = document.createElement("li");
             sub_part_elt.appendChild(faces_li);
-            faces_li.appendChild(document.createTextNode("Faces : "));
 
-            const faces_toggler = createToggler("fas fa-square", "black", "red", ()=> {const_this.obj.toggleFaces(true)},  ()=> {const_this.obj.toggleFaces(false)}, const_this.obj.isFacesVisible());
-            faces_li.appendChild(faces_toggler);
+            var div_input_group = document.createElement("div");
+            div_input_group.className = "input-group";
+            faces_li.appendChild(div_input_group)
+
+            var span_title = document.createElement("span");
+            span_title.className = "input-group-text";
+            span_title.appendChild(document.createTextNode("Faces : "));
+            div_input_group.appendChild(span_title);
+
+            const faces_toggler = createToggler("fas fa-square input-group-text", "black", "red", ()=> {const_this.obj.toggleFaces(true)},  ()=> {const_this.obj.toggleFaces(false)}, const_this.obj.isFacesVisible());
+            div_input_group.appendChild(faces_toggler);
             document.addEventListener(GeoObject.EVT_OBJ_FACES_VISIBILITY, (e) => {
                 if(e.detail.obj == const_this.obj) {
                     faces_toggler.toggleNoCallback(e.detail.value);
@@ -952,25 +994,25 @@ class GeoObjectUi{
             });
 
             const color_pick_faces = document.createElement("input");
+            color_pick_faces.className = "input-group-text form-control-color";
             color_pick_faces.type = "color";
             color_pick_faces.value = "#" + const_this.obj.faces.material.color.getHexString();
             color_pick_faces.title = "Faces color";
             color_pick_faces.style.cursor = 'pointer';
-            color_pick_faces.style.margin = "2px";
             color_pick_faces.onchange = function(){
                 const_this.obj.faces.material.color = new THREE.Color(color_pick_faces.value);
             };
-            faces_li.appendChild(color_pick_faces);
+            div_input_group.appendChild(color_pick_faces);
 
             var orientFlip = document.createElement("i");
-            orientFlip.className = "fas fa-undo";
+            orientFlip.className = "input-group-text";
+            orientFlip.className = "fas fa-undo input-group-text";
             orientFlip.title = "flip faces orientation";
             orientFlip.style.cursor = 'pointer';
-            orientFlip.style.margin = "2px";
             orientFlip.onclick = function(){
                 const_this.obj.reverseOrient(const_this.geo_scene._theejs_scene);
             };
-            faces_li.appendChild(orientFlip);
+            div_input_group.appendChild(orientFlip);
         }
 
 
@@ -978,10 +1020,18 @@ class GeoObjectUi{
             // bbox
             var bbox_li = document.createElement("li");
             sub_part_elt.appendChild(bbox_li);
-            bbox_li.appendChild(document.createTextNode("Bbox : "));
 
-            const bbox_toggler = createToggler("far fa-square", "black", "red", ()=> {const_this.obj.toggleBbox(true)},  ()=> {const_this.obj.toggleBbox(false)}, const_this.obj.isBboxVisible());
-            bbox_li.appendChild(bbox_toggler);
+            var div_input_group = document.createElement("div");
+            div_input_group.className = "input-group";
+            bbox_li.appendChild(div_input_group)
+
+            var span_title = document.createElement("span");
+            span_title.className = "input-group-text";
+            span_title.appendChild(document.createTextNode("Bbox : "));
+            div_input_group.appendChild(span_title);
+
+            const bbox_toggler = createToggler("far fa-square input-group-text ", "black", "red", ()=> {const_this.obj.toggleBbox(true)},  ()=> {const_this.obj.toggleBbox(false)}, const_this.obj.isBboxVisible());
+            div_input_group.appendChild(bbox_toggler);
             document.addEventListener(GeoObject.EVT_OBJ_bbox_VISIBILITY, (e) => {
                 if(e.detail.obj == const_this.obj) {
                     bbox_toggler.toggleNoCallback(e.detail.value);
@@ -989,15 +1039,15 @@ class GeoObjectUi{
             });
 
             const color_pick_bbox = document.createElement("input");
+            color_pick_bbox.className = "input-group-text form-control-color";
             color_pick_bbox.type = "color";
             color_pick_bbox.value = "#" + const_this.obj.bbox.material.color.getHexString();
             color_pick_bbox.title = "Bbox color";
             color_pick_bbox.style.cursor = 'pointer';
-            color_pick_bbox.style.margin = "2px";
             color_pick_bbox.onchange = function(){
                 const_this.obj.bbox.material.color = new THREE.Color(color_pick_bbox.value);
             };
-            bbox_li.appendChild(color_pick_bbox);
+            div_input_group.appendChild(color_pick_bbox);
         }
         
     }

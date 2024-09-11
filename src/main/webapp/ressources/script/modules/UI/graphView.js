@@ -19,7 +19,7 @@ import {getOpenObjectsUuid, openResqmlObjectContentByUUID} from "../main.js"
 import {getJsonObjectFromServer} from "../requests/requests.js"
 
 
-import cytoscape from "./lib/cytoscape/cytoscape.esm.min.js"
+//import cytoscape from "./lib/cytoscape/cytoscape.esm.min.js"
 cytoscapeFcose(cytoscape)
 
 var CY_DBL_LEFT_CLICK_DATE = new Date();
@@ -37,7 +37,7 @@ function initiateGraphView(containerDIV){
 
             container: containerDIV, // container to render in
             elements: [],
-            style: cyGetStyle('data(name)', 'data(name)'),
+            css: cyGetStyle('data(name)', 'data(name)'),
 
             layout: {
                 name: 'grid',
@@ -84,7 +84,7 @@ export function cyGetEdgeStyle(edgeLabel, enableArrow){
     if(enableArrow!=null && enableArrow){
         return {
                     selector: 'edge',
-                    style: 
+                    css: 
                     {
                         'width': 2,
                         'line-color': '#555',
@@ -100,7 +100,7 @@ export function cyGetEdgeStyle(edgeLabel, enableArrow){
     }else{
         return {
                     selector: 'edge',
-                    style: 
+                    css: 
                     {
                         'width': 2,
                         'line-color': '#555',
@@ -120,7 +120,8 @@ export function cyGetNodeStyle(nodeLabel){
                 selector: 'node',
                 css: 
                 {
-                    'background-color': '#448',
+                    //'background-color': '#448',
+                    'background-color': 'data(color)',
                     'label': nodeLabel
                 },
 
@@ -385,13 +386,13 @@ export function addNodeToGraph(node, cy, relations,
         }
         var addedNode = cy.add({ 
                 group: 'nodes', 
-                data: { name: cyGetNodeNamePrefix(node) + node.title, id: node.uuid }, 
+                data: { name: cyGetNodeNamePrefix(node) + node.title, id: node.uuid, color: cyGetNodeColor(node) },
                 position: { x: baryPosX, y: baryPosY } ,
-                css: {
+                /*css: {
                     'background-color': cyGetNodeColor(node),
                     'width'  : nodeSize,
                     'height' : nodeSize
-                }
+                }*/
             }); 
 
 
@@ -847,8 +848,8 @@ export function createCheckableFIRPlist(relations, checkableName){
                         );
         checkbox.querySelectorAll('label').forEach( 
             function(element, index) {
-                element.setAttribute("data-toggle", "tooltip");
-                element.setAttribute("data-placement", "bottom");
+                element.setAttribute("data-bs-toggle", "tooltip");
+                element.setAttribute("data-bs-placement", "bottom");
                 element.setAttribute("title", elt.type);
             });
 
@@ -873,8 +874,8 @@ export function createCheckableFIRPlist(relations, checkableName){
                         );
                 checkbox.querySelectorAll('label').forEach( 
                     function(element, index) {
-                        element.setAttribute("data-toggle", "tooltip");
-                        element.setAttribute("data-placement", "bottom");
+                        element.setAttribute("data-bs-toggle", "tooltip");
+                        element.setAttribute("data-bs-placement", "bottom");
                         element.setAttribute("title", elt.type);
                     });
                 CONST_CY_CHECKBOX[uuid] = checkbox.querySelector('input[type="checkbox"]');
@@ -927,7 +928,7 @@ export function createCheckableFIRPlist(relations, checkableName){
 
     // On active les nouveaux tooltips
     $(document).ready(function(){
-        $('[data-toggle="tooltip"]').tooltip();
+        $('[data-bs-toggle="tooltip"]').tooltip();
     });
 
     return listFIRP;

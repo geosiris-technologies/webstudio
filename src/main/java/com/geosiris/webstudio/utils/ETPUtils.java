@@ -15,13 +15,18 @@ limitations under the License.
 */
 package com.geosiris.webstudio.utils;
 
-import Energistics.Etp.v12.Datatypes.Object.ContextInfo;
-import Energistics.Etp.v12.Datatypes.Object.ContextScopeKind;
-import Energistics.Etp.v12.Datatypes.Object.RelationshipKind;
-import Energistics.Etp.v12.Datatypes.Object.Resource;
+import Energistics.Etp.v12.Datatypes.DataValue;
+import Energistics.Etp.v12.Datatypes.Object.*;
 import Energistics.Etp.v12.Datatypes.ServerCapabilities;
 import Energistics.Etp.v12.Protocol.Discovery.GetResources;
 import Energistics.Etp.v12.Protocol.Discovery.GetResourcesResponse;
+import Energistics.Etp.v12.Protocol.Store.PutDataObjects;
+import com.geosiris.energyml.data.*;
+import com.geosiris.energyml.exception.NotImplementedException;
+import com.geosiris.energyml.exception.ObjectNotFoundNotError;
+import com.geosiris.energyml.pkg.EPCFile;
+import com.geosiris.energyml.utils.EPCGenericManager;
+import com.geosiris.energyml.utils.EnergymlWorkspace;
 import com.geosiris.energyml.utils.ObjectController;
 import com.geosiris.etp.communication.ClientInfo;
 import com.geosiris.etp.communication.ConnectionType;
@@ -38,23 +43,39 @@ import com.geosiris.etp.utils.ETPHelper;
 import com.geosiris.etp.utils.ETPUri;
 import com.geosiris.etp.websocket.ETPClient;
 import com.geosiris.webstudio.etp.*;
+import com.geosiris.webstudio.exeptions.NotValidInputException;
 import com.geosiris.webstudio.logs.ServerLogMessage;
 import com.geosiris.webstudio.model.ETP3DObject;
 import com.geosiris.webstudio.servlet.Editor;
+import com.google.gson.Gson;
 import jakarta.servlet.http.HttpSession;
 import jakarta.xml.bind.JAXBException;
 import org.apache.avro.specific.SpecificRecordBase;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.eclipse.jetty.http.HttpURI;
+import reactor.util.function.Tuple3;
+import reactor.util.function.Tuples;
 
+import javax.xml.datatype.XMLGregorianCalendar;
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.io.OutputStream;
+import java.lang.reflect.InvocationTargetException;
 import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import java.util.stream.Collectors;
+import java.util.stream.IntStream;
+
+import static com.geosiris.energyml.utils.EnergymlWorkspaceHelper.getCrsObj;
+import static com.geosiris.energyml.utils.EnergymlWorkspaceHelper.readArray;
+import static com.geosiris.energyml.utils.ObjectController.searchAttributeMatchingNameWithPath;
 
 public class ETPUtils {
     public static Logger logger = LogManager.getLogger(ETPUtils.class);
     public static final int waitingForResponseTime = 20000;
+
 
     public static HttpURI getHttpUriETP(String serverUrl){
         if(serverUrl.toLowerCase(Locale.ROOT).startsWith("http:")) {
@@ -76,7 +97,7 @@ public class ETPUtils {
             Object ack = etpClient.getEtpClientSession().waitForAknowledge(msgId, waitingForResponseTime);
             if (ack != null) {
                 SessionUtility.log(session, new ServerLogMessage(ServerLogMessage.MessageType.TOAST,
-                        "ETP <== Recieved acknoledge for message '" + msg.getClass().getSimpleName() + "'",
+                        "ETP <== Received acknowledge for message '" + msg.getClass().getSimpleName() + "'",
                         SessionUtility.EDITOR_NAME));
             }
         }
@@ -89,7 +110,10 @@ public class ETPUtils {
             dataResp = etpClient.getEtpClientSession().waitForResponse(msgId, timeout);
         }
         if(dataResp != null) {
-            logger.info(msgId + ") Answer : " + dataResp);
+            logger.info(msgId + ") Answers : " + dataResp.size());
+            for(Message m: dataResp){
+                logger.info("\t" + m.getHeader() + " " + m.getBody());
+            }
             SessionUtility.log(session, new ServerLogMessage(ServerLogMessage.MessageType.LOG,
                     "ETP <== Recieve ETP message " + dataResp.getClass().getSimpleName() + " : " + dataResp,
                     SessionUtility.EDITOR_NAME));
@@ -101,15 +125,45 @@ public class ETPUtils {
         return dataResp;
     }
 
-    public static ETPClient establishConnexion(HttpSession session, HttpURI host, String userName, String password,
-                                               Boolean askConnection) {
+    public static ETPClient establishConnexion(
+            HttpSession session,
+            HttpURI host,
+            String userName,
+            String password,
+            String token,
+            String headers,
+            Boolean askConnection
+    ) {
+        Map<String, String> parsedHeaders = new HashMap<>();
+		try{
+			Gson gson = new Gson();
+			parsedHeaders = gson.fromJson(headers, HashMap.class);
+		}catch (Exception ignore){}
+        if(parsedHeaders == null){
+            parsedHeaders = new HashMap<>();
+        }
+		for(Map.Entry<String, String> he: parsedHeaders.entrySet()){
+			logger.info("Headers " + he.getKey() + " " + he.getValue());
+		}
+        return establishConnexion(session, host, userName, password, token, parsedHeaders, askConnection);
+    }
+
+    public static ETPClient establishConnexion(
+            HttpSession session,
+            HttpURI host,
+            String userName,
+            String password,
+            String token,
+            Map<String, String> headers,
+            Boolean askConnection
+    ) {
         if(session != null) {
             SessionUtility.log(session, new ServerLogMessage(ServerLogMessage.MessageType.TOAST,
                     "(ETP) trying to establish connexion with '" + host + "'",
                     SessionUtility.EDITOR_NAME));
         }
         if (askConnection) {
-            ETPClient etpClient = establishConnexionForClient(session, host, userName, password);
+            ETPClient etpClient = establishConnexionForClient(session, host, userName, password, token, headers);
             if (etpClient != null) {
                 if(session != null) {
                     session.setAttribute(SessionUtility.SESSION_ETP_CLIENT_ID, etpClient);
@@ -123,6 +177,7 @@ public class ETPUtils {
                 return etpClient;
             } else {
                 if(session != null) {
+                    logger.debug("ETP ==> Connexion NOT established with '" + host);
                     SessionUtility.log(session, new ServerLogMessage(ServerLogMessage.MessageType.ERROR,
                             "ETP ==> Connexion NOT established with '" + host,
                             SessionUtility.EDITOR_NAME));
@@ -170,6 +225,48 @@ public class ETPUtils {
         return result;
     }
 
+    public static PutDataObjects createPutDataObjects(List<Object> enerygmlObjects, String dataspace){
+        Map<CharSequence, DataObject> mapResult = new HashMap<>();
+
+        for(Object o: enerygmlObjects){
+            DataObject data_o = getDataObjectFromEnergyml(o, dataspace);
+            mapResult.put(data_o.getResource().getUri(), data_o);
+        }
+        return ETPDefaultProtocolBuilder.buildPutDataObjects(mapResult, false);
+    }
+
+    public static DataObject getDataObjectFromEnergyml(Object enerygmlObject, String dataspace){
+        String title = ObjectController.getObjectAttributeValue(enerygmlObject, "citation.title") + "";
+        String uuid = (String) ObjectController.getObjectAttributeValue(enerygmlObject, "uuid");
+        XMLGregorianCalendar lastUpdate_cal = ((XMLGregorianCalendar) ObjectController
+                .getObjectAttributeValue(enerygmlObject, "citation.lastUpdate"));
+        long lastUpdate = 0L;
+        try {
+            lastUpdate = lastUpdate_cal.toGregorianCalendar().getTimeInMillis();
+        } catch (Exception ignore){}
+
+        String uri = new ETPUri(dataspace, EPCGenericManager.getPackageDomain_fromClassName(enerygmlObject.getClass().getName()),
+                EPCGenericManager.getSchemaVersion(enerygmlObject, false).replace(".", ""), EPCGenericManager.getObjectTypeForFilePath(enerygmlObject), uuid, null ).toString();
+
+        logger.info("lastUpdate : " + lastUpdate);
+        logger.info("uri : " + uri);
+        String marshalledObj = Editor.pkgManager.marshal(enerygmlObject);
+        Resource fResource = Resource.newBuilder()
+                .setActiveStatus(ActiveStatusKind.Active)
+                .setAlternateUris(new ArrayList<>())
+                .setCustomData(new HashMap<>())
+                .setLastChanged(lastUpdate)
+                .setName(title)
+                .setSourceCount(null)
+                .setTargetCount(null)
+                .setStoreCreated(0)
+                .setStoreLastWrite(lastUpdate)
+                .setUri(uri)
+                .build();
+        return ETPDefaultProtocolBuilder.buildDataObjectFromResqmlXMl(marshalledObj, uuid, fResource);
+    }
+
+
 
     public static String getDataObjectFromUuid(HttpSession session, String dataspace, String uuid){
         String result = null;
@@ -203,8 +300,21 @@ public class ETPUtils {
     }
 
 
-    private static ETPClient establishConnexionForClient(HttpSession session, HttpURI host, String userName, String password, boolean useDefaultHandler) {
-        ClientInfo clientInfo = new ClientInfo(host, 4000, 4000);
+    private static ETPClient establishConnexionForClient(
+            HttpSession session,
+            HttpURI host,
+            String userName,
+            String password,
+            String token,
+            Map<String, String> headers,
+            boolean useDefaultHandler
+    ) {
+        ClientInfo clientInfo = new ClientInfo(host);
+        Map<CharSequence, DataValue> mapCaps = new HashMap<>();
+//        mapCaps.put("MaxWebSocketMessagePayloadSize", DataValue.newBuilder().setItem(40000).build());
+//        mapCaps.put("MaxWebSocketMessagePayloadSize", DataValue.newBuilder().setItem(40000).build());
+        ServerCapabilities caps = new ServerCapabilities();
+        caps.setEndpointCapabilities(mapCaps);
         Map<CommunicationProtocol, ProtocolHandler> protocolHandlers = new HashMap<>();
         if(useDefaultHandler){
             protocolHandlers.put(CoreHandler_WebStudio.protocol, new CoreHandler_WebStudio());
@@ -220,13 +330,24 @@ public class ETPUtils {
             protocolHandlers.put(DiscoveryHandler_WebStudio.protocol, new DiscoveryHandler_WebStudio());
             protocolHandlers.put(DataArrayHandler.protocol, new DataArrayHandler_WebStudio());
         }
-        ETPConnection etpConnection = new ETPConnection(ConnectionType.CLIENT, new ServerCapabilities(), clientInfo, protocolHandlers);
+        ETPConnection etpConnection = new ETPConnection(ConnectionType.CLIENT, caps, clientInfo, protocolHandlers);
 
-        return ETPClient.getInstanceWithAuth_Basic(host, etpConnection, 5000, userName, password);
+        if(token != null && !token.trim().isEmpty()){
+            return ETPClient.getInstanceWithAuth_Token(host, etpConnection, 5000, token, headers);
+        }else {
+            return ETPClient.getInstanceWithAuth_Basic(host, etpConnection, 5000, userName, password, headers);
+        }
     }
 
-    private static ETPClient establishConnexionForClient(HttpSession session, HttpURI host, String userName, String password) {
-        return establishConnexionForClient(session, host, userName, password, false);
+    private static ETPClient establishConnexionForClient(
+            HttpSession session,
+            HttpURI host,
+            String userName,
+            String password,
+            String token,
+            Map<String, String> headers
+    ) {
+        return establishConnexionForClient(session, host, userName, password, token, headers, false);
     }
 
     public static Map<String, Object> getGraphical(HttpSession session, ETPUri representationUri){
@@ -282,114 +403,11 @@ public class ETPUtils {
         return graphicalElements;
     }
 
-
-    public static String write3DFile(List<Number> pointsCoords, List<List<Long>> facesPointIndices, File3DType file3DType, Object3DType objType){
-        return write3DFile(pointsCoords, 3, facesPointIndices, file3DType, objType);
-    }
-    public static String write3DFile(List<Number> pointsCoords, int pointDimension, List<List<Long>> facesPointIndices, File3DType file3DType, Object3DType objType){
-        if (Objects.requireNonNull(file3DType) == File3DType.OBJ) {
-            return write3DFile_OBJ(pointsCoords, pointDimension, facesPointIndices, objType);
-        }
-        return write3DFile_OFF(pointsCoords, pointDimension, facesPointIndices);
-    }
-
-    public static String write3DFile_OFF(List<Number> pointsCoords, int pointDimension, List<List<Long>> facesPointIndices){
-        StringBuilder result = new StringBuilder();
-        result.append("OFF\n\n");
-        result.append(pointsCoords.size() / pointDimension).append(" ").append(facesPointIndices.size()).append(" ").append("0\n");
-
-        // Points
-        StringBuilder off_points = new StringBuilder();
-        for(int pi = 0; pi<pointsCoords.size() / pointDimension; pi++){
-            for(int dim=0; dim<pointDimension; dim++){
-                off_points.append(pointsCoords.get(pi*pointDimension + dim).floatValue()).append(" ");
-            }
-            off_points.append("\n");
-        }
-
-        StringBuilder off_triangles = new StringBuilder();
-        for(List<Long> face: facesPointIndices){
-            off_triangles.append(face.size()).append(" ");
-            for (Long number : face) {
-                off_triangles.append(number).append(" ");
-            }
-            off_triangles.append("\n");
-        }
-
-        result.append(off_points).append("\n");
-        result.append(off_triangles);
-
-        return result.toString();
-    }
-    public static String write3DFile_OBJ(List<Number> pointsCoords, int pointDimension, List<List<Long>> facesPointIndices, Object3DType objType){
-        String entityPrefix;
-        switch (objType){
-            case POINT_CLOUD:
-            case POLYLINE:
-                entityPrefix = "l";
-                break;
-            default:
-                entityPrefix = "f";
-                break;
-        }
-        StringBuilder result = new StringBuilder();
-        // Points
-        StringBuilder obj_points = new StringBuilder();
-        for(int pi = 0; pi<pointsCoords.size() / pointDimension; pi++){
-            obj_points.append("v ");
-            for(int dim=0; dim<pointDimension; dim++){
-                obj_points.append(pointsCoords.get(pi*pointDimension + dim).floatValue()).append(" ");
-            }
-            obj_points.append("\n");
-        }
-
-        StringBuilder obj_entity = new StringBuilder();
-        for(List<Long> face: facesPointIndices){
-            obj_entity.append(entityPrefix).append(" ");
-            for (Long number : face) {
-                obj_entity.append(number + 1).append(" ");
-            }
-            obj_entity.append("\n");
-        }
-
-        result.append(obj_points).append("\n");
-        result.append(obj_entity);
-
-        return result.toString();
-    }
-
-    public static ETP3DObject get3DFileFromETP(ETPClient etpClient, HttpSession session, String uri, File3DType file3DType, Boolean normalizePosition) throws JAXBException {
-        ETP3DObject obj3D = null;
-
-        ETPUri etpUri = ETPUri.parse(uri);
-
-        String fileContent = ETPHelper.sendGetDataObjects_pretty(etpClient, Arrays.asList(new String[]{uri}), "xml", 50000).get(0);
-        Object resqmlObj = Editor.pkgManager.unmarshal(fileContent).getValue();
-
-
-        /* --- CRS start --- */
-        String epsgCode = null;
-//        Map<String, Object> dors = ObjectController.findSubObjectsAndPath(resqmlObj, "DataObjectReference");
-//        for(Map.Entry<String, Object> dor: dors.entrySet()){
-//            if(dor.getKey().toLowerCase().endsWith("crs")){
-//                String crsUuid = (String) ObjectController.getObjectAttributeValue(dor.getValue(), "uuid");
-//                logger.debug("CRs : " + crsUuid + " ==> ");
-//                if(crsUuid != null) {
-//                    String crsFileContent = getDataObjectFromUuid(session, etpUri.getDataspace(), crsUuid);
-//                    Object crsObj = Editor.pkgManager.unmarshal(crsFileContent).getValue();
-//                    Object epsg = ObjectController.getObjectAttributeValue(crsObj, "ProjectedCrs.EpsgCode");
-//                    logger.debug("epsg : " + epsg );
-//                    if(epsg != null) {
-//                        epsgCode = epsg + "";
-//                        break;
-//                    }
-//                }
-//            }
-//        }
-        /* --- CRS  end  --- */
-        /* --- Color  start  --- */
+    public static Tuple3<String, String, String> get_PLF_Colors(HttpSession session, ETPUri etpUri){
         logger.debug("graphical_info start");
         Map<String, Object> graphicals = new HashMap<>();
+
+        String defaultValue = "#000000";
 
         String pointColor=null, lineColor=null, faceColor=null;
         if(session != null) {
@@ -451,186 +469,72 @@ public class ETPUtils {
 
             logger.debug("Colors found : " + pointColor + " " + lineColor + " " + faceColor);
         }
+        return Tuples.of(
+                pointColor == null ? (etpUri.toString().toLowerCase().contains("pointset") ? randomHexColor() : defaultValue) : pointColor,
+                lineColor  == null ? (etpUri.toString().toLowerCase().contains("polyline") ? randomHexColor() : defaultValue) : lineColor,
+                faceColor  == null ? randomHexColor() : faceColor);
+    }
 
-        /* --- Color  end  --- */
-
-        String title = (String) ObjectController.getObjectAttributeValue(resqmlObj, "citation.Title");
-        String uuid = (String) ObjectController.getObjectAttributeValue(resqmlObj, "uuid");
-
-        logger.debug("Title : " + ObjectController.getObjectAttributeValue(resqmlObj, "citation.Title") + "\n" + resqmlObj);
-
-        long offsetPoints = 0;
-
-        StringBuilder off_points = new StringBuilder();
-        StringBuilder off_triangles = new StringBuilder();
-
-        long nbPoints = 0;
-        long nbfaces = 0;
-
-        if(resqmlObj.getClass().getSimpleName().endsWith("TriangulatedSetRepresentation")) {
-            List<Object> trianglePatch = (List<Object>) ObjectController.getObjectAttributeValue(resqmlObj, "TrianglePatch");
-
-            trianglePatch.sort((a, b) -> {
-                        String indexa = String.valueOf(ObjectController.getObjectAttributeValue(a, "PatchIndex"));
-                        String indexb = String.valueOf(ObjectController.getObjectAttributeValue(b, "PatchIndex"));
-                        if(indexa==null){
-                            return -1;
-                        } else if (indexb==null) {
-                            return 1;
-                        }else{
-                            try{
-                                return Integer.compare(Integer.parseInt(indexa), Integer.parseInt(indexb));
-                            }catch (Exception ignore){}
-                        }
-                        return -1;
-                    }
-            );
-            System.out.println("Title : " + ObjectController.getObjectAttributeValue(resqmlObj, "citation.Title") + "\n" + resqmlObj);
-            System.out.println("patchs : " + trianglePatch.size() + "\n\t" + (trianglePatch.size() > 0 ? trianglePatch.get(0) : "NONE"));
+    public static String randomHexColor(){
+        Random random = new Random();
+//        return "#" + String.format("%02X", Math.max(20, random.nextInt(8)*4)) + String.format("%02X", Math.max(20, random.nextInt(8)*4)) + String.format("%02X", Math.max(20, random.nextInt(8)*4));
+        return String.format("#%06x", random.nextInt(0xffffff + 1));
+    }
 
 
-            List<Number> allSurfacepoints = new ArrayList<>();
-            List<List<Long>> allSurfacefaces = new ArrayList<>();
+    public static ETP3DObject get3DFileFromETP(ETPClient etpClient, HttpSession session, String uri, File3DType file3DType) throws JAXBException, NotValidInputException, IOException {
+        uri = uri.trim();
+        ETPUri etpUri = ETPUri.parse(uri);
 
-            for (Object patch : trianglePatch) {
-//                String crsUuid = (String) ObjectController.getObjectAttributeValue(patch, "Geometry.LocalCrs.Uuid");
+        ETPWorkspace workspace = new ETPWorkspace(etpUri.getDataspace(), etpClient);
 
-                List<Object> pointsExtArray = ObjectController.findSubObjects(ObjectController.getObjectAttributeValue(patch, "geometry"), "ExternalDataArrayPart", true);
-                pointsExtArray.addAll(ObjectController.findSubObjects(ObjectController.getObjectAttributeValue(patch, "geometry"), "Hdf5Dataset", true));
-                List<Object> trianglesExtArray = ObjectController.findSubObjects(ObjectController.getObjectAttributeValue(patch, "triangles"), "ExternalDataArrayPart", true);
-                trianglesExtArray.addAll(ObjectController.findSubObjects(ObjectController.getObjectAttributeValue(patch, "triangles"), "Hdf5Dataset", true));
+        Object obj = workspace.getObjectByIdentifier(uri);
+        String title = (String) ObjectController.getObjectAttributeValue(obj, "citation.Title");
+        String uuid = (String) ObjectController.getObjectAttributeValue(obj, "uuid");
+        String epsgCode = null;
+        logger.info("URI to load " + uri + " ==> " + obj);
 
-                assert pointsExtArray.size() > 0;
-                assert pointsExtArray.size() == trianglesExtArray.size(); // Should have as many pointExtArray as triangleExtArray
+        String objClassNameLC = obj.getClass().getSimpleName().toLowerCase();
 
-                for (int patchPart_idx = 0; patchPart_idx < pointsExtArray.size(); patchPart_idx++) {
-                    String pathInExternalFile_point = (String) ObjectController.getObjectAttributeValue(pointsExtArray.get(patchPart_idx), "PathInExternalFile");
-                    if(pathInExternalFile_point == null){
-                        pathInExternalFile_point = (String) ObjectController.getObjectAttributeValue(pointsExtArray.get(patchPart_idx), "PathInHdfFile");
-                    }
-                    String pathInExternalFile_triangles = (String) ObjectController.getObjectAttributeValue(trianglesExtArray.get(patchPart_idx), "PathInExternalFile");
-                    if(pathInExternalFile_triangles == null){
-                        pathInExternalFile_triangles = (String) ObjectController.getObjectAttributeValue(trianglesExtArray.get(patchPart_idx), "PathInHdfFile");
-                    }
-
-                    List<Number> allpoints = ETPHelper.sendGetDataArray_prettier(etpClient, uri, pathInExternalFile_point, 5000, true);
-                    List<Number> alltriangles = ETPHelper.sendGetDataArray_prettier(etpClient, uri, pathInExternalFile_triangles, 5000, true);
-
-//                    for (int p_idx = 0; p_idx < allpoints.size() - 2; p_idx += 3) {
-//                        off_points.append(allpoints.get(p_idx).floatValue()).append(" ");
-//                        off_points.append(allpoints.get(p_idx + 1).floatValue()).append(" ");
-//                        off_points.append(allpoints.get(p_idx + 2).floatValue()).append("\n");
-//                        nbPoints++;
-//                    }
-                    allSurfacepoints.addAll(allpoints);
-
-//                    for (int f_idx = 0; f_idx < alltriangles.size() - 2; f_idx += 3) {
-//                        off_triangles.append("3 ");
-//                        off_triangles.append(offsetPoints + alltriangles.get(f_idx).longValue()).append(" ");
-//                        off_triangles.append(offsetPoints + alltriangles.get(f_idx + 1).longValue()).append(" ");
-//                        off_triangles.append(offsetPoints + alltriangles.get(f_idx + 2).longValue()).append("\n");
-//                        nbfaces++;
-//                    }
-
-                    for (int f_idx = 0; f_idx < alltriangles.size() - 2; f_idx += 3) {
-                        allSurfacefaces.add(Arrays.asList(
-                                offsetPoints + alltriangles.get(f_idx).longValue(),
-                                offsetPoints + alltriangles.get(f_idx + 1).longValue(),
-                                offsetPoints + alltriangles.get(f_idx + 2).longValue()));
-                    }
-
-                    offsetPoints += allpoints.size() / 3;
-                }
-            }
-
-            StringBuilder result = new StringBuilder();
-//            result.append("OFF\n\n");
-//            result.append(nbPoints).append(" ").append(nbfaces).append(" ").append("0\n");
-//            result.append(off_points).append("\n");
-//            result.append(off_triangles);
-
-            result.append(write3DFile(allSurfacepoints, 3, allSurfacefaces, file3DType, Object3DType.SURFACE));
-
-            obj3D = new ETP3DObject(result.toString(), file3DType.toString().toLowerCase(), resqmlObj.getClass().getSimpleName(), uuid, title, "#000000", "#000000", faceColor, epsgCode);
-        }else if(resqmlObj.getClass().getSimpleName().contains("PolylineSetRepresentation"))  {
-            StringBuilder result = new StringBuilder();
-
-            List<Object> patchs = (List<Object>) ObjectController.getObjectAttributeValue(resqmlObj, "linePatch");
-            for (Object patch : patchs) {
-                List<Object> pointsExtArray = ObjectController.findSubObjects(ObjectController.getObjectAttributeValue(patch, "geometry"), "ExternalDataArrayPart", true);
-                pointsExtArray.addAll(ObjectController.findSubObjects(ObjectController.getObjectAttributeValue(patch, "geometry"), "Hdf5Dataset", true));
-                List<Object> nodeCountExtArray = ObjectController.findSubObjects(ObjectController.getObjectAttributeValue(patch, "NodeCountPerPolyline"), "ExternalDataArrayPart", true);
-                nodeCountExtArray.addAll(ObjectController.findSubObjects(ObjectController.getObjectAttributeValue(patch, "NodeCountPerPolyline"), "Hdf5Dataset", true));
-                assert pointsExtArray.size() > 0;
-
-                List<List<Number>> pointPerElt = new ArrayList<>();
-                for (Object patchPart : pointsExtArray) {
-                    String pathInExternalFile_point = (String) ObjectController.getObjectAttributeValue(patchPart, "PathInExternalFile");
-                    if(pathInExternalFile_point == null){
-                        pathInExternalFile_point = (String) ObjectController.getObjectAttributeValue(patchPart, "PathInHdfFile");
-                    }
-                    pointPerElt.add(ETPHelper.sendGetDataArray_prettier(etpClient, uri, pathInExternalFile_point, 5000, true));
-//                    for(Number n: pointPerElt.get(pointPerElt.size()-1)){
-//                        logger.debug(n);
-//                    }
-                    logger.debug("pointPerElt size" + pointPerElt.get(0).size());
-                }
-
-                for (int nc_i=0; nc_i<nodeCountExtArray.size(); nc_i++) {
-                    Object nodeCountExt = nodeCountExtArray.get(nc_i);
-                    String pathInExternalFile_point = (String) ObjectController.getObjectAttributeValue(nodeCountExt, "PathInExternalFile");
-                    if(pathInExternalFile_point == null){
-                        pathInExternalFile_point = (String) ObjectController.getObjectAttributeValue(nodeCountExt, "PathInHdfFile");
-                    }
-                    List<Number> nodeCounts = ETPHelper.sendGetDataArray_prettier(etpClient, uri, pathInExternalFile_point, 5000, true);
-                    for(Number n: nodeCounts){
-                        logger.debug(n);
-                    }
-                    int idx = 0;
-                    for(Number size: nodeCounts){
-                        try {
-                            for (int i=0; i < size.intValue(); i++) {
-                                result.append(pointPerElt.get(nc_i).get(idx * 3).floatValue()).append(" ");
-                                result.append(pointPerElt.get(nc_i).get(idx * 3 + 1).floatValue()).append(" ");
-                                result.append(pointPerElt.get(nc_i).get(idx * 3 + 2).floatValue()).append(" ");
-                                idx++;
-                            }
-                            result.append("\n");
-                        }catch (Exception e){logger.error(e);}
-                    }
-                }
-            }
-
-            obj3D = new ETP3DObject(result.toString(), "polyline", resqmlObj.getClass().getSimpleName(), uuid, title, "#000000", lineColor, faceColor, epsgCode);
-        } else if(resqmlObj.getClass().getSimpleName().compareToIgnoreCase("PointSetRepresentation") == 0)  {
-            List<Object> patchs = (List<Object>) ObjectController.getObjectAttributeValue(resqmlObj, "NodePatchGeometry");
-            for (Object patch : patchs) {
-                List<Object> pointsExtArray = ObjectController.findSubObjects(ObjectController.getObjectAttributeValue(patch, "Points"), "ExternalDataArrayPart", true);
-                assert pointsExtArray.size() > 0;
-                for (Object patchPart : pointsExtArray) {
-                    String pathInExternalFile_point = (String) ObjectController.getObjectAttributeValue(patchPart, "PathInExternalFile");
-                    if(pathInExternalFile_point == null){
-                        pathInExternalFile_point = (String) ObjectController.getObjectAttributeValue(patchPart, "PathInHdfFile");
-                    }
-                    List<Number> allpoints = ETPHelper.sendGetDataArray_prettier(etpClient, uri, pathInExternalFile_point, 5000, true);
-                    for (int p_idx = 0; p_idx < allpoints.size() - 2; p_idx += 3) {
-                        off_points.append(allpoints.get(p_idx).floatValue()).append(" ");
-                        off_points.append(allpoints.get(p_idx + 1).floatValue()).append(" ");
-                        off_points.append(allpoints.get(p_idx + 2).floatValue()).append("\n");
-                        nbPoints++;
-                    }
-                }
-            }
-
-            StringBuilder result = new StringBuilder();
-            result.append("OFF\n\n");
-            result.append(nbPoints).append(" ").append(nbfaces).append(" ").append("0\n");
-            result.append(off_points).append("\n");
-            result.append(off_triangles);
-
-            obj3D = new ETP3DObject(result.toString(), "off", resqmlObj.getClass().getSimpleName(), uuid, title, pointColor, lineColor, faceColor, epsgCode);
+        List<AbstractMesh> meshes = null;
+        try {
+//            if(objClassNameLC.contains("polyline")){
+//                meshes = readPolylineRepresentation(obj, workspace).stream().map(p -> (AbstractMesh)p).collect(Collectors.toList());
+//            }else if(objClassNameLC.contains("pointset")){
+//                logger.info("reading pointSet");
+//                meshes = readPointRepresentation(obj, workspace).stream().map(p -> (AbstractMesh)p).collect(Collectors.toList());
+//            }else {
+            meshes = Mesh.readMeshObject(obj, workspace);
+//            }
+        } catch (Exception e){
+            logger.error("Not supported resqml type or error to read  " + uri);
+            e.printStackTrace();
+            return null;
         }
-        return obj3D;
+        Tuple3<String, String, String> graphicals = get_PLF_Colors(session, etpUri);
+//        logger.info("CRs : ");
+//        Gson gson = new Gson();
+//        for(AbstractMesh m: meshes){
+//            logger.info(m.getCrsObject());
+//            logger.info(isZReversed(m.getCrsObject()));
+//            logger.info(gson.toJson(m.getCrsObject()));
+//            if(isZReversed(m.getCrsObject())){
+//                ((List<List<Double>>)m.getPointList()).forEach(l->l.set(2, -l.get(2)));
+//            }
+//        }
+
+        String pointColor = graphicals.getT1();
+        String lineColor = graphicals.getT2();
+        String faceColor = graphicals.getT3();
+
+        OutputStream os = new ByteArrayOutputStream();
+        if(file3DType == File3DType.OBJ) {
+            SurfaceMesh.exportObj(meshes, os, title, !objClassNameLC.contains("triangulatedsetrepresentation"));
+        }else if (file3DType == File3DType.OFF) {
+            SurfaceMesh.exportOff(meshes, os, title, !objClassNameLC.contains("triangulatedsetrepresentation"));
+        }
+
+        return new ETP3DObject(os.toString(), file3DType.toString().toLowerCase(), obj.getClass().getSimpleName(), uuid, title, pointColor, lineColor, faceColor, epsgCode);
     }
 
 
@@ -679,7 +583,7 @@ public class ETPUtils {
             Object resqmlObj = Editor.pkgManager.unmarshal(fileContent).getValue();
             Map<String, Object> objList = new HashMap<>();
             objList.put((String) ObjectController.getObjectAttributeValue(resqmlObj, "uuid"), resqmlObj);
-
+            logger.info("createDORFromUri : {}\n{}", uri, objList);
             Object dor = Editor.pkgManager.createInstance(dorClassName, objList, uri.getUuid());
             ObjectController.editObjectAttribute(dor, "EnergisticsUri", uri.toString());
             return dor;
@@ -731,6 +635,182 @@ public class ETPUtils {
             bs = "0" + bs;
         }
         return "#" + rs + gs + bs;
+    }
+
+    // TODO: remove after energyml-utils fix
+    public static List<PolylineSetMesh> readPolylineRepresentation(Object energymlObject, EnergymlWorkspace workspace) throws NotImplementedException, InvocationTargetException, IllegalAccessException {
+        List<PolylineSetMesh> meshes = new ArrayList<>();
+        try {
+            long patchIdx = 0;
+            var patchPathInObjMap = searchAttributeMatchingNameWithPath(energymlObject, "[Node|Line]Patch");
+            for (Map.Entry<String, Object> e : patchPathInObjMap.entrySet()) {
+                String patchPathInObj = e.getKey();
+                Object patch = e.getValue();
+                Map.Entry<String, Object> entry = searchAttributeMatchingNameWithPath(patch, "Geometry.Points").entrySet().iterator().next();
+                String pointsPath = entry.getKey();
+                Object pointsObj = entry.getValue();
+
+                List<List<Double>> points = new ArrayList<>();
+                List<?> pl = readArray(pointsObj, energymlObject, patchPathInObj + pointsPath, workspace);
+                if(pl.size() > 0) {
+                    if (pl.get(0) instanceof Collection) {
+                        points.addAll(((List<List<?>>) pl).stream()
+                                .map(l -> l.stream().map(v -> ((Number) v).doubleValue()).collect(Collectors.toList())).collect(Collectors.toList()));
+                    } else { // pl given flat
+                        for (int i = 0; i < pl.size() - 2; i+=3) {
+                            points.add(new ArrayList<>(List.of(
+                                    ((Number) pl.get(i)).doubleValue(),
+                                    ((Number) pl.get(i + 1)).doubleValue(),
+                                    ((Number) pl.get(i + 2)).doubleValue()
+                            )));
+                        }
+                    }
+                }else{
+                    logger.info("Size is 0 for {}", patch);
+                }
+
+
+                Object crs = null;
+                try {
+                    crs = getCrsObj(pointsObj, patchPathInObj + pointsPath, energymlObject, workspace);
+                } catch (ObjectNotFoundNotError ignore) {
+                }
+
+                Map.Entry<String, Object> closedPolyEntry = searchAttributeMatchingNameWithPath(patch, "ClosedPolylines").entrySet().iterator().next();
+                String closePolyPath = closedPolyEntry.getKey();
+                Object closePolyObj = closedPolyEntry.getValue();
+                var closePoly = readArray(closePolyObj, energymlObject, patchPathInObj + closePolyPath, workspace);
+
+                List<List<Long>> pointIndices = null;
+                try {
+                    Map.Entry<String, Object> nodeCountPerPolyPathInObjEntry = searchAttributeMatchingNameWithPath(patch, "NodeCountPerPolyline").entrySet().iterator().next();
+                    String nodeCountPerPolyPathInObj = nodeCountPerPolyPathInObjEntry.getKey();
+                    Object nodeCountPerPoly = nodeCountPerPolyPathInObjEntry.getValue();
+                    List<Long> nodeCountsList = readArray(nodeCountPerPoly, energymlObject, patchPathInObj + nodeCountPerPolyPathInObj, workspace).stream()
+                            .map(v -> ((Number)v).longValue()).collect(Collectors.toList());
+                    long idx = 0;
+                    int polyIdx = 0;
+                    pointIndices = new ArrayList<>();
+                    for (Long nbNode : nodeCountsList) {
+                        pointIndices.add(IntStream.range((int) idx, (int) idx + nbNode.intValue())
+                                .boxed().map(Long::valueOf).collect(Collectors.toList()));
+                        if (closePoly != null && closePoly.size() > polyIdx && closePoly.get(polyIdx) != null) {
+                            // pointIndices.get(pointIndices.size() - 1).add(idx);
+                        }
+                        idx += nbNode;
+                        polyIdx++;
+                    }
+                } catch (IndexOutOfBoundsException ignore) {
+                }
+
+                if (pointIndices == null || pointIndices.isEmpty()) {
+                    pointIndices = new ArrayList<List<Long>>(Collections.singleton(new ArrayList<Long>(IntStream.range(0, points.size()).mapToObj(Long::valueOf).collect(Collectors.toList()))));
+                }
+
+                if (!points.isEmpty()) {
+                    meshes.add(new PolylineSetMesh(
+                            energymlObject,
+                            crs,
+                            points,
+                            String.format("%s_patch%d", EPCFile.getIdentifier(energymlObject), patchIdx),
+                            pointIndices
+                    ));
+                }
+
+                patchIdx++;
+            }
+        }catch (Exception e){
+            logger.error(e);
+            throw e;
+        }
+        return meshes;
+    }
+
+    public static List<PointSetMesh> readPointRepresentation(Object energymlObject, EnergymlWorkspace workspace) throws NotImplementedException, InvocationTargetException, IllegalAccessException {
+        List<PointSetMesh> meshes = new ArrayList<>();
+
+        long patchIdx = 0;
+        Map<String, Object> pointsPathInObjMap = searchAttributeMatchingNameWithPath(energymlObject, "NodePatch.[\\d]+.Geometry.Points");
+        for(Map.Entry<String, Object> e: pointsPathInObjMap.entrySet()) {
+            String pointsPathInObj = e.getKey();
+            Object pointsObj = e.getValue();
+
+            List<List<Double>> points = new ArrayList<>();
+            List<?> pl = readArray(pointsObj, energymlObject, pointsPathInObj, workspace);
+            if(pl.size() > 0) {
+                if (pl.get(0) instanceof Collection) {
+                    points.addAll(((List<List<?>>) pl).stream()
+                            .map(l -> l.stream().map(v -> ((Number) v).doubleValue()).collect(Collectors.toList())).collect(Collectors.toList()));
+                } else { // pl given flat
+                    for (int i = 0; i < pl.size() - 2; i+=3) {
+                        points.add(new ArrayList<>(List.of(
+                                ((Number) pl.get(i)).doubleValue(),
+                                ((Number) pl.get(i + 1)).doubleValue(),
+                                ((Number) pl.get(i + 2)).doubleValue()
+                        )));
+                    }
+                }
+            }else{
+                logger.info("Size is 0 for {}", pointsPathInObj);
+            }
+
+            Object crs = null;
+            try {
+                crs = getCrsObj(pointsObj, pointsPathInObj, energymlObject, workspace);
+            } catch (ObjectNotFoundNotError ignore) {}
+            if (points != null) {
+                meshes.add(new PointSetMesh(
+                        energymlObject,
+                        crs,
+                        points,
+                        String.format("NodePatch num %d", patchIdx)
+                ));
+            }
+
+            patchIdx++;
+        }
+
+        patchIdx = 0;
+        pointsPathInObjMap = searchAttributeMatchingNameWithPath(energymlObject, "NodePatchGeometry.[\\d]+.Points");
+        for(Map.Entry<String, Object> e: pointsPathInObjMap.entrySet()) {
+            String pointsPathInObj = e.getKey();
+            Object pointsObj = e.getValue();
+            List<List<Double>> points = new ArrayList<>();
+            List<?> pl = readArray(pointsObj, energymlObject, pointsPathInObj, workspace);
+            if(pl.size() > 0) {
+                if (pl.get(0) instanceof Collection) {
+                    points.addAll(((List<List<?>>) pl).stream()
+                            .map(l -> l.stream().map(v -> ((Number) v).doubleValue()).collect(Collectors.toList())).collect(Collectors.toList()));
+                } else { // pl given flat
+                    for (int i = 0; i < pl.size() - 2; i+=3) {
+                        points.add(new ArrayList<>(List.of(
+                                ((Number) pl.get(i)).doubleValue(),
+                                ((Number) pl.get(i + 1)).doubleValue(),
+                                ((Number) pl.get(i + 2)).doubleValue()
+                        )));
+                    }
+                }
+            }else{
+                logger.info("Size is 0 for {}", pointsPathInObj);
+            }
+
+            Object crs = null;
+            try {
+                crs = getCrsObj(pointsObj, pointsPathInObj, energymlObject, workspace);
+            } catch (ObjectNotFoundNotError ignore) {}
+            if (points != null) {
+                meshes.add(new PointSetMesh(
+                        energymlObject,
+                        crs,
+                        points,
+                        String.format("NodePatchGeometry num %d", patchIdx)
+                ));
+            }
+
+            patchIdx++;
+        }
+
+        return meshes;
     }
 
     public static void main(String[] argv){

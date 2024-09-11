@@ -34,6 +34,53 @@ export class ObjLoader extends SurfaceLoader{
         var pointsFinished = false;
 
         for(var lineIdx = 0; lineIdx < fileContentArray.length-1; lineIdx++){
+            var line = fileContentArray[lineIdx].trim();
+            if(line.length > 0 && !line.startsWith("#") && !line.startsWith("g") && !line.startsWith("o")){
+                if(line.startsWith("v") || line.startsWith("V")){
+                    this.points.push(line.split(/\s+/).slice(1, 4).map((x) => parseFloat(x)));
+                }
+                else if(line.startsWith("f") || line.startsWith("F")){
+                    var indices = line.split(/\s+/).slice(1).map((x) => parseInt(x.split("/")[0]));
+                    // triangle Fan
+                    for(var i=1; i<indices.length - 1; i++){
+                        if(indices[0] - 1 < this.points.length && indices[i] - 1 < this.points.length && indices[i + 1] - 1 < this.points.length){
+                            this.trianglesIdx.push([indices[0] - 1, indices[i] - 1, indices[i+1] - 1]);
+                        }else{
+                            console.log("Obj loading : indices not match with point size")
+                            console.log([indices[0] - 1, indices[i] - 1, indices[i+1] - 1])
+                        }
+                        //console.log([indices[0], indices[i], indices[i+1]]);
+                    }
+                } else if(line.startsWith("l") || line.startsWith("L")){
+                    var indices = line.split(/\s+/).slice(1).map((x) => parseInt(x.split("/")[0]));
+                    for(var i=0; i<indices.length - 1; i++){
+                        if(indices[i] - 1 < this.points.length && indices[i+1] - 1 < this.points.length){
+                            this.lines.push(this.points[indices[i] - 1]);
+                            this.lines.push(this.points[indices[i+1] - 1]);
+                        }
+                    }
+                }
+            }
+        }
+        this.computeLines();
+        this.computeTriangles();
+        this.computeBarycenter();
+    }
+
+    /*constructor(objFileContent) {
+        super();
+
+        var fileContentArray = objFileContent.split(/\n/);
+
+        this.points = []
+        this.trianglesIdx = []
+        this.triangles = []
+        this.lines = []
+
+        var pointsStart = false;
+        var pointsFinished = false;
+
+        for(var lineIdx = 0; lineIdx < fileContentArray.length-1; lineIdx++){
             var line = fileContentArray[lineIdx];
             if(line.length > 0){
                 var matchPoints = __obj_point_regexp__.exec(line);
@@ -54,5 +101,5 @@ export class ObjLoader extends SurfaceLoader{
         this.computeLines();
         this.computeTriangles();
         this.computeBarycenter();
-    }
+    }*/
 }

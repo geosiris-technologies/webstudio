@@ -16,6 +16,9 @@ limitations under the License.
 export function createRadio(name, label, value, checked=false, inline=true){
     var radioGrp = document.createElement("div");
     radioGrp.className = "form-check";
+    if(inline){
+        radioGrp.className += " form-check-inline";
+    }
 
     var radio = document.createElement("input");
     radio.id = "radio_" + Date.now();
@@ -28,25 +31,21 @@ export function createRadio(name, label, value, checked=false, inline=true){
         radio.checked = "checked" ;
     }
 
-
     var lbl = document.createElement("label");
+    lbl.className = "form-check-label";
+    lbl.type = "label";
     lbl.appendChild(document.createTextNode(label));
     //lbl.style.marginLeft = "2px";
 
     radioGrp.appendChild(radio);
     radioGrp.appendChild(lbl);
-    radioGrp.style.marginLeft = "5px";
-
-    if(inline){
-        radioGrp.style.display = "inline";
-    }
 
     return radioGrp;
 }
 
 export function createToggler(on_icon_class, color_on, color_off, on_callback=null, off_callback=null, defaultIsOn = true){
     const toggler = document.createElement("i");
-    toggler.style.margin = "2px";
+    //toggler.style.margin = "2px";
     toggler.className = on_icon_class;
     toggler.style.cursor = "pointer";
     toggler.style.color = defaultIsOn ? color_on : color_off;
@@ -98,13 +97,13 @@ export function createToggler(on_icon_class, color_on, color_off, on_callback=nu
 
 export function createScaler(){
     var in_scaler = document.createElement("input");
-    in_scaler.style.textAlign = "right";
+    /*in_scaler.style.textAlign = "right";
     in_scaler.style.display = "inline";
     in_scaler.style.cursor = 'pointer';
     in_scaler.style.margin = "2px";
     in_scaler.style.width = "100px";
     in_scaler.style.height = "25px";
-    in_scaler.style.paddingRight = '1px';
+    in_scaler.style.paddingRight = '1px';*/
     in_scaler.className = "form-control";
     in_scaler.type = "number";
     in_scaler.min = "0.1";

@@ -13,7 +13,7 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 */
-
+import {__CL_TOAST_CONTAINER__} from "../common/variables.js"
 
 
 var geosiris_SNACKBAR_COUNT = 0;
@@ -90,4 +90,83 @@ export function _getTotalSnackStackHeight(){
         }catch(e){}
     }));
     return sumHeight;
+}
+
+/* Bootstrap toast */
+
+function htmlToNodes(html) {
+    const template = document.createElement('template');
+    template.innerHTML = html;
+    return template.content.childNodes;
+}
+
+const __HTML_TOAST_CONTAINER__ = `<div class="toast-container position-absolute bottom-0 end-0 p-3" style="z-index: 3000"></div>`;
+const __HTML_RECT_BLUE__ = `<svg class="bd-placeholder-img rounded me-2" width="20" height="20" xmlns="http://www.w3.org/2000/svg" aria-hidden="true" preserveAspectRatio="xMidYMid slice" focusable="false"><rect width="100%" height="100%" fill="#007aff"></rect></svg>`;
+//htmlToNodes(__HTML_TOAST_CONTAINER__).forEach( e => document.body.appendChild(e));
+
+var __HTML_TOAST__ = `<div class="toast" role="alert" aria-live="assertive" aria-atomic="true">
+  <div class="toast-header">
+    __ICON__
+    <strong class="me-auto">__TITLE__</strong>
+    <small class="text-muted">__TIME__</small>
+    <button type="button" class="btn-close" data-bs-dismiss="toast" aria-label="Close"></button>
+  </div>
+  <div class="toast-body">__BODY__</div>
+</div>
+`;
+
+
+function elementToString(elt){
+    if(typeof(elt) == "string"){
+        return elt
+    }
+    return elt.outerHTML;
+}
+
+/*function createToast(
+    container=document.getElementById(__CL_TOAST_CONTAINER__),
+    iconElt=__HTML_RECT_BLUE__,
+    title="Notification", time="",
+    body="<span>Nothing to say</span>",
+    option = {
+      animation: true,
+      autohide: true,
+      delay: 10000
+    }
+){*/
+export function createToast(
+    {
+        container = document.getElementById(__CL_TOAST_CONTAINER__),
+        iconElt = __HTML_RECT_BLUE__,
+        title = "Notification",
+        time = "",
+        body = "<span>Nothing to say</span>",
+        option = {
+          animation: true,
+          autohide: true,
+          delay: 10000
+        },
+        identifier=""
+    }={}
+){
+    var toaster = __HTML_TOAST__;
+    toaster = toaster.replace("__ICON__", elementToString(iconElt));
+    toaster = toaster.replace("__TITLE__", elementToString(title));
+    toaster = toaster.replace("__TIME__", elementToString(time));
+    toaster = toaster.replace("__BODY__", elementToString(body));
+
+    const telt = htmlToNodes(toaster);
+    telt.forEach( e => {
+        const constE = e;
+        container.appendChild(e);
+        (new bootstrap.Toast(e, option)).show();
+        e.id=identifier;
+        e.addEventListener('hidden.bs.toast ', function () {
+            console.log(constE.parent);
+            alert("Shown bs Toast called");
+            constE.remove();
+            console.log(constE.parent);
+        })
+    });
+    return telt;
 }

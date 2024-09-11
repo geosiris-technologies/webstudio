@@ -55,17 +55,19 @@ export function checkAllRelations(uuid, relations, checkboxesName, checkedValue,
         if(relations[currentUUID] != null){
             if(document.getElementById(cbUpRelId).checked){
                 for(var r_upIdx=0; r_upIdx<relations[currentUUID].relationUp.length; r_upIdx++){
+                    
                     try{
                         var r_up = relations[currentUUID].relationUp[r_upIdx];
                         checkElement(r_up.uuid, checkboxesName, checkedValue);
-                        
-                        var r_up_lowerType = relations[r_up.uuid].type.toLowerCase();
+                        if(relations.hasOwnProperty(r_up.uuid)){
+                            var r_up_lowerType = relations[r_up.uuid].type.toLowerCase();
 
-                        if(!uuidStack.includes(r_up.uuid) && !uuidView.includes(r_up.uuid)){
-                            uuidStack.push(r_up.uuid);
+                            if(!uuidStack.includes(r_up.uuid) && !uuidView.includes(r_up.uuid)){
+                                uuidStack.push(r_up.uuid);
+                            }
                         }
                     }catch(e){
-                        console.log(e)
+                        console.log(e);
                     }
                 }
             }

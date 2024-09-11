@@ -16,8 +16,10 @@ limitations under the License.
 <div class="modal fade" id="modal_WorkspaceDict" >
 	<script type="module">
 		import {filterJsonDictUI, refreshWorkspaceDictVue} from "/ressources/script/modules/UI/modals/propertiesVue.js";
+		import {onEnterPressed} from "/ressources/script/modules/UI/htmlUtils.js";
 
 		document.getElementById("FilterWorkspaceDict").onkeypress = function(event){
+		    console.log(event);
 			onEnterPressed(event, function(){
 									filterJsonDictUI('container_WorkspaceDict', 
 															"counter_WorkspaceDict", 
@@ -59,7 +61,7 @@ limitations under the License.
 			<div class="modal-header">
 				<h4 class="modal-title">Workspace tree</h4>
 				<div id="rolling_WorkspaceDict" class="spinner-border text-success" role="status" style="display: none"> </div>
-				<button type="button" class="close" data-dismiss="modal">&times;</button>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
 				
 			</div>
 
@@ -78,34 +80,26 @@ limitations under the License.
 				
 					<div class="container-fluid">
 						<div class="input-group mb-3">
-							<div class="input-group-prepend">
-								<span class="form-control" style="max-width: 160px;">Nb elements :</span>
-							</div>
-							<span class="form-control" id="counter_WorkspaceDict" style="max-width: 100px;">0</span>
-							<span class="form-control" style="max-width: 190px;">Filter contents :</span>
-							<input class="form-control" id="FilterWorkspaceDict" type="search" placeholder="Filter by content" /> 
+                            <span class="input-group-text" style="max-width: 160px;">Nb elements :</span>
+							<span class="input-group-text" id="counter_WorkspaceDict" style="max-width: 100px;">0</span>
+							<span class="input-group-text" style="max-width: 190px;">Filter contents :</span>
+							<input class="input-group-text" id="FilterWorkspaceDict" type="search" placeholder="Filter by content" />
 							<span class="inputTextClearBut fas fa-times-circle" id="FilterWorkspaceDict_clear"></span>
-							<div class="input-group-append">
-								<div class="input-group-text form-control">
-									<div class="custom-control custom-checkbox">
-										<input type="checkbox" class="custom-control-input" id="splitWords_WorkspaceDict" >
-										<label class="custom-control-label" for="splitWords_WorkspaceDict">Split phrase in words</label>
-									</div>
-								</div>
-							</div>
-							<div class="input-group-append">
-								<div class="input-group-text form-control">
-									<div class="custom-control custom-checkbox">
-										<input type="checkbox" class="custom-control-input" id="caseSenstive_WorkspaceDict" >
-										<label class="custom-control-label" for="caseSenstive_WorkspaceDict">Case sensitive</label>
-									</div>
-								</div>
-							</div>
-							<div class="input-group-append">
-								<button class="btn btn-success form-control" 
-									id="but_FilterWorkspaceDict">Go
-								</button>
-							</div>
+                            <div class="form-control">
+                                <div class="form-check form-check-inline">
+                                    <input type="checkbox" class="form-check-input" id="splitWords_WorkspaceDict" >
+                                    <label class="form-check-label" for="splitWords_WorkspaceDict">Split phrase in words</label>
+                                </div>
+                            </div>
+                            <div class="input-group-text">
+                                <div class="form-check form-check-inline">
+                                    <input type="checkbox" class="form-check-input" id="caseSenstive_WorkspaceDict" >
+                                    <label class="form-check-label" for="caseSenstive_WorkspaceDict">Case sensitive</label>
+                                </div>
+                            </div>
+                            <button class="btn btn-success"
+                                id="but_FilterWorkspaceDict">Go
+                            </button>
 						</div>
 					</div>
 					<div class="containerJsonTree" id="container_WorkspaceDict"></div>

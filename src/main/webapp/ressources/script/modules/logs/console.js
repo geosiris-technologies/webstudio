@@ -18,7 +18,7 @@ import {isUUID, rws__dateNowStr} from "../common/utils.js";
 import {openResqmlObjectContentByUUID} from "../main.js";
 import {UUID_REGEX_raw, __CL_CONSOLE_LI__, __CL_CONSOLE_MSG_CONTENT__, __CL_CONSOLE_MSG_DATE__, __CL_CONSOLE_UL__, __ENUM_CONSOLE_MSG_SEVERITY_DEBUG__, __ENUM_CONSOLE_MSG_SEVERITY_ERROR__, __ENUM_CONSOLE_MSG_SEVERITY_LOG__, __ENUM_CONSOLE_MSG_SEVERITY_TOAST__, __RWS_CLIENT_NAME__, __TB_MSG_SEVERITY__, getSeverityClass} from "../common/variables.js";
 import {createCheck, createEltAndSubs} from "../UI/htmlUtils.js";
-import {createSnackBar} from "../UI/snackbar.js";
+import {createSnackBar, createToast} from "../UI/snackbar.js";
 
 
 export function _format_msg_html(input){
@@ -146,8 +146,21 @@ export function appendConsoleMessage(console_id, msg){
 
             // Toast to show a popup msg
             //if(msg.severity == __ENUM_CONSOLE_MSG_SEVERITY_ERROR__ || msg.severity == __ENUM_CONSOLE_MSG_SEVERITY_TOAST__)
-            if(msg.severity == __ENUM_CONSOLE_MSG_SEVERITY_TOAST__)
-                createSnackBar(content);
+            if(msg.severity == __ENUM_CONSOLE_MSG_SEVERITY_TOAST__){
+//                createSnackBar(content);
+                createToast(
+                    {
+                        title: msg.originator,
+                        time: (new Date(Date.now())).toLocaleTimeString('en-US'),
+                        body: msg.message,
+                        option: {
+                          animation: true,
+                          autohide: true,
+                          delay: 10000
+                        }
+                    }
+                );
+            }
         }else {
             console.log("#appendConsoleMessage error no console content found");
         }
@@ -208,11 +221,13 @@ export function rws_addConsoleMessageFilter(console_id){
         div_checkboxes.appendChild(check);
     }
 
-    // Event lors de l'ajout d'un message
-    for(let lu_msg of console_elt.getElementsByClassName(__CL_CONSOLE_UL__)){
-        lu_msg.addEventListener("DOMNodeInserted", 
-            function (event) {
-                var target = event.target;
+    // Options de l'observateur (quelles sont les mutations à observer)
+    var config = { attributes: true, childList: true };
+
+    function callback(mutationsList) {
+        for (var mutation of mutationsList) {
+            if(mutation.type == "childList"){
+                var target = mutation.target;
                 const check_msg_type = console_elt.getElementsByClassName(check_classes);
                 for (let checkboxDiv of check_msg_type) {
                     var checkbox = checkboxDiv;
@@ -227,10 +242,18 @@ export function rws_addConsoleMessageFilter(console_id){
                         }
                     }
                 }
-            }, 
-            false);
+            }
+        }
+
     }
 
+    // Créé une instance de l'observateur lié à la fonction de callback
+    var observer = new MutationObserver(callback);
+
+    // Event lors de l'ajout d'un message
+    for(let lu_msg of console_elt.getElementsByClassName(__CL_CONSOLE_UL__)){
+        observer.observe(lu_msg, config);
+    }
 
     // Creation du clear button
     var clear_but = document.createElement("span");

@@ -34,7 +34,7 @@ limitations under the License.
 					style="display: none">
 					<span class="sr-only">closing...</span>
 				</div>
-				<button type="button" name="submit" class="close" data-dismiss="modal">&times;</button>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
 			</div>
 			
 			<div style="display:contents;">
@@ -43,11 +43,11 @@ limitations under the License.
 				<div class="btn-group" role="group" >
 					<button type="button" name="submit" class="btn btn-primary"
 							id="but_closeEpcYes"
-							data-dismiss="modal">Yes</button>
+							data-bs-dismiss="modal">Yes</button>
 							
 					<button type="button" name="submit" class="btn btn-dark"
 							id="but_closeEpcNo"
-							data-dismiss="modal">No</button>
+							data-bs-dismiss="modal">No</button>
 				</div>
 			</div>
 		</div>

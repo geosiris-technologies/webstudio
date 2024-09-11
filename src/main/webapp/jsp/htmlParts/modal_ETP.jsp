@@ -45,19 +45,19 @@ limitations under the License.
                     style="display: none">
                     <span class="sr-only">Waiting for response...</span>
                 </div>
-                <button type="button" class="close" data-dismiss="modal">&times;</button>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
 
             <div class="modal-body">
                 <ul class="nav nav-tabs">
                     <li class="nav-item">
-                        <a class="nav-link active" data-toggle="tab" href="#ETPRequest_import">Get resources</a>
+                        <a class="nav-link active" data-bs-toggle="tab" href="#ETPRequest_import">Get resources</a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link" data-toggle="tab" href="#ETPRequest_send">Put data object</a>
+                        <a class="nav-link" data-bs-toggle="tab" href="#ETPRequest_send">Put data object</a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link" data-toggle="tab" href="#ETPRequest_getRelated">Get related resources</a>
+                        <a class="nav-link" data-bs-toggle="tab" href="#ETPRequest_getRelated">Get related resources</a>
                     </li>
                 </ul>
 
@@ -90,7 +90,7 @@ limitations under the License.
                         <form id="ETPRequest_import_Form" name="ETPForm" method="post" action="ETPRequest" accept-charset="utf-8">
                             <input class="form-control" type="text" required name="request" value="getresources" hidden="hidden" />
                             <div class="form-row">
-                                <label><input class="checkbox" type="checkbox" name="ask_aknowledge">Ask acknowledge</label>
+                                <label><input class="checkbox form-check-input" type="checkbox" name="ask_aknowledge">Ask acknowledge</label>
                             </div>
                         </form>
                         <button class="btn btn-primary geosiris-btn-etp"
@@ -109,20 +109,20 @@ limitations under the License.
                     
                     <div id="ETPRequest_send" class="container tab-pane"><br>
                         <div>
-                            <div class="custom-control custom-checkbox">
-                                <input type="checkbox" class="custom-control-input" name="checkUpRelations" id="epcETPRequest_send_checkUpRelations" checked>
-                                <label class="custom-control-label" for="epcETPRequest_send_checkUpRelations">Auto-check upward relations</label>
+                            <div class="form-check form-check-inline">
+                                <input type="checkbox" class="form-check-input" name="checkUpRelations" id="epcETPRequest_send_checkUpRelations" checked>
+                                <label class="form-check-label" for="epcETPRequest_send_checkUpRelations">Auto-check upward relations</label>
                             </div>
-                            <div class="custom-control custom-checkbox">
-                                <input type="checkbox" class="custom-control-input" name="checkDownRelations" id="epcETPRequest_send_checkDownRelations" >
-                                <label class="custom-control-label" for="epcETPRequest_send_checkDownRelations">Auto-check downward relations</label>
+                            <div class="form-check form-check-inline">
+                                <input type="checkbox" class="form-check-input" name="checkDownRelations" id="epcETPRequest_send_checkDownRelations" >
+                                <label class="form-check-label" for="epcETPRequest_send_checkDownRelations">Auto-check downward relations</label>
                             </div>
                         </div>
                         
                         <form id="ETPRequest_send_Form" name="ETPRequest_send_Form" method="POST" action="ETPRequest" enctype="multipart/form-data">
-                            <input class="form-control" type="text" required name="request"value="putdataobjects" hidden="hidden" />
+                            <input class="form-control" type="text" required name="request" value="putdataobjects" hidden="hidden" />
                             <div class="form-row">
-                                <label><input class="checkbox" type="checkbox" name="ask_aknowledge">Ask acknowledge</label>
+                                <label><input class="checkbox form-check-input" type="checkbox" name="ask_aknowledge">Ask acknowledge</label>
                             </div>
                             <div class="modal_tab_table" id="ETPRequest_send_workspace_objList" ></div>
                             
@@ -144,34 +144,30 @@ limitations under the License.
                         <br>
                         <div class="modal_tab_pane_content">
                             <div id="ETPRequest_getRelated_FormRequest">
-                                <input class="btn btn-primary geosiris-btn-etp" name="submit" type="button" value="Get Related" 
-                                        id="submit_getRelated">
-                                <form id="ETPRequest_getRelated_Form" name="ETPForm" method="post" action="ETPRequest" accept-charset="utf-8"> 
-                                    <input type="text" required name="request" value="getrelated" hidden="hidden" />
-                                    <div class="form-row">
-                                        <label><input class="checkbox" type="checkbox" name="ask_aknowledge">Ask acknowledge</label>
-                                    </div>
+                                <div class="input-group">
+                                    <form id="ETPRequest_getRelated_Form" name="ETPForm" method="post" action="ETPRequest" accept-charset="utf-8">
+                                        <input type="text" required="" name="request" value="getrelated" hidden="hidden">
+                                        <div class="form-row">
+                                            <label><input class="checkbox form-check-input" type="checkbox" name="ask_aknowledge">Ask acknowledge</label>
+                                        </div>
 
-                                    <div class="form-row">
-                                        <div class="form-group col-md-6">
-                                            <label name="ETPRequest_getRelated_scopekind">Scope kind</label>
+                                        <div class="input-group">
+                                            <label name="ETPRequest_getRelated_scopekind" class="input-group-text" type="label">Scope kind</label>
                                             <select class="form-control" id="ETPRequest_getRelated_scopekind" name="scope">
                                                 <option value="sources">Sources</option>
                                                 <option value="targets">Targets</option>
                                                 <option value="sourcesOrSelf">Sources or Self</option>
                                                 <option value="targetsOrSelf">Targets or Self</option>
                                             </select>
-                                        </div>
-                                        <div class="form-group col-md-6">
-                                            <label name="ETPRequest_getRelated_depth">Depth</label>
+                                            <label name="ETPRequest_getRelated_depth" class="input-group-text" type="label">Depth</label>
                                             <input class="form-control" type="number" name="depth" id="ETPRequest_getRelated_depth" value="1" min="1">
-                                        </div>
-                                    </div>
-                                    <div class="modal_tab_table" id="ETPRequest_getRelated_workspace_objList"></div>
-                                </form>
+                                        <input class="btn btn-primary geosiris-btn-etp" name="submit" type="button" value="Get Related" id="submit_getRelated" title=""></div>
+                                        <div class="modal_tab_table" id="ETPRequest_getRelated_workspace_objList"></div>
+                                    </form>
+                                </div>
 
                                 <h3>Related Objects</h3>
-                                <form id="ETPRequest_ImportRelated_Form" name="ETPForm" method="post" action="ETPRequest" accept-charset="utf-8" style="display: none"> 
+                                <form id="ETPRequest_ImportRelated_Form" name="ETPForm" method="post" action="ETPRequest" accept-charset="utf-8" style="display: none">
                                     <input class="form-control" type="text" required name="request"value="import" hidden="hidden" />
                                     <div id="ETPRequest_getRelated_objList"></div>
 
@@ -192,20 +188,20 @@ limitations under the License.
 
                     <div id="ETPRequest_getDataArray" class="container tab-pane"><br>
                         <div>
-                            <div class="custom-control custom-checkbox">
-                                <input type="checkbox" class="custom-control-input" name="checkUpRelations" id="epcETPRequest_getDataArray_checkUpRelations" checked>
-                                <label class="custom-control-label" for="epcETPRequest_getDataArray_checkUpRelations">Auto-check upward relations</label>
+                            <div class="form-check form-check-inline">
+                                <input type="checkbox" class="form-check-input" name="checkUpRelations" id="epcETPRequest_getDataArray_checkUpRelations" checked>
+                                <label class="form-check-label" for="epcETPRequest_getDataArray_checkUpRelations">Auto-check upward relations</label>
                             </div>
-                            <div class="custom-control custom-checkbox">
-                                <input type="checkbox" class="custom-control-input" name="checkDownRelations" id="epcETPRequest_getDataArray_checkDownRelations" >
-                                <label class="custom-control-label" for="epcETPRequest_getDataArray_checkDownRelations">Auto-check downward relations</label>
+                            <div class="form-check form-check-inline">
+                                <input type="checkbox" class="form-check-input" name="checkDownRelations" id="epcETPRequest_getDataArray_checkDownRelations" >
+                                <label class="form-check-label" for="epcETPRequest_getDataArray_checkDownRelations">Auto-check downward relations</label>
                             </div>
                         </div>
                         
                         <form id="ETPRequest_getDataArray_Form" name="ETPRequest_getDataArray_Form" method="POST" action="ETPRequest" enctype="multipart/form-data">
                             <input class="form-control" type="text" required name="request"value="putdataobjects" hidden="hidden" />
                             <div class="form-row">
-                                <label><input class="checkbox" type="checkbox" name="ask_aknowledge">Ask acknowledge</label>
+                                <label><input class="checkbox form-check-input" type="checkbox" name="ask_aknowledge">Ask acknowledge</label>
                             </div>
                             <div class="modal_tab_table" id="ETPRequest_getDataArray_workspace_objList" ></div>
                             

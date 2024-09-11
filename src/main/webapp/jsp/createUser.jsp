@@ -56,31 +56,23 @@ limitations under the License.
 						}
 					%>
 					<form method="post" action="createuser" accept-charset="utf-8" id="form_CreateUser">
-						<div class="input-group form-group">
-							<div class="input-group-prepend">
-								<span class="input-group-text"><em class="fas fa-user"></em></span>
-							</div>
+						<div class="input-group">
+                            <span class="input-group-text"><em class="fas fa-user"></em></span>
 							<input type="text" class="form-control" placeholder="User name" name="login" required>
 							
 						</div>
-						<div class="input-group form-group">
-							<div class="input-group-prepend">
-								<span class="input-group-text"><em class="fas fa-key"></em></span>
-							</div>
+						<div class="input-group">
+                            <span class="input-group-text"><em class="fas fa-key"></em></span>
 							<input type="password" encrypt="bcrypt" class="form-control" placeholder="Password" name="password" required autocomplete="new-password">
 						</div>
-						<div class="input-group form-group">
-							<div class="input-group-prepend">
-								<span class="input-group-text"><em class="fas fa-key"></em></span>
-							</div>
+						<div class="input-group">
+                            <span class="input-group-text"><em class="fas fa-key"></em></span>
 							<input type="password" encrypt="bcrypt" class="form-control" placeholder="Confirm password" name="password" required autocomplete="new-password">
 						</div>
 
 
-						<div class="input-group form-group">
-							<div class="input-group-prepend">
-								<span class="input-group-text"><em class="fas fa-users"></em></span>
-							</div>
+						<div class="input-group">
+                            <span class="input-group-text"><em class="fas fa-users"></em></span>
 							<select name="group" class="form-control">
 								<option value="user">user</option>
 								<option value="geosiris">geosiris (admin)</option>
@@ -90,17 +82,13 @@ limitations under the License.
 						
 						<span style="display:none" class="err_info" id="err_pwd"></span>
 
-						<div class="input-group form-group">
-							<div class="input-group-prepend">
-								<span class="input-group-text"><em class="fas fa-envelope"></em></span>
-							</div>
+						<div class="input-group">
+                            <span class="input-group-text"><em class="fas fa-envelope"></em></span>
 							<input type="text" id="mail" name="mail" placeholder="User mail adress" class="form-control">
 						</div>
 					</form>
 
-					<div class="form-group">
-						<button id="but_createUser" class="btn float-right login_btn">Create user</button>
-					</div>
+                    <button id="but_createUser" class="btn float-right login_btn mt-3">Create user</button>
 
 					<span><a href="editor">Back to Editor</a></span>
 				</div>

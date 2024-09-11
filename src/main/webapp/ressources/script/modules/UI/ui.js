@@ -14,21 +14,23 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-import {call_after_DOM_updated, createDeleteResqmlButton, createDropDownDivider, createRadio, createSplitter} from "./htmlUtils.js"
+import {call_after_DOM_updated, createDeleteResqmlButton, createDropDownDivider, createRadio, createSplitter, createEditableHighlighted} from "./htmlUtils.js"
 import {hasBeenDisconnected, refreshWorkspace, rws_addEventListeners} from "./eventHandler.js"
 import {appendConsoleMessage} from "../logs/console.js"
 import {getAllOpendedObjects, deleteResqmlObject} from "../requests/uiRequest.js"
-import {sendGetWorkspaceObjectsList} from "../requests/requests.js"
+import {sendGetWorkspaceObjectsList, sendGetURL_Promise} from "../requests/requests.js"
 import {compare, copyOtherTableSortingParams, createTableFromData, highlightTableCellFromClass, highlightTableLineFromTdText, transformTab_AddColumn} from "./table.js"
 import {getAttribute, compareVersionNumber} from "../common/utils.js"
 import {openResqmlObjectContentByUUID} from "../main.js"
 import {energymlRootTypes, savePreferences} from "../energyml/epcContentManager.js"
 import {JsonTableColumnizer_Checkbox, JsonTableColumnizer_Radio, JsonTableColumnizer_Icon, JsonTableColumnizer_DotAttrib, toTable} from "./jsonToTable.js"
+import {createToast} from "./snackbar.js"
 import {SEM_IS_LOADING_WORKSPACE,
     getObjectTableCellClass,
     setSEM_IS_LOADING_WORKSPACE,
     CLASS_HIGHLIGHT_EXISTING_OBJECT,
-    CLASS_HIGHLIGHT_EXISTING_OBJECT_ENABLED
+    CLASS_HIGHLIGHT_EXISTING_OBJECT_ENABLED,
+    CLASS_TABLE_FIXED
 } from "../common/variables.js"
 
 
@@ -183,9 +185,11 @@ export function initSessionTimeOut(spanTimeout_id){
         /////////////////
         // Event Listener 
         /////////////////
+        const session_warning_minutes_limit = 5;
+        var session_time_cache_minutes = 0;
+        const session_time_warning_toast_id = "session_time_warning";
 
         const evt_list_onMessage = function(event) {
-            //console.log("updating " + event.data)
             var timeSinceSessionClose = parseInt(event.data);
             var minutes = Math.trunc(timeSinceSessionClose/60000);
             var secondes = Math.trunc( (timeSinceSessionClose - minutes*60000) / 1000) ;
@@ -207,6 +211,25 @@ export function initSessionTimeOut(spanTimeout_id){
                         timeOutText += minutes + " min";
                     }
                     cst_spanTimeOut.innerHTML = timeOutText;
+
+                    if(minutes <= session_warning_minutes_limit && session_time_cache_minutes > session_warning_minutes_limit){
+                        createToast(
+                            {
+                                identifier:session_time_warning_toast_id,
+                                title: "Event handler",
+                                time: (new Date(Date.now())).toLocaleTimeString('en-US'),
+                                body: timeOutText + ". Please do something to re-init the session duration.",
+                                option: {
+                                  animation: true,
+                                  autohide: true,
+                                  delay: 300000
+                                }
+                            }
+                        );
+                    }else if(minutes > session_warning_minutes_limit && session_time_cache_minutes < session_warning_minutes_limit){
+                        $('#' + session_time_warning_toast_id).remove();
+                    }
+                    session_time_cache_minutes = minutes;
 
                 }catch(e){console.log(e)}
             }else{    // On recharge la page si la session est fini pour ne pas laisser l'utilisateur faire des manipulations
@@ -335,6 +358,23 @@ export function highlightExistingElt(jsonObjectList){
     });
 }
 
+export function edit_file(uuid){
+    sendGetURL_Promise("/GetObjectAsXml?uuid=" + uuid).then(
+        function (file_content) {
+            if(file_content != null && file_content.length > 0){
+                const parent_in_editor = $("#modal_file_editor_content")[0];
+                while(parent_in_editor.firstChild){
+                    parent_in_editor.firstChild.remove();
+                }
+                parent_in_editor.appendChild(createEditableHighlighted(file_content, "xml"));
+                $('#modal_file_editor').modal('show');
+            }else{
+                console.log("Error opening editor for " + uuid);
+            }
+        }
+    ).catch((e) => console.log(e));
+}
+
 export function createTable(jsonList,
         idTable, idObjectList, idTabHeader, idConsoleElt,
         idTabContainer, classObjectContent, 
@@ -387,7 +427,7 @@ export function createTable(jsonList,
 }
 
 export function initRootEltSelector(typeSelector){
-    const rgxPkg = new RegExp("_?(?<version>((?<dev>dev[\\d]+)x_)?(?<versionNum>([\\d]+[_])*\\d))$");
+    const rgxPkg = new RegExp("_?(?<version>((?<dev>dev[\\d]+)x_)?(?<versionNum>([\\d]+[_\\.])*\\d))$");
 
     const mapPackageToVersionToTypes = {};
     //createRadio
@@ -396,10 +436,9 @@ export function initRootEltSelector(typeSelector){
         // On recupere tout sauf le nom de la classe
         var versionNum = energymlRootTypes[typeIdx].substring(0, energymlRootTypes[typeIdx].lastIndexOf(".")); 
         // on cherche la deniere partie du nom de package, qui contient le numero de version
-        versionNum = versionNum.substring(versionNum.lastIndexOf(".")+1).replace(/[^\d_]/g, '');
+        versionNum = versionNum.substring(versionNum.lastIndexOf(".")+1).replace(/([\w\d\.]+)(_|[a-zA-Z])(\d[\d\_\\.]+$)/g, '$3');
 
-        if(versionNum.length > 0){
-
+        if(versionNum.length > 0 && versionNum.match(/(\d[\d\_\\.]+$)/g)){
             var packageName = energymlRootTypes[typeIdx].substring(0, energymlRootTypes[typeIdx].lastIndexOf("."));
             packageName = packageName.substring(packageName.lastIndexOf(".")+1).substring(0, packageName.length - versionNum.length);
             while(!isNaN(parseInt(packageName.slice(-1), 10))
@@ -427,9 +466,9 @@ export function initRootEltSelector(typeSelector){
     const radioIdPrefix = "modal_createRootElt_radioVersion_";
 
     var countPackage = 0;
-    for(var pkg in mapPackageToVersionToTypes){
-        const constPkg = pkg;
-        const pkgMapVersionToType = mapPackageToVersionToTypes[pkg];
+
+    for(const constPkg of Object.keys(mapPackageToVersionToTypes).sort().values()){
+        const pkgMapVersionToType = mapPackageToVersionToTypes[constPkg];
 
         const pkgTypesDiv = document.createElement("div");
         pkgTypesDiv.name = constPkg+"_versions";
@@ -439,45 +478,47 @@ export function initRootEltSelector(typeSelector){
         const radioPkgVersionName = radioIdPrefix + constPkg;
 
         var countType = 0;
-        var versionListSorted = Object.keys(mapPackageToVersionToTypes[pkg]).sort(compareVersionNumber).reverse();
+        var versionListSorted = Object.keys(pkgMapVersionToType).sort(compareVersionNumber).reverse();
         versionListSorted.forEach(version => {
             const constVersion = version;
             var found = version.match(rgxPkg);
-            var versionVue = found.groups["versionNum"].replace("_", ".")
-            if(found.groups["dev"]!=null){
-                versionVue += "(" + found.groups["dev"] +")";
-            }
-            var radioVersion = createRadio("v " + versionVue, "", radioPkgVersionName, 
-                                            function(){
-                                                while(typeSelector.firstChild){
-                                                    typeSelector.firstChild.remove();
-                                                }
-                                                pkgMapVersionToType[constVersion].sort();
-
-                                                for(var eltIdx=0; eltIdx<pkgMapVersionToType[constVersion].length; eltIdx++){
-                                                    var opt = document.createElement("option");
-                                                    opt.value = pkgMapVersionToType[constVersion][eltIdx];
-                                                    opt.appendChild(document.createTextNode(opt.value.substring(opt.value.lastIndexOf(".") + 1)));
-                                                    typeSelector.appendChild(opt);
-                                                }
-                                            }, 
-                                            countType==0 && countPackage==0);
-            radioVersion.className += " form-check-inline";
-            
-            if(countType==0 && countPackage==0){
-                pkgMapVersionToType[constVersion].sort();
-                for(var eltIdx=0; eltIdx<pkgMapVersionToType[constVersion].length; eltIdx++){
-                    var opt = document.createElement("option");
-                    opt.value = pkgMapVersionToType[constVersion][eltIdx];
-                    opt.appendChild(document.createTextNode(opt.value.substring(opt.value.lastIndexOf(".") + 1)));
-                    typeSelector.appendChild(opt);
-                    pkgTypesDiv.style.display = ''; 
+            if(found != null){
+                var versionVue = found.groups["versionNum"].replace("_", ".")
+                if(found.groups["dev"]!=null){
+                    versionVue += "(" + found.groups["dev"] +")";
                 }
+                var radioVersion = createRadio("v " + versionVue, "", radioPkgVersionName,
+                                                function(){
+                                                    while(typeSelector.firstChild){
+                                                        typeSelector.firstChild.remove();
+                                                    }
+                                                    pkgMapVersionToType[constVersion].sort();
+
+                                                    for(var eltIdx=0; eltIdx<pkgMapVersionToType[constVersion].length; eltIdx++){
+                                                        var opt = document.createElement("option");
+                                                        opt.value = pkgMapVersionToType[constVersion][eltIdx];
+                                                        opt.appendChild(document.createTextNode(opt.value.substring(opt.value.lastIndexOf(".") + 1)));
+                                                        typeSelector.appendChild(opt);
+                                                    }
+                                                },
+                                                countType==0 && countPackage==0);
+                radioVersion.className += " form-check-inline";
+
+                if(countType==0 && countPackage==0){
+                    pkgMapVersionToType[constVersion].sort();
+                    for(var eltIdx=0; eltIdx<pkgMapVersionToType[constVersion].length; eltIdx++){
+                        var opt = document.createElement("option");
+                        opt.value = pkgMapVersionToType[constVersion][eltIdx];
+                        opt.appendChild(document.createTextNode(opt.value.substring(opt.value.lastIndexOf(".") + 1)));
+                        typeSelector.appendChild(opt);
+                        pkgTypesDiv.style.display = '';
+                    }
+                    countType++;
+                }
+
+                pkgTypesDiv.appendChild(radioVersion);
                 countType++;
             }
-
-            pkgTypesDiv.appendChild(radioVersion);
-            countType++;
         });
 
         radioVersionContainer.appendChild(pkgTypesDiv);
@@ -513,20 +554,9 @@ export function initRootEltSelector(typeSelector){
 }
 
 export function getResqmlObjectTable(dataTableContent, dataTableColumn, oldTable){
-    /*var dataTableHeader = dataTableColumn.map(title => title[0].toUpperCase() + title.substring(1));
-    var table = createTableFromData(dataTableContent, dataTableColumn, dataTableHeader, 
-                                    dataTableContent.map(elt => [ function(){openResqmlObjectContentByUUID(elt['uuid'])} ]), 
-                                    null,
-                                    null); 
-                                        // On met le oldTable à null ici pour trier seulement apres l'ajout de la nouvelle colonne,
-                                        // sinon les boutons de suppressions ne seront pas en face des bons elements.
-
-    transformTab_AddColumn(table, "", 0, dataTableContent.map(elt => createDeleteResqmlButton(elt)), "colName_delete", "");*/
-
-    /*-----------------*/
     const f_cols = []
-    
-    /*f_cols.push(new JsonTableColumnizer_Checkbox("sample_check", (obj) => getAttribute(obj, "uuid")));*/
+
+    f_cols.push(new JsonTableColumnizer_Checkbox("epc_table_checkboxes", (obj) => getAttribute(obj, "uuid", (elt)=>elt["uuid"]+ "-tab")));
     /*f_cols.push(new JsonTableColumnizer_Radio("sample_radio", (obj) => getAttribute(obj, "uuid")));*/
     f_cols.push(new JsonTableColumnizer_Icon(
         "far fa-trash-alt deleteButton", 
@@ -568,7 +598,7 @@ export function getResqmlObjectTable(dataTableContent, dataTableColumn, oldTable
     );
 
     var table = toTable(dataTableContent, f_cols);
-    table.className += " table-striped table-bordered table-hover table-fixed table-top-fixed";
+    table.className += CLASS_TABLE_FIXED;
     /*-----------------*/
     copyOtherTableSortingParams(table, oldTable, dataTableColumn);
 

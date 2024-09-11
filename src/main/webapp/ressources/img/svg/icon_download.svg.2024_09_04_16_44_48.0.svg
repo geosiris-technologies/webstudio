@@ -1,0 +1,59 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<svg
+   viewBox="0 0 512 512"
+   version="1.1"
+   id="svg4"
+   sodipodi:docname="icon_download.svg"
+   inkscape:version="1.2.2 (732a01da63, 2022-12-09)"
+   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:svg="http://www.w3.org/2000/svg">
+  <defs
+     id="defs8" />
+  <sodipodi:namedview
+     id="namedview6"
+     pagecolor="#505050"
+     bordercolor="#ffffff"
+     borderopacity="1"
+     inkscape:showpageshadow="0"
+     inkscape:pageopacity="0"
+     inkscape:pagecheckerboard="1"
+     inkscape:deskcolor="#505050"
+     showgrid="false"
+     inkscape:zoom="1.727716"
+     inkscape:cx="131.09794"
+     inkscape:cy="209.23578"
+     inkscape:window-width="3840"
+     inkscape:window-height="2066"
+     inkscape:window-x="5749"
+     inkscape:window-y="877"
+     inkscape:window-maximized="1"
+     inkscape:current-layer="svg4" />
+  <!--!Font Awesome Free 6.6.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free Copyright 2024 Fonticons, Inc.-->
+  <path
+     d="M288 32c0-17.7-14.3-32-32-32s-32 14.3-32 32l0 242.7-73.4-73.4c-12.5-12.5-32.8-12.5-45.3 0s-12.5 32.8 0 45.3l128 128c12.5 12.5 32.8 12.5 45.3 0l128-128c12.5-12.5 12.5-32.8 0-45.3s-32.8-12.5-45.3 0L288 274.7 288 32zM64 352c-35.3 0-64 28.7-64 64l0 32c0 35.3 28.7 64 64 64l384 0c35.3 0 64-28.7 64-64l0-32c0-35.3-28.7-64-64-64l-101.5 0-45.3 45.3c-25 25-65.5 25-90.5 0L165.5 352 64 352zm368 56a24 24 0 1 1 0 48 24 24 0 1 1 0-48z"
+     id="path2" />
+  <text
+     xml:space="preserve"
+     style="font-size:183.122px;font-family:Arial;-inkscape-font-specification:Arial;text-align:center;text-anchor:middle;fill:#000000;stroke-width:3.81502;stroke-linecap:round;paint-order:fill markers stroke"
+     x="597.45825"
+     y="131.08244"
+     id="text237"><tspan
+       sodipodi:role="line"
+       id="tspan235"
+       x="597.45825"
+       y="131.08244"
+       style="stroke-width:3.81502">XML</tspan></text>
+  <text
+     xml:space="preserve"
+     style="font-size:183.122px;font-family:Arial;-inkscape-font-specification:Arial;text-align:center;text-anchor:middle;fill:#000000;stroke-width:3.81502;stroke-linecap:round;paint-order:fill markers stroke"
+     x="550.02356"
+     y="-242.16689"
+     id="text349-1"><tspan
+       sodipodi:role="line"
+       id="tspan347-6"
+       x="550.02356"
+       y="-242.16689"
+       style="stroke-width:3.81502">JSON</tspan></text>
+</svg>

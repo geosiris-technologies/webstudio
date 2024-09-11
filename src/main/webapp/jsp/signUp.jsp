@@ -50,33 +50,25 @@ limitations under the License.
 					}
 				%>
 				<form method="post" action="signup" accept-charset="utf-8" id="form_signUp">
-					<div class="input-group form-group">
-						<div class="input-group-prepend">
-							<span class="input-group-text"><em class="fas fa-user"></em></span>
-						</div>
+					<div class="input-group">
+						<span class="input-group-text"><em class="fas fa-user"></em></span>
 						<input type="text" class="form-control" placeholder="User name" name="login" required>
 						
 					</div>
-					<div class="input-group form-group">
-						<div class="input-group-prepend">
-							<span class="input-group-text"><em class="fas fa-key"></em></span>
-						</div>
+					<div class="input-group">
+						<span class="input-group-text"><em class="fas fa-key"></em></span>
 						<input type="password" encrypt="bcrypt" class="form-control" placeholder="Password" name="password" required>
 					</div>
-					<div class="input-group form-group">
-						<div class="input-group-prepend">
-							<span class="input-group-text"><em class="fas fa-key"></em></span>
-						</div>
+					<div class="input-group">
+						<span class="input-group-text"><em class="fas fa-key"></em></span>
 						<input type="password" encrypt="bcrypt" class="form-control" placeholder="Confirm password" name="password" required>
 					</div>
 					
 					
 					<span style="display:none" class="err_info" id="err_pwd"></span>
 
-					<div class="input-group form-group">
-						<div class="input-group-prepend">
-							<span class="input-group-text"><em class="fas fa-envelope"></em></span>
-						</div>
+					<div class="input-group">
+						<span class="input-group-text"><em class="fas fa-envelope"></em></span>
 						<input type="text" id="mail" name="mail" placeholder="Mail adress" class="form-control">
 					</div>
 				</form>

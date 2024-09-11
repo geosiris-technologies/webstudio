@@ -28,7 +28,6 @@ import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
-import jakarta.xml.bind.JAXBException;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -107,7 +106,7 @@ public class ETPSurfaceToFile extends HttpServlet {
 
 
         System.out.println(serverUrl  + "- " + username  + "- " + password);
-        ETPClient etpClient = ETPUtils.establishConnexion(null, ETPUtils.getHttpUriETP(serverUrl), username, password, true);
+        ETPClient etpClient = ETPUtils.establishConnexion(null, ETPUtils.getHttpUriETP(serverUrl), username, password, null, new HashMap<>(), true);
 
         Map<String, ETPUri> mapUri = new HashMap<>();
         ETPUri etpuri = ETPUri.parse(parameters.get("uri").getAsString());
@@ -116,8 +115,8 @@ public class ETPSurfaceToFile extends HttpServlet {
         List<ETP3DObject> surfaces = new ArrayList<>();
         for(ETPUri etpUri: mapUri.values()) {
             try {
-                surfaces.add(ETPUtils.get3DFileFromETP(etpClient, null, etpUri.toString(), fileFormat, false));
-            } catch (JAXBException e) {
+                surfaces.add(ETPUtils.get3DFileFromETP(etpClient, null, etpUri.toString(), fileFormat));
+            } catch (Exception e) {
                 logger.error(e.getMessage(), e);
             }
         }

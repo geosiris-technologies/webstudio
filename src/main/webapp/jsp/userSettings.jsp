@@ -62,43 +62,33 @@ limitations under the License.
 
 				<form method="post" action="usersettings" accept-charset="utf-8" id="form_UserSettings">
 					<!-- USER LOGIN -->
-					<div class="input-group form-group">
-						<div class="input-group-prepend">
-							<span class="input-group-text" title="login"><em class="fas fa-user"></em></span>
-						</div>
+					<div class="input-group">
+                        <span class="input-group-text" title="login"><em class="fas fa-user"></em></span>
 						<%out.print("<input type='text' class='form-control' name='login' value='"+login+"' readonly='readonly' >"); %>
 					</div>
 
 					<!-- USER PWD -->
-					<div class="input-group form-group">
-						<div class="input-group-prepend">
-							<span class="input-group-text"><em class="fas fa-key"></em></span>
-						</div>
+					<div class="input-group">
+                        <span class="input-group-text"><em class="fas fa-key"></em></span>
 						<input type="password" encrypt="bcrypt" class="form-control" placeholder="Password*" name="password" required>
 					</div>
 
 					<!-- USER NEW PWD CONFIRMATION-->
 					<span>Update your information</span>
-					<div class="input-group form-group">
-						<div class="input-group-prepend">
-							<span class="input-group-text"><em class="fas fa-key"></em></span>
-						</div>
+					<div class="input-group">
+                        <span class="input-group-text"><em class="fas fa-key"></em></span>
 						<input type="password" encrypt="bcrypt" class="form-control" placeholder="New password" name="newPassword" >
 					</div>
-					<div class="input-group form-group">
-						<div class="input-group-prepend">
-							<span class="input-group-text"><em class="fas fa-key"></em></span>
-						</div>
+					<div class="input-group">
+                        <span class="input-group-text"><em class="fas fa-key"></em></span>
 						<input type="password" encrypt="bcrypt" class="form-control" placeholder="Confirm new password" name="newPassword" >
 					</div>
 
 					<span style="display:none" class="err_info" id="err_pwd"></span>
 
 					<!-- USER MAIL -->
-					<div class="input-group form-group">
-						<div class="input-group-prepend">
-							<span class="input-group-text"><em class="fas fa-envelope"></em></span>
-						</div>
+					<div class="input-group">
+                        <span class="input-group-text"><em class="fas fa-envelope"></em></span>
 						<%out.print("<input type='text' class='form-control' name='mail' value='"+mail+"' >"); %>
 					</div>
 				</form>

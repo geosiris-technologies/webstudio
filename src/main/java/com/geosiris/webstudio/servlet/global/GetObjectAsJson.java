@@ -15,6 +15,9 @@ limitations under the License.
 */
 package com.geosiris.webstudio.servlet.global;
 
+import com.geosiris.energyml.utils.EPCGenericManager;
+import com.geosiris.energyml.utils.ExportVersion;
+import com.geosiris.webstudio.utils.HttpSender;
 import com.geosiris.webstudio.utils.SessionUtility;
 import com.google.gson.Gson;
 import jakarta.servlet.ServletException;
@@ -27,6 +30,7 @@ import jakarta.servlet.http.HttpSession;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.util.Map;
@@ -67,20 +71,33 @@ public class GetObjectAsJson extends HttpServlet {
 
         if(map.containsKey(uuid)) {
             Gson gson = new Gson();
+            Object obj = map.get(uuid);
             try {
-                answer = gson.toJson(map.get(uuid));
+                answer = gson.toJson(obj);
 //                StringWriter s = new StringWriter();
 //                Utility.objectToJson();
             }catch (Exception e){
                 logger.debug(e.getMessage(), e);
             }
-        }
 
-        PrintWriter out = response.getWriter();
-        response.setContentType("application/json");
-        response.setCharacterEncoding("UTF-8");
-        out.write(answer);
-        out.flush();
+            if("true".equals(request.getParameter("download"))){
+                ByteArrayOutputStream bos = new ByteArrayOutputStream();
+                bos.write(answer.getBytes());
+                HttpSender.writeFileAsRequestResponse(response, EPCGenericManager.genPathInEPC(obj, ExportVersion.CLASSIC).replace(".xml", ".json"), "application/json", bos);
+            }else {
+                PrintWriter out = response.getWriter();
+                response.setContentType("application/json");
+                response.setCharacterEncoding("UTF-8");
+                out.write(answer);
+                out.flush();
+            }
+        }else{
+            PrintWriter out = response.getWriter();
+            response.setContentType("application/json");
+            response.setCharacterEncoding("UTF-8");
+            out.write("Unknown uuid : " + uuid);
+            out.flush();
+        }
     }
 
     /**

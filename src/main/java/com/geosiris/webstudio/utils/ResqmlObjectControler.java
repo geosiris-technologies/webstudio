@@ -15,22 +15,28 @@ limitations under the License.
 */
 package com.geosiris.webstudio.utils;
 
+import com.geosiris.energyml.pkg.EPCPackage;
 import com.geosiris.energyml.utils.EPCGenericManager;
 import com.geosiris.energyml.utils.ObjectController;
+import com.geosiris.energyml.utils.Pair;
+import com.geosiris.energyml.utils.Utils;
 import com.geosiris.etp.utils.ETPUri;
+import com.geosiris.webstudio.model.WorkspaceContent;
 import com.geosiris.webstudio.property.ConfigurationType;
 import com.geosiris.webstudio.servlet.Editor;
 import com.geosiris.webstudio.servlet.global.ResqmlAccessibleTypes;
+import energyml.common2_1.Activity;
+import energyml.common2_3.ActivityTemplate;
+import energyml.witsml2_1.Tubular;
 import jakarta.servlet.http.HttpSession;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
+import javax.xml.datatype.XMLGregorianCalendar;
 import java.lang.reflect.Method;
+import java.lang.reflect.Modifier;
 import java.lang.reflect.ParameterizedType;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.stream.Collectors;
 
 
@@ -40,17 +46,22 @@ public class ResqmlObjectControler {
 
     public static void modifyResqmlObjectFromParameter(HttpSession session, Object resqmlObj, String paramPath,
                                                        ModficationType modifType, Object value,
-                                                       Map<String, Object> epcObjects
+                                                       Map<String, Object> epcObjectsSource
     ) throws Exception {
-        modifyResqmlObjectFromParameter(session, resqmlObj, paramPath, modifType, value, epcObjects, paramPath, resqmlObj);
+        //        TODO: le code suivant ne marche pas car l'additional object est un propertyDict et donc l'uuid des porpsKind n'apparait pas directement dans la map
+        //        Map<String, Object> epcObjects = new HashMap<>();
+        //        epcObjects.putAll(epcObjectsSource);
+        //        epcObjects.putAll(GetAdditionalObjects.ADDITIONAL_ENERGYML_OBJECTS);
+        modifyResqmlObjectFromParameter(session, resqmlObj, paramPath, modifType, value, epcObjectsSource, paramPath, resqmlObj);
     }
 
-    public static void modifyResqmlObjectFromParameter(HttpSession session, Object resqmlObj, String paramPath,
+    private static void modifyResqmlObjectFromParameter(HttpSession session, Object resqmlObj, String paramPath,
                                                        ModficationType modifType, Object value,
                                                        Map<String, Object> epcObjects,
                                                        String completePath,
                                                        Object rootObject
     ) throws Exception {
+
         if (resqmlObj != null) {
             Class<?> objClass = resqmlObj.getClass();
             if (paramPath.startsWith(".")) {
@@ -327,52 +338,56 @@ public class ResqmlObjectControler {
 
                 // For each parameterTemplate, we create all real parameter in the activity
                 for (Object paramTempl : paramListTempl) {
-                    boolean isInput = Boolean.parseBoolean("" + ObjectController.getObjectAttributeValue(paramTempl, "isInput"));
+                    try {
+                        boolean isInput = Boolean.parseBoolean("" + ObjectController.getObjectAttributeValue(paramTempl, "isInput"));
 
-                    if (isInput) {
-                        long minOccurs = Long.parseLong("" + ObjectController.getObjectAttributeValue(paramTempl, "MinOccurs"));
-                        String title = (String) ObjectController.getObjectAttributeValue(paramTempl, "Title");
-                        List<String> paramKind = ((List<?>) ObjectController.getObjectAttributeValue(paramTempl, "AllowedKind"))
-                                .stream().map(x -> "" + x).collect(Collectors.toList());
+                        if (isInput) {
+                            long minOccurs = Long.parseLong("" + ObjectController.getObjectAttributeValue(paramTempl, "MinOccurs"));
+                            String title = (String) ObjectController.getObjectAttributeValue(paramTempl, "Title");
+                            List<String> paramKind = ((List<?>) ObjectController.getObjectAttributeValue(paramTempl, "AllowedKind"))
+                                    .stream().map(x -> "" + x).collect(Collectors.toList());
 
-                        List<Object> defaultValues = (List<Object>) ObjectController.getObjectAttributeValue(paramTempl, "DefaultValue");
+                            List<Object> defaultValues = (List<Object>) ObjectController.getObjectAttributeValue(paramTempl, "DefaultValue");
 
-                        for (String allowedK : paramKind) {
-                            logger.info("Allowed Kind : " + allowedK);
-                        }
-                        logger.info("ParamTempl : " + title + " minOc " + minOccurs);
-                        for (int cpt = 0; cpt < Math.max(minOccurs, 1); cpt++) {
-                            Class<?> activityParamClass = getClassMatchFromPrefix(paramKind.get(cpt % paramKind.size()), possibleParamType);
+                            for (String allowedK : paramKind) {
+                                logger.info("Allowed Kind : " + allowedK);
+                            }
+                            logger.info("ParamTempl : " + title + " minOc " + minOccurs);
+                            for (int cpt = 0; cpt < Math.max(minOccurs, 1); cpt++) {
+                                Class<?> activityParamClass = getClassMatchFromPrefix(paramKind.get(cpt % paramKind.size()), possibleParamType);
 
-                            Object defaultValue = null;
-                            for (Object defVal : defaultValues) {
-                                assert activityParamClass != null;
-                                logger.info("Compare default value class '" + activityParamClass.getName()
-                                        + "' with def val class : '" + defVal.getClass().getName() + "'");
-                                if (defVal.getClass().getName().compareTo(activityParamClass.getName()) == 0) {
-                                    defaultValue = defVal;
-                                    break;
+                                Object defaultValue = null;
+                                for (Object defVal : defaultValues) {
+                                    assert activityParamClass != null;
+                                    logger.info("Compare default value class '" + activityParamClass.getName()
+                                            + "' with def val class : '" + defVal.getClass().getName() + "'");
+                                    if (defVal.getClass().getName().compareTo(activityParamClass.getName()) == 0) {
+                                        defaultValue = defVal;
+                                        break;
+                                    }
                                 }
-                            }
 
-                            // If there are no default value
-                            if (defaultValue == null) {
-                                assert activityParamClass != null;
-                                defaultValue = Editor.pkgManager.createInstance(activityParamClass.getName(), new HashMap<>(), null);
-                            } else {
-                                logger.info("taking default value " + defaultValue);
-                                // If there is a default value, we copy it and add it to the activity parameter list
-                                defaultValue = ResQMLConverter.getCopy(session, defaultValue, new HashMap<>());
-                            }
-                            ResqmlObjectControler.modifyResqmlObjectFromParameter(session, defaultValue, "Title",
-                                    ModficationType.EDITION,
-                                    title, new HashMap<>());
-                            ResqmlObjectControler.modifyResqmlObjectFromParameter(session, defaultValue, "Index",
-                                    ModficationType.EDITION,
-                                    "" + cpt, new HashMap<>());
+                                // If there are no default value
+                                if (defaultValue == null) {
+                                    assert activityParamClass != null;
+                                    defaultValue = Editor.pkgManager.createInstance(activityParamClass.getName(), new HashMap<>(), null);
+                                } else {
+                                    logger.info("taking default value " + defaultValue);
+                                    // If there is a default value, we copy it and add it to the activity parameter list
+                                    defaultValue = ResQMLConverter.getCopy(session, defaultValue, new HashMap<>());
+                                }
+                                ResqmlObjectControler.modifyResqmlObjectFromParameter(session, defaultValue, "Title",
+                                        ModficationType.EDITION,
+                                        title, new HashMap<>());
+                                ResqmlObjectControler.modifyResqmlObjectFromParameter(session, defaultValue, "Index",
+                                        ModficationType.EDITION,
+                                        "" + cpt, new HashMap<>());
 
-                            ((List<Object>) ObjectController.getObjectAttributeValue(activity, ".Parameter")).add(defaultValue);
+                                ((List<Object>) ObjectController.getObjectAttributeValue(activity, ".Parameter")).add(defaultValue);
+                            }
                         }
+                    }catch (Exception e){
+                        logger.error(e);
                     }
                 }
 
@@ -380,7 +395,7 @@ public class ResqmlObjectControler {
                 logger.error(e.getMessage(), e);
             }
         } else {
-            logger.error("Activity '" + ObjectController.getObjectAttributeValue(activity, ".uuid") + "' allready has params");
+            logger.error("Activity '" + ObjectController.getObjectAttributeValue(activity, ".uuid") + "' already has params");
         }
     }
 
@@ -409,4 +424,124 @@ public class ResqmlObjectControler {
 
     public enum ModficationType {ADD_LIST_ELT, REMOVE_LIST_ELT, CREATE_ELT, EDITION}
 
+    public static Object randomizecontent(Class<?> objClass, WorkspaceContent wc){
+        return createInstance(objClass, wc, null, null);
+    }
+
+    private static final Random RANDOMIZER = new Random();
+    private static Map<String, String> extTypes = Editor.pkgManager.getExtTypesAsJson(SessionUtility.wsProperties.getDirPathToExtTypes());
+
+    public static Object createInstance(Class<?> objClass, WorkspaceContent wc, Object parent, String thisAttributeName){
+        if(objClass.getName().compareToIgnoreCase("java.lang.Object") == 0) return null;
+        if(objClass.isEnum()){
+            return objClass.getEnumConstants()[RANDOMIZER.nextInt(objClass.getEnumConstants().length)];
+        }else{
+            if(Number.class.isAssignableFrom(objClass)){
+                Integer rand = RANDOMIZER.nextInt(100);
+                try {
+                    return objClass.getMethod("valueOf", String.class).invoke(null, String.valueOf(rand));
+                } catch (Exception e) {e.printStackTrace();}
+            }else if(Boolean.class.isAssignableFrom(objClass)){
+                int rand = RANDOMIZER.nextInt(2);
+                return rand != 0;
+            }else if(objClass.isPrimitive()){
+                Integer rand = RANDOMIZER.nextInt(100);
+                try {
+                    return createInstance(
+                            Class.forName("java.lang." + objClass.getSimpleName().substring(0,1).toUpperCase() + objClass.getSimpleName().substring(1)),
+                            wc, parent, thisAttributeName
+                    );
+                } catch (ClassNotFoundException e) {e.printStackTrace();}
+            }else if(String.class.isAssignableFrom(objClass)){
+                if(thisAttributeName != null){
+                    String refClass = (parent!=null?parent.getClass().getName():objClass.getName()).toLowerCase();
+                    if(refClass.endsWith("ext")) refClass = refClass.substring(0,refClass.length()-3);
+                    String attribPath = ( refClass + "." + thisAttributeName).toLowerCase();
+
+                    if(thisAttributeName.compareToIgnoreCase("uuid") == 0
+                            || thisAttributeName.compareToIgnoreCase("uid") == 0
+                    ){
+                        return UUID.randomUUID().toString();
+                    }else if(extTypes.containsKey(attribPath)){
+                        try {
+                            String enumClassName = extTypes.get(attribPath);
+                            if(enumClassName.toLowerCase().endsWith("ext")) enumClassName = enumClassName.substring(0,enumClassName.length()-3);
+                            return String.valueOf(
+                                    createInstance(
+                                            Class.forName(enumClassName),
+                                            wc, parent, thisAttributeName
+                                    )
+                            );
+
+                        } catch (ClassNotFoundException e) {
+                            e.printStackTrace();
+                            return "Randomization of " + thisAttributeName + "(" + RANDOMIZER.nextInt() + ") ExtEnum value failed to generate";
+                        }
+                    }else{
+                        return "Randomization of " + thisAttributeName + "(" + RANDOMIZER.nextInt() + ") ";// + attribPath;
+                    }
+                }else{
+                    return "A random value (" + RANDOMIZER.nextInt() + ")";
+                }
+            }else if(objClass.getSimpleName().compareToIgnoreCase("DataObjectReference") == 0){
+                // TODO
+            }else if(XMLGregorianCalendar.class.isAssignableFrom(objClass)){
+                return Utils.getCalendarForNow();
+            }else if(Collection.class.isAssignableFrom(objClass)){
+                try {
+                    Collection objInstance = (Collection) (!Modifier.isAbstract(objClass.getModifiers()) ? objClass.getDeclaredConstructor().newInstance(): new ArrayList<>());
+
+                    for(int i=0; i<RANDOMIZER.nextInt(2) + 2; i++){
+                        objInstance.add(createInstance(ObjectController.getClassTemplatedTypeofSubParameter(parent.getClass(), thisAttributeName).get(0), wc, objInstance, thisAttributeName));
+                    }
+                    return objInstance;
+                } catch (Exception e) {e.printStackTrace();}
+            }else{
+                if(Modifier.isAbstract(objClass.getModifiers())) {
+                    EPCPackage energymlPkg = Editor.pkgManager.getMatchingPackage(objClass);
+                    List<Class<?>> possibleClasses = ObjectController.getResqmlInheritorClasses(objClass.getName(), energymlPkg.getPkgClasses());
+                    return createInstance(
+                            possibleClasses.get(RANDOMIZER.nextInt(possibleClasses.size())),
+                            wc, parent, thisAttributeName
+                    );
+                }else {
+                    try {
+                        Object objInstance = objClass.getDeclaredConstructor().newInstance();
+                        for (Pair<Class<?>, String> param : ObjectController.getClassAttributes(objClass)) {
+                            Object paramInstance = createInstance(param.l(), wc, objInstance, param.r());
+                            if(Collection.class.isAssignableFrom(param.l())) {
+                                ((Collection<?>)ObjectController.getObjectAttributeValue(objInstance, param.r())).addAll((Collection)paramInstance);
+                            }else{
+                                ObjectController.editObjectAttribute(objInstance, param.r(), paramInstance);
+                            }
+                        }
+                        return objInstance;
+                    } catch (Exception e) {
+                        System.err.println("Failed to instanciate class " + objClass + " for attribute " + thisAttributeName);
+                        e.printStackTrace();
+                    }
+                }
+            }
+        }
+        return null;
+    }
+
+    public static void main(String[] argv){
+//        System.out.println(createInstance(WellboreType.class, null, null, null));
+//        System.out.println(createInstance(Double.class, null, null, null));
+//        System.out.println(createInstance(double.class, null, null, null));
+//        System.out.println(createInstance(Integer.class, null, null, null));
+//        System.out.println(createInstance(String.class, null, null, null));
+
+//        for(String pkg: extTypes.keySet()){
+//            System.out.println(pkg);
+//        }
+//        System.out.println(Editor.pkgManager.marshal(randomizecontent(Tubular.class, null)));
+
+        ActivityTemplate activityTemplate = (ActivityTemplate) Editor.pkgManager.unmarshal(Utils.readFileOrRessource("C:/Users/Cryptaro/Downloads/ActivityTemplate_c5d4277b-266d-4b78-bae4-af9d642f513b.xml")).getValue();
+        Object activity = new Activity();
+        System.out.println(activityTemplate);
+        prefillActivityFromTemplate(null, activityTemplate, activity);
+        System.out.println(Editor.pkgManager.marshal(activity));
+    }
 }

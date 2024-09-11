@@ -14,13 +14,15 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-import {createSnackBar} from "./snackbar.js"
+import {createSnackBar, createToast} from "./snackbar.js"
 import {appendConsoleMessage} from "../logs/console.js"
 import {beginTask, endTask, refreshHighlightedOpenedObjects} from "./ui.js"
 import {closeResqmlObjectContentByUUID, loadResqmlData} from "../main.js"
 import {getAllOpendedObjects} from "../requests/uiRequest.js"
-import {sendGetURL_Promise, sendPostForm_Promise} from "../requests/requests.js"
+import {sendGetURL_Promise, sendPostForm_Promise, getJsonObjectFromServer} from "../requests/requests.js"
 import {__ENUM_CONSOLE_MSG_SEVERITY_ACTION__, __ID_CONSOLE_MODAL__} from "../common/variables.js"
+import {beginETPRequest, updateGetRelatedETPTableContent, endETPRequest} from "./modals/etp.js";
+import {update_etp_connexion_views} from "../etp/etp_connection.js";
 
 
 export let hasBeenDisconnected = false;
@@ -35,7 +37,20 @@ export function rws_addEventListeners(eventTag, f_onMessage, f_onError){
         rws_eventSource.onerror = (e) => {
             if(!hasBeenDisconnected){
                 hasBeenDisconnected = true;
-                createSnackBar(rws_eventSource.readyState + "] Connexion lost with the server. Please try to refresh the page", -1);
+                var msg = rws_eventSource.readyState + "] Connexion lost with the server. Please try to refresh the page";
+                // createSnackBar(msg, -1);
+                createToast(
+                    {
+                        title: "Event handler",
+                        time: (new Date(Date.now())).toLocaleTimeString('en-US'),
+                        body: msg,
+                        option: {
+                          animation: true,
+                          autohide: false,
+                          delay: 10000
+                        }
+                    }
+                );
             }
             if(f_onError!=null){
                 f_onError(e);
@@ -62,7 +77,20 @@ export function rws_addEventListeners(eventTag, f_onMessage, f_onError){
     }catch(exception){
         console.log(exception);
         hasBeenDisconnected = true;
-        createSnackBar("Connexion lost with the server. Please try to refresh the page", -1);
+        var msg = "Connexion lost with the server. Please try to refresh the page";
+        // createSnackBar(msg, -1);
+        createToast(
+            {
+                title: "Event handler",
+                time: (new Date(Date.now())).toLocaleTimeString('en-US'),
+                body: msg,
+                option: {
+                  animation: true,
+                  autohide: false,
+                  delay: 10000
+                }
+            }
+        );
     }
 }
 
@@ -135,6 +163,18 @@ export function refreshWorkspace(){
                 }catch(exep_notRefreshed){
                     closeResqmlObjectContentByUUID(currentObj.resqmlElt.rootUUID);
                 }
+            }
+            if($('#modal_ETP').hasClass('show')){
+                beginETPRequest();
+                getJsonObjectFromServer("ResqmlEPCRelationship").then(
+                    function(relations){;
+                        updateGetRelatedETPTableContent(relations);
+                        endETPRequest();
+                        update_etp_connexion_views();
+                    }).catch((error) => {
+                        console.error(error);
+                        endETPRequest();
+                });
             }
         }, 
         function(){

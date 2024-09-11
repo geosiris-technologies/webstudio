@@ -59,8 +59,9 @@ public Boolean restrictedExperiment(String prod_type){
 <script type="module">
 	import {initWebStudioView} from "/ressources/script/modules/main.js";
 	import {filterTable} from "/ressources/script/modules/UI/table.js";
-	import {onEnterPressed} from "/ressources/script/modules/UI/htmlUtils.js";
+	import {onEnterPressed, createEditableHighlighted} from "/ressources/script/modules/UI/htmlUtils.js";
 	import {setUserName, initSessionTimeOut} from "/ressources/script/modules/UI/ui.js";
+	import {launch_deleteResqmlObjects} from "/ressources/script/modules/requests/uiRequest.js";
 
 	$(window).on('load', initWebStudioView);
 
@@ -76,6 +77,10 @@ public Boolean restrictedExperiment(String prod_type){
 	}
 	document.getElementById("span_tabulationScroller_right").onclick = function(event){
 		document.getElementById(__ID_EPC_TABS_HEADER__).scrollLeft += 30;
+	}
+
+	document.getElementById("delete_tableFilter_EPCView").onclick = function(event){
+		launch_deleteResqmlObjects($("#epcTableContent > tbody > tr > td > input:checked").map((i,e) => $(e).val()).toArray());
 	}
 
 
@@ -103,6 +108,8 @@ public Boolean restrictedExperiment(String prod_type){
 			//out.print("initSessionTimeOut(null);");
 		}
 		%>
+	    // document.getElementById("rws__EPC_TABS_CONTAINER__").appendChild(createEditableHighlighted('{"test": "coucou", "a": [0,1,12]}', "json"));
+	    // document.getElementById("rws__EPC_TABS_CONTAINER__").appendChild(createEditableHighlighted('<ns2:HorizonInterpretation xmlns="http://www.energistics.org/energyml/data/commonv2" xmlns:ns2="http://www.energistics.org/energyml/data/resqmlv2" xmlns:ns3="http://www.energistics.org/energyml/data/witsmlv2" uuid="8bc7e14e-90b3-4ee2-93d3-13f60e22dde4" schemaVersion="2.2"><Citation><Title>ShetLand JFR</Title><Originator>Geosiris user : JFR</Originator><Creation>2024-08-20T08:39:33.334Z</Creation><Format>Geosiris WebStudio</Format><Editor>Katalyst</Editor><LastUpdate>2024-08-20T08:58:46.923Z</LastUpdate></Citation><ns2:InterpretedFeature><Uuid>fa55b157-6308-4b16-95ed-1250e984fbea</Uuid><QualifiedType>resqml22.BoundaryFeature</QualifiedType><Title>Shetland_GP</Title></ns2:InterpretedFeature></ns2:HorizonInterpretation>', "xml"));
 
 	});
 </script>
@@ -128,30 +135,25 @@ public Boolean restrictedExperiment(String prod_type){
 				<div>
 	 				<div class="container-fluid">
 						<div class="input-group mb-3">
-							<div class="input-group-prepend">
-								<button class="btn btn-primary form-control" style="padding: revert;" data-toggle="modal" data-target="#modal_createRootElt">
-									<span class="fas fa-plus-circle" style="font-size: 20pt;" title="Create new root element"></span>
-								</button>
-							</div>
-							<input class="form-control" id="tableFilter_EPCView" type="search" placeholder="Filter by title, uuid, type or version" /> 
+                            <button class="btn btn-primary" type="button" style="padding: revert;" data-bs-toggle="modal" data-bs-target="#modal_createRootElt">
+                                <span class="fas fa-plus-circle" style="font-size: 20pt;" title="Create new root element"></span>
+                            </button>
+							<input class="form-control" id="tableFilter_EPCView" type="search" placeholder="Filter by title, uuid, type or version" />
 							<span id="searchclear" class="inputTextClearBut fas fa-times-circle" 
 									onclick="document.getElementById('tableFilter_EPCView').value=''; document.getElementById('filter_tableFilter_EPCView').click();"
 									onmouseover="this.className = this.className.replace(/fas/g,'far')"
 									onmouseout="this.className = this.className.replace(/far/g,'fas')"
 							></span>
-							<div class="input-group-append">
-								<div class="input-group-text form-control">
-									<div class="custom-control custom-checkbox">
-										<input type="checkbox" class="custom-control-input" id="caseSenstive_EPCView" >
-										<label class="custom-control-label" for="caseSenstive_EPCView">Case sensitive</label>
-									</div>
-								</div>
-							</div>
-							<div class="input-group-append">
-								<button class="btn btn-success form-control" 
-									id="filter_tableFilter_EPCView">Go
-								</button>
-							</div>
+                            <button class="btn btn-success"
+                                id="filter_tableFilter_EPCView" type="button">Go
+                            </button>
+                            <div class="input-group-text">
+                                <div class="form-check form-check-inline">
+                                    <input type="checkbox" class="form-check-input" id="caseSenstive_EPCView" >
+                                    <label class="form-check-label" for="caseSenstive_EPCView">Case sensitive</label>
+                                </div>
+                            </div>
+                            <button class="btn btn-danger" id="delete_tableFilter_EPCView" type="delete">Delete</button>
 						</div>
 					</div>
 				</div>
@@ -176,6 +178,8 @@ public Boolean restrictedExperiment(String prod_type){
     
     
 	<%@ include file="/jsp/htmlParts/console.jsp" %>
+
+	<div class="toast-container position-absolute bottom-0 end-0 p-3" id="rws__CL_TOAST_CONTAINER__" style="z-index: 3000"></div>
 
 </body>
 </html>

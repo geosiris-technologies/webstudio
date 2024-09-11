@@ -153,3 +153,12 @@ export function compareVersionNumber(va, vb){
     else if(idx>va_array.length) return 1;
     else return -1;
 }
+
+
+export function removeListDuplicatesByObjectKey(obj, k){
+    var seen = {};
+    return obj.filter(function(item) {
+        var k_val = item[k];
+        return (seen.hasOwnProperty(k_val) && k_val != null) ? false : (seen[k_val] = true);
+    })
+}

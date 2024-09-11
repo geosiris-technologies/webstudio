@@ -9,7 +9,7 @@
                     style="display: none">
                     <span class="sr-only">Refreshing</span>
                 </div>
-                <button type="button" class="close" data-dismiss="modal" id="closeBut_3D_view">&times;</button>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close" id="closeBut_3D_view"></button>
             </div>
 
             <div class="modal-body" id="geo3DVue"></div>

@@ -28,6 +28,7 @@ import org.apache.logging.log4j.Logger;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.lang.reflect.Modifier;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -38,8 +39,8 @@ import java.util.stream.Collectors;
 public class ResqmlRootTypes extends HttpServlet {
 	private static final long serialVersionUID = 1L;
     public static Logger logger = LogManager.getLogger(ResqmlRootTypes.class);
-    private static final List<Class<?>> rootClasses = Editor.pkgManager.getRootClasses()
-				.stream().filter(cl -> cl != null && !Modifier.isAbstract(cl.getModifiers())).collect(Collectors.toList());
+    private static final List<Class<?>> rootClasses = new ArrayList<>(Editor.pkgManager.getRootClasses()
+            .stream().filter(cl -> cl != null && !Modifier.isAbstract(cl.getModifiers())).collect(Collectors.toSet()));
     /**
      * @see HttpServlet#HttpServlet()
      */

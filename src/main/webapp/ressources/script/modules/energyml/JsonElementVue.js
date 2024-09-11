@@ -15,6 +15,7 @@ limitations under the License.
 */
 
 import {createCollapser} from "../UI/htmlUtils.js"
+import {UUID_REGEX_raw} from "../common/variables.js"
 
 
 export function isComplexObject(obj){
@@ -23,20 +24,33 @@ export function isComplexObject(obj){
 
 export function addJsonData(jsObject, jsonEltVue, printListIdx, f_applyOnKey){
     if(isComplexObject(jsObject)){
-        for(var i in jsObject){
-
+        var jsObject_keys = Object.keys(jsObject);
+        jsObject_keys.sort((a, b) => {
+            try{
+                return jsObject[a].citation.title.localeCompare(jsObject[b].citation.title);
+            }catch(e){}
+            return a.localeCompare(b);
+        });
+        jsObject_keys.forEach(i => {
             var spanTitle = null;
             if(!Array.isArray(jsObject) || printListIdx){
                 // besoin d'un title
+                var title = "";
+                if (i.match(UUID_REGEX_raw)){
+                    try{
+                        title += " \"" + jsObject[i].citation.title + "\" ";
+                    }catch(e){}
+                }
+                title += i + " :";
                 spanTitle = document.createElement("span");
-                spanTitle.appendChild(document.createTextNode(i + ' : '));
+                spanTitle.appendChild(document.createTextNode(title));
             }
 
             var eltToPutChildIn = jsonEltVue;
 
             if(isComplexObject(jsObject[i])){
                 eltToPutChildIn = document.createElement("div")
-                eltToPutChildIn.style.display ="block";
+                eltToPutChildIn.style.display = "block";
                 eltToPutChildIn.style.paddingLeft = "20px";
                 eltToPutChildIn.style.borderLeft = "1px dashed black";
                 eltToPutChildIn.className = 'jsonTreeDiv';
@@ -101,7 +115,7 @@ export function addJsonData(jsObject, jsonEltVue, printListIdx, f_applyOnKey){
                     }catch(e){console.log(e);}
                 }
             }
-        }
+        });
     }else{
         var spanContent = document.createElement("span");
         spanContent.appendChild(document.createTextNode(jsObject));

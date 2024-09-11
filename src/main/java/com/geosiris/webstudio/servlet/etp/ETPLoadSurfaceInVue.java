@@ -108,8 +108,8 @@ public class ETPLoadSurfaceInVue extends HttpServlet {
         List<ETP3DObject> surfaces = new ArrayList<>();
         for(ETPUri etpUri: mapUri.values()) {
             try {
-                surfaces.add(ETPUtils.get3DFileFromETP((ETPClient) session.getAttribute(SessionUtility.SESSION_ETP_CLIENT_ID), session, etpUri.toString(), File3DType.OFF, false));
-            } catch (JAXBException e) {
+                surfaces.add(ETPUtils.get3DFileFromETP((ETPClient) session.getAttribute(SessionUtility.SESSION_ETP_CLIENT_ID), session, etpUri.toString(), File3DType.OFF));
+            } catch (Exception e) {
                 logger.error(e.getMessage(), e);
             }
         }

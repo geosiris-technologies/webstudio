@@ -31,15 +31,15 @@ limitations under the License.
 				<div id="rolling_partialExport" class="spinner-border text-success" role="status" style="display: none">
 					<span class="sr-only">Exporting...</span>
 				</div>
-				<button type="button" class="close" data-dismiss="modal" id="closeBut_partialExport">&times;</button>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close" id="closeBut_partialExport"></button>
 			</div>
 
 			<ul class="nav nav-tabs">
 			    <li class="nav-item">
-			        <a class="nav-link active" data-toggle="tab" href="#exportFileToDisk">Entire workspace</a>
+			        <a class="nav-link active" data-bs-toggle="tab" href="#exportFileToDisk">Entire workspace</a>
 			    </li>
 			    <li class="nav-item">
-			        <a class="nav-link" data-toggle="tab" href="#exportPartialFileToDisk">Partial export</a>
+			        <a class="nav-link" data-bs-toggle="tab" href="#exportPartialFileToDisk">Partial export</a>
 			    </li>
 			</ul>
 
@@ -49,13 +49,13 @@ limitations under the License.
 						<form id="exportEPCFormToDisk" name="exportEPCFormToDisk" method="post" action="ExportEPCFile" accept-charset="utf-8">
 							<label  name="epcInputLabel">EPC file name</label>
 							<input class="form-control" type="text" id="exportEpcFilePath" required name="epcFilePath" style="width:100%"/>
-							<div class="custom-control custom-radio" style="margin-left: px; margin-right:2px;">
-								<input type="radio" class="custom-control-input" id="export-radio-version-classic" required name="exportVersion" value="classic" checked>
-								<label class="custom-control-label" for="export-radio-version-classic">Classical</label>
+							<div class="form-check form-check-inline" style="margin-left: px; margin-right:2px;">
+								<input type="radio" class="form-check-input" id="export-radio-version-classic" required name="exportVersion" value="classic" checked>
+								<label class="form-check-label" for="export-radio-version-classic">Classical</label>
 							</div>
-							<div class="custom-control custom-radio" style="margin-left:2px; margin-right:2px;">
-								<input type="radio" class="custom-control-input" id="export-radio-version-expand" required name="exportVersion" value="expand">
-								<label class="custom-control-label" for="export-radio-version-expand">Expanded</label>
+							<div class="form-check form-check-inline" style="margin-left:2px; margin-right:2px;">
+								<input type="radio" class="form-check-input" id="export-radio-version-expand" required name="exportVersion" value="expand">
+								<label class="form-check-label" for="export-radio-version-expand">Expanded</label>
 							</div>
 							<input class="btn btn-primary" name="submit"  id="exportEpcSubmitBut" value="Export">
 						</form>
@@ -64,13 +64,13 @@ limitations under the License.
 
 				<div id="exportPartialFileToDisk" class="container tab-pane"><br>
 					<div>
-						<div class="custom-control custom-checkbox">
-							<input type="checkbox" class="custom-control-input"  name="checkUpRelations" id="epcPartialExport_checkUpRelations"  checked>
-							<label class="custom-control-label" for="epcPartialExport_checkUpRelations">Auto-check upward relations</label>
+						<div class="form-check form-check-inline">
+							<input type="checkbox" class="form-check-input"  name="checkUpRelations" id="epcPartialExport_checkUpRelations"  checked>
+							<label class="form-check-label" for="epcPartialExport_checkUpRelations">Auto-check upward relations</label>
 						</div>
-						<div class="custom-control custom-checkbox">
-							<input type="checkbox" class="custom-control-input"  name="checkDownRelations" id="epcPartialExport_checkDownRelations" >
-							<label class="custom-control-label" for="epcPartialExport_checkDownRelations">Auto-check downward relations</label>
+						<div class="form-check form-check-inline">
+							<input type="checkbox" class="form-check-input"  name="checkDownRelations" id="epcPartialExport_checkDownRelations" >
+							<label class="form-check-label" for="epcPartialExport_checkDownRelations">Auto-check downward relations</label>
 						</div>
 						
 						
@@ -92,13 +92,13 @@ limitations under the License.
 						<label name="epcFilePath">EPC file name</label> 
 						<input class="form-control" type="text" required id="epcPartialExportInput" name="epcFilePath" style="width:100%" />
 					
-						<div class="custom-control custom-radio" style="margin-left: px; margin-right:2px;">
-							<input type="radio" class="custom-control-input" id="exportPartial-radio-version-classic" required name="exportVersion" value="classic" checked>
-							<label class="custom-control-label" for="exportPartial-radio-version-classic">Classical</label>
+						<div class="form-check form-check-inline" style="margin-left: px; margin-right:2px;">
+							<input type="radio" class="form-check-input" id="exportPartial-radio-version-classic" required name="exportVersion" value="classic" checked>
+							<label class="form-check-label" for="exportPartial-radio-version-classic">Classical</label>
 						</div>
-						<div class="custom-control custom-radio" style="margin-left:2px; margin-right:2px;">
-							<input type="radio" class="custom-control-input" id="exportPartial-radio-version-expand" required name="exportVersion" value="expand">
-							<label class="custom-control-label" for="exportPartial-radio-version-expand">Expanded</label>
+						<div class="form-check form-check-inline" style="margin-left:2px; margin-right:2px;">
+							<input type="radio" class="form-check-input" id="exportPartial-radio-version-expand" required name="exportVersion" value="expand">
+							<label class="form-check-label" for="exportPartial-radio-version-expand">Expanded</label>
 						</div>
 						<input class="btn btn-primary" name="submit" type="submit" value="Export">
 					</form>

@@ -58,6 +58,8 @@ export const __ID_CONSOLE__        = "rws__ID_CONSOLE__";
 export const __CL_CONSOLE_UL__     = "rws__CL_CONSOLE_UL__";
 export const __CL_CONSOLE_LI__     = "rws__CL_CONSOLE_LI__";
 
+export const __CL_TOAST_CONTAINER__     = "rws__CL_TOAST_CONTAINER__";
+
 
 export const __ID_EPC_TABLE_CONTENT__  = "rws__EPC_TABLE_CONTENT__";
 export const __ID_EPC_TABLE_DIV__      = "rws__EPC_TABLE_DIV__";
@@ -67,6 +69,10 @@ export const __ID_EPC_TABS_CONTAINER__ = "rws__EPC_TABS_CONTAINER__";
 
 export const __CL_CONSOLE_MSG_DATE__    = "rws__CL_CONSOLE_MSG_DATE__";
 export const __CL_CONSOLE_MSG_CONTENT__ = "rws__CL_CONSOLE_MSG_CONTENT__";
+
+
+export const CLASS_TABLE = " table table-striped table-bordered table-hover table-sm ";
+export const CLASS_TABLE_FIXED = CLASS_TABLE + "table-fixed table-top-fixed ";
 
 
 /*

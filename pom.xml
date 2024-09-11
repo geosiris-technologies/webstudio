@@ -4,7 +4,7 @@
     <groupId>com.geosiris</groupId>
     <artifactId>webstudio</artifactId>
     <name>${project.groupId}:${project.artifactId}</name>
-    <version>1.0.15</version>
+    <version>1.0.16</version>
     <organization>
         <name>Geosiris</name>
         <url>http://www.geosiris.com</url>
@@ -40,6 +40,9 @@
         <maven.compiler.source>11</maven.compiler.source>
         <maven.compiler.target>11</maven.compiler.target>
         <java.version>11</java.version>
+<!--        <maven.compiler.source>20</maven.compiler.source>-->
+<!--        <maven.compiler.target>20</maven.compiler.target>-->
+<!--        <java.version>20</java.version>-->
         <webapp.dir>${project.basedir}/src/main/webapp</webapp.dir>
         <tomcat.version>10.1.0-M15</tomcat.version>
         <failOnMissingWebXml>true</failOnMissingWebXml>
@@ -63,12 +66,12 @@
         <dependency>
             <groupId>com.geosiris</groupId>
             <artifactId>energyml-utils</artifactId>
-            <version>1.0.9</version>
+            <version>1.0.12</version>
         </dependency>
         <dependency>
             <groupId>com.geosiris</groupId>
             <artifactId>etpproto-java</artifactId>
-            <version>1.0.1</version>
+            <version>1.0.5</version>
         </dependency>
         <!-- Energyml deps -->
         <dependency>

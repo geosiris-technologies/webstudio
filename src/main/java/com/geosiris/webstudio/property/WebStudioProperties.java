@@ -172,7 +172,7 @@ public class WebStudioProperties extends Properties {
 //        logger.info(new WebStudioProperties());
         logger.info(System.getenv("WS_CONFIG_INI_FILE_PATH"));
         WebStudioProperties ws = new WebStudioProperties();
+        System.out.println(ws);
 //        logger.info(ws.getXSDFilePathFromPkgName("common2_0"));
-//        System.out.println(ws);
     }
 }
