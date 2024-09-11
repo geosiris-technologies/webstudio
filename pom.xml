@@ -40,6 +40,9 @@
         <maven.compiler.source>11</maven.compiler.source>
         <maven.compiler.target>11</maven.compiler.target>
         <java.version>11</java.version>
+<!--        <maven.compiler.source>20</maven.compiler.source>-->
+<!--        <maven.compiler.target>20</maven.compiler.target>-->
+<!--        <java.version>20</java.version>-->
         <webapp.dir>${project.basedir}/src/main/webapp</webapp.dir>
         <tomcat.version>10.1.0-M15</tomcat.version>
         <failOnMissingWebXml>true</failOnMissingWebXml>

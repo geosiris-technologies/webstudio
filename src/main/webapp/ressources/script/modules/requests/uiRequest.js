@@ -13,7 +13,7 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 */
-
+import {CLASS_TABLE_FIXED} from "../common/variables.js";
 import {createTabulation, openTabulation, saveAllResqmlObject_promise} from "../UI/tabulation.js";
 import {beginTask, endTask, refreshHighlightedOpenedObjects, edit_file} from "../UI/ui.js";
 import {sendGetURLAndReload, sendPostFormAndReload, refreshWorkspace} from "../UI/eventHandler.js";
@@ -23,7 +23,9 @@ import {ResqmlElement} from "../energyml/ResqmlElement.js";
 import {appendConsoleMessage} from "../logs/console.js";
 import {call_after_DOM_updated, createSplitter} from "../UI/htmlUtils.js";
 import {sendUserFormWithPasswordValidation} from "../common/passwordValidator.js";
+import {getAttribute} from "../common/utils.js";
 import {createTableFromData, transformTabToFormCheckable} from "../UI/table.js";
+import {JsonTableColumnizer_Checkbox, JsonTableColumnizer_Radio, JsonTableColumnizer_Icon, JsonTableColumnizer_DotAttrib, toTable} from "../UI/jsonToTable.js";
 import {closeResqmlObjectContentByUUID, openResqmlObjectContentByUUID} from "../main.js";
 import {closeModal, openExistingModal, openModal} from "../UI/modals/modalEntityManager.js";
 import {createSnackBar} from "../UI/snackbar.js";
@@ -311,12 +313,35 @@ export function sendCreateUser(){
 }
 
 export function createUserTableView(checkboxesName, f_OnCheckToggle, jsonContent){
-    console.log(jsonContent["user"]);
+    /*console.log(jsonContent["user"]);
     var tableDOR = createTableFromData(jsonContent, ["login", "mail", "usr_grp"], ["User name", "User", "Group"], null, null, null);
 
     transformTabToFormCheckable(tableDOR, jsonContent.map(elt => elt["login"]), checkboxesName, f_OnCheckToggle);
     tableDOR.className += " deleteUserTable";
-    return tableDOR;
+    return tableDOR;*/
+
+    const f_cols = []
+
+    f_cols.push(new JsonTableColumnizer_Checkbox(checkboxesName, (obj) => getAttribute(obj, "login")));
+
+    ["login", "mail", "usr_grp"].forEach(
+        (attrib) => {
+            f_cols.push(
+                new JsonTableColumnizer_DotAttrib(
+                    attrib=="usr_grp"?"Group":attrib.substring(0, 1).toUpperCase() + attrib.substring(1),
+                    attrib,
+                    null,
+                    null,
+                    null,
+                    null,
+                    ""
+                )
+            );
+        }
+    );
+    var table = toTable(jsonContent, f_cols);
+    table.className += CLASS_TABLE_FIXED + " deleteUserTable";
+    return table;
 }
 
 

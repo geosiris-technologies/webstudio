@@ -20,7 +20,7 @@ import com.geosiris.energyml.utils.Pair;
 import com.geosiris.webstudio.model.WorkspaceContent;
 import com.geosiris.webstudio.utils.HttpSender;
 import com.geosiris.webstudio.utils.SessionUtility;
-import com.google.gson.Gson;
+import com.google.gson.*;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.HttpServlet;
@@ -29,10 +29,14 @@ import jakarta.servlet.http.HttpServletResponse;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
+import javax.xml.datatype.DatatypeFactory;
+import javax.xml.datatype.XMLGregorianCalendar;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.PrintWriter;
+import java.lang.reflect.Type;
+import java.math.BigInteger;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -46,9 +50,72 @@ import java.util.Map;
  */
 @WebServlet("/GetAdditionalObjects")
 public class GetAdditionalObjects extends HttpServlet {
+	/*public class BigIntegerConverter {
+		public static class Serializer implements JsonSerializer<BigInteger> {
+
+			public Serializer() {
+				super();
+			}
+			@Override
+			public JsonElement serialize(BigInteger bigint, Type type,
+										 JsonSerializationContext jsonSerializationContext) {
+				return new JsonPrimitive(bigint.toString());
+			}
+
+		}
+		public static class Deserializer implements JsonDeserializer<BigInteger> {
+
+			@Override
+			public BigInteger deserialize(JsonElement jsonElement, Type type,
+													JsonDeserializationContext jsonDeserializationContext) {
+				try {
+					JsonObject obj  = jsonElement.getAsJsonObject();
+					return obj.getAsBigInteger();
+				} catch (Exception e) {
+					return null;
+				}
+			}
+
+		}
+	}
+	public class XMLGregorianCalendarConverter {
+		public static class Serializer implements JsonSerializer<XMLGregorianCalendar> {
+
+			public Serializer() {
+				super();
+			}
+			@Override
+			public JsonElement serialize(XMLGregorianCalendar t, Type type,
+										 JsonSerializationContext jsonSerializationContext) {
+				XMLGregorianCalendar xgcal = (XMLGregorianCalendar) t;
+				return new JsonPrimitive(xgcal.toXMLFormat());
+			}
+
+		}
+		public static class Deserializer implements JsonDeserializer<XMLGregorianCalendar> {
+
+			@Override
+			public XMLGregorianCalendar deserialize(JsonElement jsonElement, Type type,
+													JsonDeserializationContext jsonDeserializationContext) {
+				try {
+					JsonObject obj  = jsonElement.getAsJsonObject();
+					XMLGregorianCalendar xmlGregCalendar = DatatypeFactory.newInstance().newXMLGregorianCalendar(obj.get("year").getAsInt(),
+							obj.get("month").getAsInt(),
+							obj.get("day").getAsInt(),
+							obj.get("hour").getAsInt(),
+							obj.get("minute").getAsInt(),obj.get("second").getAsInt(),
+							0, obj.get("timezone").getAsInt());
+					return xmlGregCalendar;
+				} catch (Exception e) {
+					return null;
+				}
+			}
+
+		}
+	}*/
 	private static final long serialVersionUID = 1L;
 
-    public static Logger logger = LogManager.getLogger(GetAdditionalObjects.class);
+	public static Logger logger = LogManager.getLogger(GetAdditionalObjects.class);
 	public static Map<String, Object> ADDITIONAL_ENERGYML_OBJECTS = readAdditionalObjects(
 			SessionUtility.wsProperties.getPathToAdditionalObjectsDir());
 
@@ -69,13 +136,23 @@ public class GetAdditionalObjects extends HttpServlet {
 			return;
 		}
 
+		/*Gson gson = new GsonBuilder()
+						.registerTypeHierarchyAdapter(XMLGregorianCalendar.class,
+							new XMLGregorianCalendarConverter.Serializer())
+						.registerTypeHierarchyAdapter(XMLGregorianCalendar.class,
+							new XMLGregorianCalendarConverter.Deserializer())
+						.registerTypeHierarchyAdapter(BigInteger.class,
+							new BigIntegerConverter.Serializer())
+						.registerTypeHierarchyAdapter(BigInteger.class,
+							new BigIntegerConverter.Deserializer())
+				.create();*/
 		Gson gson = new Gson();
 
 		PrintWriter out = response.getWriter();
-        response.setContentType("application/json");
-        response.setCharacterEncoding("UTF-8");
-        out.write(gson.toJson(getExternalProperties()));
-        out.flush();
+		response.setContentType("application/json");
+		response.setCharacterEncoding("UTF-8");
+		out.write(gson.toJson(getExternalProperties()));
+		out.flush();
 	}
 
 	/**

@@ -58,25 +58,19 @@ limitations under the License.
 							}
 						%>
 						<form method="post" action="connexion" accept-charset="utf-8" >
-							<div class="input-group form-group">
-								<div class="input-group-prepend">
-									<span class="input-group-text">
-										<em class="fas fa-user"></em>
-									</span>
-								</div>
+							<div class="input-group">
+                                <span class="input-group-text">
+                                    <em class="fas fa-user"></em>
+                                </span>
 								<input type="text" class="form-control" placeholder="username" name="login">
 							</div>
-							<div class="input-group form-group">
-								<div class="input-group-prepend">
-									<span class="input-group-text">
-										<em class="fas fa-key"></em>
-									</span>
-								</div>
+							<div class="input-group">
+                                <span class="input-group-text">
+                                    <em class="fas fa-key"></em>
+                                </span>
 								<input type="password" encrypt="bcrypt" class="form-control" placeholder="password" name="password" autocomplete="on">
 							</div>
-							<div class="form-group">
-								<input type="submit" value="Login" id="connexionSubmit" class="btn float-right login_btn">
-							</div>
+							<input type="submit" value="Login" id="connexionSubmit" class="btn float-right login_btn input-group-text mt-3">
 						</form>
 					</div>
 					<div class="card-footer">

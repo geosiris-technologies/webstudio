@@ -1,4 +1,5 @@
 FROM tomcat:10.1-jdk11-openjdk-slim as base
+# FROM tomcat:10.1-jdk21-openjdk-slim as base
 
 LABEL maintainer="valentin.gauthier@geosiris.com"
 

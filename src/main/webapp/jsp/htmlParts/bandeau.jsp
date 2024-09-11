@@ -184,7 +184,7 @@ limitations under the License.
 				role="button" data-bs-toggle="dropdown" aria-haspopup="true"
 				aria-expanded="false"
 				id="sessionInfoBut"></a>
-				<div class="dropdown-menu dropdown-menu-right" aria-labelledby="navbarDropdown" id="sessionInfoMenu">
+				<div class="dropdown-menu dropdown-menu-lg-end" aria-labelledby="navbarDropdown" id="sessionInfoMenu">
 					<div>WebStudio v${GEOSIRIS_ENV_WEBSTUDIO_VERSION}-${GEOSIRIS_ENV_PRODUCTION_TYPE}-${GEOSIRIS_ENV_CONFIG_TYPE}</br><div>
 					<div class="dropdown-divider"></div>
 					<div><a id="but_reverse_vue" class="dropdown-item">Reverse vue</a><div>
