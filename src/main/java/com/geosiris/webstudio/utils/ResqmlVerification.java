@@ -405,7 +405,7 @@ public class ResqmlVerification {
                                 || (refObjVersion != null && refObjVersion.compareTo(objVersion) != 0)
                         ) {
                             messages.add(new LogResqmlVerification("DOR reference has wrong information",
-                                    "Referenced object Version is '" + refObjTitle + "' and not '" + objVersion
+                                    "Referenced object Version is '" + refObjVersion + "' and not '" + objVersion
                                             + "' at path : " + dor.getName(),
                                     rootUUID,
                                     rootTitle,

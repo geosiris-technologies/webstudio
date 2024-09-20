@@ -57,37 +57,41 @@ export function exportAndClose(fileName){
 }
 
 //Ouvre un onglet dans le panneau de contenur d'objet (le crée si non déjà existant)
-export function openResqmlObjectContent(    uuid,  
+export function openResqmlObjectContent( uuid,  
         idTabHeader, idTabContainer, idConsoleElt,
-        classObjectContent, classObjectProperty){
+        classObjectContent, classObjectProperty, endpoint="ResqmlObjectTree"){
+    /*ObjectRelsTree*/
+
     //console.log('openTab ' + uuid);
     if(beginTask(true)){
-        if(!openTabulation(uuid, idTabHeader)){ // Si la tabulation existe on n'en re-crée pas une
+        if(endpoint=="ObjectRelsTree" || !openTabulation(uuid, idTabHeader)){ // Si la tabulation existe on n'en re-crée pas une
             var xmlHttp = new XMLHttpRequest();
 
-            getJsonObjectFromServer("ResqmlObjectTree?uuid=" + uuid).then(function(parsedJSON){
+            getJsonObjectFromServer(endpoint + "?uuid=" + uuid).then(function(parsedJSON){
+              var id_suffix = endpoint == "ObjectRelsTree" ? "-rels" : "";
+
+              //console.log(parsedJSON);
               if(parsedJSON != null){
                 var objectProperty = document.createElement("div");
-                objectProperty.id  = genObjectPropertyElementId(uuid);
+                objectProperty.id  = genObjectPropertyElementId(uuid) + id_suffix;
                 objectProperty.className = classObjectProperty;
                 // ----------
                 var resqmlElt = new ResqmlElement(parsedJSON, uuid, objectProperty);
                 var content = resqmlElt.createView();
                 // ----------
-
-                content.id = genObjectContentElementId(uuid);
+                content.id = genObjectContentElementId(uuid) + id_suffix;
                 content.className += " " + classObjectContent;
 
                 var divObjectContent = document.createElement("div");
                 divObjectContent.style.height = "100%";
                 divObjectContent.style.width  = "100%";
                 divObjectContent.style.padding= "0px";
-                divObjectContent.id= genObjectContentDivElementId();
+                divObjectContent.id= genObjectContentDivElementId() + id_suffix;
 
                 var butExpandObject = document.createElement("span");
                 butExpandObject.title = "Expand tree";
                 butExpandObject.className += " treeExpander fas fa-angle-double-down";
-                butExpandObject.id = "but_Expand_" + uuid;
+                butExpandObject.id = "but_Expand_" + uuid + id_suffix;
                 divObjectContent.appendChild(butExpandObject);
 
                 butExpandObject.onclick = function(){
@@ -102,7 +106,7 @@ export function openResqmlObjectContent(    uuid,
                 var butCollapseObject = document.createElement("span");
                 butCollapseObject.title = "Collapse tree";
                 butCollapseObject.className += " treeExpander fas fa-angle-double-up";
-                butCollapseObject.id = "but_Collapse_" + uuid;
+                butCollapseObject.id = "but_Collapse_" + uuid + id_suffix;
                 divObjectContent.appendChild(butCollapseObject);
 
                 butCollapseObject.onclick = function(){
@@ -121,7 +125,7 @@ export function openResqmlObjectContent(    uuid,
                 var butValidateObject = document.createElement("button");
                 butValidateObject.appendChild(document.createTextNode("Validate"));
                 butValidateObject.className += " btn btn-outline-dark objButtonAction";
-                butValidateObject.id = "but_Validate_" + uuid;
+                butValidateObject.id = "but_Validate_" + uuid + id_suffix;
                 divBtnGrp.appendChild(butValidateObject);
 
                 butValidateObject.onclick = function(){
@@ -131,7 +135,7 @@ export function openResqmlObjectContent(    uuid,
                 var butRefresh = document.createElement("button");
                 butRefresh.appendChild(document.createTextNode("Refresh"));
                 butRefresh.className += " btn btn-outline-dark objButtonAction";
-                butRefresh.id = "but_AutoCorrect_" + uuid;
+                butRefresh.id = "but_AutoCorrect_" + uuid + id_suffix;
                 divBtnGrp.appendChild(butRefresh);
 
                 butRefresh.onclick = function(){
@@ -154,7 +158,7 @@ export function openResqmlObjectContent(    uuid,
                 butPrint_Json.appendChild(document.createTextNode("Json"));
                 butPrint_Json.title = "Google Gson translation";
                 butPrint_Json.className += " btn btn-outline-success objButtonAction";
-                butPrint_Json.id = "but_Print_Json_" + uuid;
+                butPrint_Json.id = "but_Print_Json_" + uuid + id_suffix;
                 divBtnGrp.appendChild(butPrint_Json);
 
                 butPrint_Json.onclick = function(){
@@ -164,7 +168,7 @@ export function openResqmlObjectContent(    uuid,
                 var butPrintDownloadJSON = document.createElement("button");
                 butPrintDownloadJSON.appendChild(document.createTextNode("Download JSON"));
                 butPrintDownloadJSON.className += " btn btn-outline-success objButtonAction";
-                butPrintDownloadJSON.id = "but_Download_json_" + uuid;
+                butPrintDownloadJSON.id = "but_Download_json_" + uuid + id_suffix;
                 divBtnGrp.appendChild(butPrintDownloadJSON);
 
                 butPrintDownloadJSON.onclick = function(){
@@ -174,7 +178,7 @@ export function openResqmlObjectContent(    uuid,
                 /*var butPrintXml = document.createElement("button");
                 butPrintXml.appendChild(document.createTextNode("Xml"));
                 butPrintXml.className += " btn btn-outline-success objButtonAction";
-                butPrintXml.id = "but_Print_xml_" + uuid;
+                butPrintXml.id = "but_Print_xml_" + uuid + id_suffix;
                 divBtnGrp.appendChild(butPrintXml);
 
                 butPrintXml.onclick = function(){
@@ -184,7 +188,7 @@ export function openResqmlObjectContent(    uuid,
                 var butRawEditXml = document.createElement("button");
                 butRawEditXml.appendChild(document.createTextNode("Edit raw XML"));
                 butRawEditXml.className += " btn btn-outline-info objButtonAction";
-                butRawEditXml.id = "butRawEditXml_" + uuid;
+                butRawEditXml.id = "butRawEditXml_" + uuid + id_suffix;
                 divBtnGrp.appendChild(butRawEditXml);
 
                 butRawEditXml.onclick = function(){
@@ -194,7 +198,7 @@ export function openResqmlObjectContent(    uuid,
                 var butPrintDownloadXML = document.createElement("button");
                 butPrintDownloadXML.appendChild(document.createTextNode("Download XML"));
                 butPrintDownloadXML.className += " btn btn-outline-success objButtonAction";
-                butPrintDownloadXML.id = "but_Download_xml_" + uuid;
+                butPrintDownloadXML.id = "but_Download_xml_" + uuid + id_suffix;
                 divBtnGrp.appendChild(butPrintDownloadXML);
 
                 butPrintDownloadXML.onclick = function(){
@@ -204,7 +208,7 @@ export function openResqmlObjectContent(    uuid,
                 var butAutoCorrect = document.createElement("button");
                 butAutoCorrect.appendChild(document.createTextNode("Auto-correct"));
                 butAutoCorrect.className += " btn btn-outline-info objButtonAction";
-                butAutoCorrect.id = "but_AutoCorrect_" + uuid;
+                butAutoCorrect.id = "but_AutoCorrect_" + uuid + id_suffix;
                 divBtnGrp.appendChild(butAutoCorrect);
 
                 butAutoCorrect.onclick = function(){
@@ -214,7 +218,7 @@ export function openResqmlObjectContent(    uuid,
                 var butClone = document.createElement("button");
                 butClone.appendChild(document.createTextNode("Clone"));
                 butClone.className += " btn btn-outline-success objButtonAction";
-                butClone.id = "but_Clone_" + uuid;
+                butClone.id = "but_Clone_" + uuid + id_suffix;
                 butClone.title = "Clone this object to create a copy with an other uuid. The copy's title contains the original object uuid.";
                 divBtnGrp.appendChild(butClone);
 
@@ -229,6 +233,21 @@ export function openResqmlObjectContent(    uuid,
                 formValidator.className += "tabulationSave btn btn-outline-danger objButtonAction";
 //                formObjectModification.appendChild(formValidator); // on le met avant le form pour bypass la valdiation de form
                 divBtnGrp.appendChild(formValidator);
+
+                /*if(endpoint=="ResqmlObjectTree"){
+                    // Root additional rels
+                    var formOpenRels = document.createElement("input");
+                    formOpenRels.type = "submit";
+                    formOpenRels.value = "Rels";
+                    formOpenRels.className += "tabulationSave btn btn-outline-info objButtonAction";
+                    divBtnGrp.appendChild(formOpenRels);
+
+                    formOpenRels.onclick = function(){
+                        openResqmlObjectContent(uuid,  
+                            idTabHeader, idTabContainer, idConsoleElt,
+                            classObjectContent, classObjectProperty, endpoint="ObjectRelsTree")
+                    };
+                }*/
 
 
                 /// AJOUTER * madatory element

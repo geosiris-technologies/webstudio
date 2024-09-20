@@ -48,6 +48,8 @@ import com.geosiris.webstudio.logs.ServerLogMessage;
 import com.geosiris.webstudio.model.ETP3DObject;
 import com.geosiris.webstudio.servlet.Editor;
 import com.google.gson.Gson;
+import energyml.resqml2_0_1.ObjPointSetRepresentation;
+import energyml.resqml2_2.PointSetRepresentation;
 import jakarta.servlet.http.HttpSession;
 import jakarta.xml.bind.JAXBException;
 import org.apache.avro.specific.SpecificRecordBase;
@@ -68,6 +70,7 @@ import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
+import static com.geosiris.energyml.utils.EPCGenericManager.getObjectTypeForFilePath_fromClassName;
 import static com.geosiris.energyml.utils.EnergymlWorkspaceHelper.getCrsObj;
 import static com.geosiris.energyml.utils.EnergymlWorkspaceHelper.readArray;
 import static com.geosiris.energyml.utils.ObjectController.searchAttributeMatchingNameWithPath;
@@ -494,7 +497,7 @@ public class ETPUtils {
         String epsgCode = null;
         logger.info("URI to load " + uri + " ==> " + obj);
 
-        String objClassNameLC = obj.getClass().getSimpleName().toLowerCase();
+        String objClassNameLC = obj.getClass().getName();
 
         List<AbstractMesh> meshes = null;
         try {
@@ -815,5 +818,7 @@ public class ETPUtils {
 
     public static void main(String[] argv){
         System.out.println(hsvToRgb(180.0f, 33.0f, 100.0f));
+        System.out.println(getObjectTypeForFilePath_fromClassName(ObjPointSetRepresentation.class.getName()));
+        System.out.println(getObjectTypeForFilePath_fromClassName(PointSetRepresentation.class.getSimpleName()));
     }
 }
