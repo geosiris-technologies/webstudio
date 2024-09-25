@@ -136,7 +136,9 @@ export function sendPostForm(form, url, showRequestResult) {
     XHR.send(FD);
 
     return XHR;
-}export function sendPostForm_Func(form, url, onloadFunc) {
+}
+
+export function sendPostForm_Func(form, url, onloadFunc) {
     var XHR = new XMLHttpRequest();
 
     // Liez l'objet FormData et l'élément form

@@ -199,6 +199,13 @@ export function create_dataspace_input(callback_func, inputs_classes_to_update){
 
     const const_inputs_classes_to_update = inputs_classes_to_update;
 
+    var but_refresh_dataspaces = document.createElement('i');
+    but_refresh_dataspaces.className = "btn btn-info fas fa-sync-alt";
+    but_refresh_dataspaces.title = "Refresh dataspace list";
+    but_refresh_dataspaces.addEventListener("click", function(event){
+         update_dataspaces_inputs(null, true);
+    });
+
 
     selectDataspace.addEventListener("change", function(event){
          if(const_inputs_classes_to_update != null){
@@ -248,6 +255,7 @@ export function create_dataspace_input(callback_func, inputs_classes_to_update){
     };
     selectDataspace.update([]);
     div.appendChild(selectDataspace);
+    div.appendChild(but_refresh_dataspaces);
 
     return div;
 }

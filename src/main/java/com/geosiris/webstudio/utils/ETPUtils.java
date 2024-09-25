@@ -329,7 +329,7 @@ public class ETPUtils {
         }else{
             protocolHandlers.put(CoreHandler_WebStudio.protocol, new CoreHandler_WebStudio());
             protocolHandlers.put(StoreHandler_WebStudio.protocol, new StoreHandler_WebStudio(session));
-            protocolHandlers.put(DataspaceHandler_WebStudio.protocol, new DataspaceHandler_WebStudio());
+            protocolHandlers.put(DataspaceHandler_WebStudio.protocol, new DataspaceHandler_WebStudio(session));
             protocolHandlers.put(DiscoveryHandler_WebStudio.protocol, new DiscoveryHandler_WebStudio());
             protocolHandlers.put(DataArrayHandler.protocol, new DataArrayHandler_WebStudio());
         }

@@ -20,6 +20,8 @@ import Energistics.Etp.v12.Protocol.Dataspace.*;
 import com.geosiris.etp.communication.ClientInfo;
 import com.geosiris.etp.communication.Message;
 import com.geosiris.etp.protocols.handlers.DataspaceHandler;
+import com.geosiris.webstudio.utils.SessionUtility;
+import jakarta.servlet.http.HttpSession;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -30,6 +32,12 @@ import java.util.Collection;
 
 public class DataspaceHandler_WebStudio extends DataspaceHandler{
     public static Logger logger = LogManager.getLogger(DataspaceHandler_WebStudio.class);
+
+    private HttpSession session;
+
+    public DataspaceHandler_WebStudio(HttpSession session){
+        this.session = session;
+    }
 
     @Override
     public Collection<Message> on_DeleteDataspaces(DeleteDataspaces msg, MessageHeader msgHeader, ClientInfo clientInfo) {
@@ -64,6 +72,9 @@ public class DataspaceHandler_WebStudio extends DataspaceHandler{
     @Override
     public Collection<Message> on_PutDataspacesResponse(PutDataspacesResponse msg, MessageHeader msgHeader, ClientInfo clientInfo) {
         logger.info("[DataspaceHandler_WebStudio] received message" + msg);
+
+        SessionUtility.logToast(session, "Dataspace created");
+        SessionUtility.logAction(session, "updatedataspace");
         return new ArrayList<>();
     }
 

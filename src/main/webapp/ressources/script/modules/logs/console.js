@@ -102,6 +102,8 @@ export function appendConsoleMessage(console_id, msg){
         if(msg.severity != null){
             severityClass = getSeverityClass(__CL_CONSOLE_LI__, msg.severity)
         }
+
+        // console.log("severityClass " + severityClass + " __ " + msg.severity);
  
         var content = msg;
         if(msg.message != null){
@@ -208,8 +210,6 @@ export function rws_addConsoleMessageFilter(console_id){
                 }
             }
         }
-
-        
     };
 
     // Ajout des checkbox
@@ -228,19 +228,23 @@ export function rws_addConsoleMessageFilter(console_id){
         for (var mutation of mutationsList) {
             if(mutation.type == "childList"){
                 var target = mutation.target;
+                var addedNodes = mutation.addedNodes;
                 const check_msg_type = console_elt.getElementsByClassName(check_classes);
                 for (let checkboxDiv of check_msg_type) {
                     var checkbox = checkboxDiv;
                     if(checkbox.type==null || checkbox.type.toLowerCase()!="checkbox"){
                         checkbox = checkbox.getElementsByTagName("input")[0];
                     }
-                    if(target.className.includes(getSeverityClass(__CL_CONSOLE_LI__, checkbox.value)) ){
-                        if(checkbox.checked){
-                            target.style.display = "";
-                        }else{
-                            target.style.display = "none";
+                    for(var addedN of addedNodes){
+                        if(addedN.className.includes(getSeverityClass(__CL_CONSOLE_LI__, checkbox.value)) ){
+                            if(checkbox.checked){
+                                addedN.style.display = "";
+                            }else{
+                                addedN.style.display = "none";
+                            }
                         }
                     }
+
                 }
             }
         }
@@ -251,8 +255,8 @@ export function rws_addConsoleMessageFilter(console_id){
     var observer = new MutationObserver(callback);
 
     // Event lors de l'ajout d'un message
-    for(let lu_msg of console_elt.getElementsByClassName(__CL_CONSOLE_UL__)){
-        observer.observe(lu_msg, config);
+    for(let ul_msg of console_elt.getElementsByClassName(__CL_CONSOLE_UL__)){
+        observer.observe(ul_msg, config);
     }
 
     // Creation du clear button
