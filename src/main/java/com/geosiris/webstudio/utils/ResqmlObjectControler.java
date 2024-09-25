@@ -56,10 +56,10 @@ public class ResqmlObjectControler {
     }
 
     private static void modifyResqmlObjectFromParameter(HttpSession session, Object resqmlObj, String paramPath,
-                                                       ModficationType modifType, Object value,
-                                                       Map<String, Object> epcObjects,
-                                                       String completePath,
-                                                       Object rootObject
+                                                        ModficationType modifType, Object value,
+                                                        Map<String, Object> epcObjects,
+                                                        String completePath,
+                                                        Object rootObject
     ) throws Exception {
 
         if (resqmlObj != null) {
@@ -432,26 +432,27 @@ public class ResqmlObjectControler {
     private static Map<String, String> extTypes = Editor.pkgManager.getExtTypesAsJson(SessionUtility.wsProperties.getDirPathToExtTypes());
 
     public static Object createInstance(Class<?> objClass, WorkspaceContent wc, Object parent, String thisAttributeName){
+        Object objInstance = null;
+
         if(objClass.getName().compareToIgnoreCase("java.lang.Object") == 0) return null;
         if(objClass.isEnum()){
-            return objClass.getEnumConstants()[RANDOMIZER.nextInt(objClass.getEnumConstants().length)];
+            objInstance = objClass.getEnumConstants()[RANDOMIZER.nextInt(objClass.getEnumConstants().length)];
         }else{
             if(Number.class.isAssignableFrom(objClass)){
                 Integer rand = RANDOMIZER.nextInt(100);
                 try {
-                    return objClass.getMethod("valueOf", String.class).invoke(null, String.valueOf(rand));
-                } catch (Exception e) {e.printStackTrace();}
+                    objInstance = objClass.getMethod("valueOf", String.class).invoke(null, String.valueOf(rand));
+                } catch (Exception e) {logger.error(e);}
             }else if(Boolean.class.isAssignableFrom(objClass)){
                 int rand = RANDOMIZER.nextInt(2);
-                return rand != 0;
+                objInstance = rand != 0;
             }else if(objClass.isPrimitive()){
-                Integer rand = RANDOMIZER.nextInt(100);
                 try {
-                    return createInstance(
+                    objInstance = createInstance(
                             Class.forName("java.lang." + objClass.getSimpleName().substring(0,1).toUpperCase() + objClass.getSimpleName().substring(1)),
                             wc, parent, thisAttributeName
                     );
-                } catch (ClassNotFoundException e) {e.printStackTrace();}
+                } catch (ClassNotFoundException e) {logger.error(e);}
             }else if(String.class.isAssignableFrom(objClass)){
                 if(thisAttributeName != null){
                     String refClass = (parent!=null?parent.getClass().getName():objClass.getName()).toLowerCase();
@@ -461,12 +462,12 @@ public class ResqmlObjectControler {
                     if(thisAttributeName.compareToIgnoreCase("uuid") == 0
                             || thisAttributeName.compareToIgnoreCase("uid") == 0
                     ){
-                        return UUID.randomUUID().toString();
+                        objInstance = UUID.randomUUID().toString();
                     }else if(extTypes.containsKey(attribPath)){
                         try {
                             String enumClassName = extTypes.get(attribPath);
                             if(enumClassName.toLowerCase().endsWith("ext")) enumClassName = enumClassName.substring(0,enumClassName.length()-3);
-                            return String.valueOf(
+                            objInstance = String.valueOf(
                                     createInstance(
                                             Class.forName(enumClassName),
                                             wc, parent, thisAttributeName
@@ -474,39 +475,38 @@ public class ResqmlObjectControler {
                             );
 
                         } catch (ClassNotFoundException e) {
-                            e.printStackTrace();
-                            return "Randomization of " + thisAttributeName + "(" + RANDOMIZER.nextInt() + ") ExtEnum value failed to generate";
+                            logger.error(e);
+                            objInstance = "Randomization of " + thisAttributeName + "(" + RANDOMIZER.nextInt() + ") ExtEnum value failed to generate";
                         }
                     }else{
-                        return "Randomization of " + thisAttributeName + "(" + RANDOMIZER.nextInt() + ") ";// + attribPath;
+                        objInstance = "Randomization of " + thisAttributeName + "(" + RANDOMIZER.nextInt() + ") ";// + attribPath;
                     }
                 }else{
-                    return "A random value (" + RANDOMIZER.nextInt() + ")";
+                    objInstance = "A random value (" + RANDOMIZER.nextInt() + ")";
                 }
             }else if(objClass.getSimpleName().compareToIgnoreCase("DataObjectReference") == 0){
                 // TODO
             }else if(XMLGregorianCalendar.class.isAssignableFrom(objClass)){
-                return Utils.getCalendarForNow();
+                objInstance = Utils.getCalendarForNow();
             }else if(Collection.class.isAssignableFrom(objClass)){
                 try {
-                    Collection objInstance = (Collection) (!Modifier.isAbstract(objClass.getModifiers()) ? objClass.getDeclaredConstructor().newInstance(): new ArrayList<>());
+                    objInstance = (!Modifier.isAbstract(objClass.getModifiers()) ? objClass.getDeclaredConstructor().newInstance(): new ArrayList<>());
 
                     for(int i=0; i<RANDOMIZER.nextInt(2) + 2; i++){
-                        objInstance.add(createInstance(ObjectController.getClassTemplatedTypeofSubParameter(parent.getClass(), thisAttributeName).get(0), wc, objInstance, thisAttributeName));
+                        ((Collection)objInstance).add(createInstance(ObjectController.getClassTemplatedTypeofSubParameter(parent.getClass(), thisAttributeName).get(0), wc, objInstance, thisAttributeName));
                     }
-                    return objInstance;
-                } catch (Exception e) {e.printStackTrace();}
+                } catch (Exception e) {logger.error(e);}
             }else{
                 if(Modifier.isAbstract(objClass.getModifiers())) {
                     EPCPackage energymlPkg = Editor.pkgManager.getMatchingPackage(objClass);
                     List<Class<?>> possibleClasses = ObjectController.getResqmlInheritorClasses(objClass.getName(), energymlPkg.getPkgClasses());
-                    return createInstance(
+                    objInstance = createInstance(
                             possibleClasses.get(RANDOMIZER.nextInt(possibleClasses.size())),
                             wc, parent, thisAttributeName
                     );
                 }else {
                     try {
-                        Object objInstance = objClass.getDeclaredConstructor().newInstance();
+                        objInstance = objClass.getDeclaredConstructor().newInstance();
                         for (Pair<Class<?>, String> param : ObjectController.getClassAttributes(objClass)) {
                             Object paramInstance = createInstance(param.l(), wc, objInstance, param.r());
                             if(Collection.class.isAssignableFrom(param.l())) {
@@ -515,15 +515,26 @@ public class ResqmlObjectControler {
                                 ObjectController.editObjectAttribute(objInstance, param.r(), paramInstance);
                             }
                         }
-                        return objInstance;
                     } catch (Exception e) {
                         System.err.println("Failed to instanciate class " + objClass + " for attribute " + thisAttributeName);
-                        e.printStackTrace();
+                        logger.error(e);
                     }
                 }
             }
         }
-        return null;
+        return objInstance;
+    }
+
+    public static Object applyDefaultValues(Object obj){
+        try {
+            modifyResqmlObjectFromParameter(null,
+                    obj,
+                    ".AscendingOrderingCriteria",
+                    ModficationType.EDITION, "AGE",
+                    new HashMap<>()
+            );
+        }catch (Exception _ignore){}
+        return obj;
     }
 
     public static void main(String[] argv){

@@ -18,6 +18,7 @@ import {downloadGetURL_Promise, sendDeleteURL_Promise, getJsonObjectFromServer} 
 import {addJsonData} from "../../energyml/JsonElementVue.js"
 import {randomColor, createDeleteButton} from "../htmlUtils.js"
 import {beginTask, endTask} from "../ui.js"
+import {getAttribute} from "../../common/utils.js"
 
 
 export function refreshPropertyDictVue(){
@@ -94,7 +95,7 @@ export function updateJsonDictUI(uri, containerId, progressBarId, counterId, pri
     }).catch((e) => {console.log(e); document.getElementById(progressBarId).style.display = "none";});
 }
 
-export function filterJsonDictUI(containerId, counterId, filter, caseSensitive, splitPhraseInWords){
+export function filterJsonDictUI(containerId, counterId, filter, caseSensitive, splitPhraseInWords, attributeToSearchIn = null){
     if(filter == null)
         filter = "";
 
@@ -112,8 +113,16 @@ export function filterJsonDictUI(containerId, counterId, filter, caseSensitive, 
     }else{
         for(var i=0; i < containerDiv.length; i++){
             var child = containerDiv[i];
+
             var found = true;
-            var txtContent = child.textContent;
+            var txtContent = "";
+
+            if(attributeToSearchIn != null && attributeToSearchIn.length > 0){
+                txtContent = getAttribute(child.getElementsByClassName("jsonTreeDiv")[0]._object, attributeToSearchIn);
+            }else{
+                txtContent = child.textContent;
+            }
+
             if(!caseSensitive){
                 txtContent = txtContent.toLowerCase()
             }

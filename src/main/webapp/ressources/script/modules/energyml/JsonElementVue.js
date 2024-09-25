@@ -54,6 +54,9 @@ export function addJsonData(jsObject, jsonEltVue, printListIdx, f_applyOnKey){
                 eltToPutChildIn.style.paddingLeft = "20px";
                 eltToPutChildIn.style.borderLeft = "1px dashed black";
                 eltToPutChildIn.className = 'jsonTreeDiv';
+
+                eltToPutChildIn._object = jsObject[i];
+
                 var collapser = null;
                 if(spanTitle != null){
                     collapser = createCollapser(spanTitle, eltToPutChildIn);
@@ -92,6 +95,7 @@ export function addJsonData(jsObject, jsonEltVue, printListIdx, f_applyOnKey){
                     }
                 }
             }else{
+                spanTitle._object = jsObject[i];
                 if(spanTitle != null){
                     var boldSpan = document.createElement("b");
                     boldSpan.appendChild(spanTitle.firstChild);

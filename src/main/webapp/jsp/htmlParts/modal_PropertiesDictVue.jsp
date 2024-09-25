@@ -32,7 +32,8 @@ limitations under the License.
 									"counter_PropertiesDict", 
 									document.getElementById('FilterPropertiesDict').value, 
 									document.getElementById('caseSenstive_PropertiesDict').checked, 
-									document.getElementById('splitWords_PropertiesDict').checked);
+									document.getElementById('splitWords_PropertiesDict').checked,
+									document.getElementById('FilterPropertiesAttribute').value);
 		}
 		document.getElementById("but_updatePropDict").onclick = function(event){
 			refreshPropertyDictVue();
@@ -80,17 +81,19 @@ limitations under the License.
 							<input class="form-control" id="FilterPropertiesDict" type="search" placeholder="Filter by content">
 							<span class="inputTextClearBut fas fa-times-circle" id="FilterPropertiesDict_clear"></span>
 							<div class="input-group-text">
-									<div class="form-check form-check-inline">
-										<input type="checkbox" class="form-check-input" id="splitWords_PropertiesDict">
-										<label class="form-check-label" for="splitWords_PropertiesDict">Split phrase in words</label>
-									</div>
-								</div>
+                                <div class="form-check form-check-inline">
+                                    <input type="checkbox" class="form-check-input" id="splitWords_PropertiesDict">
+                                    <label class="form-check-label" for="splitWords_PropertiesDict">Split phrase in words</label>
+                                </div>
+                            </div>
 							<div class="input-group-text">
-									<div class="form-check form-check-inline">
-										<input type="checkbox" class="form-check-input" id="caseSenstive_PropertiesDict">
-										<label class="form-check-label" for="caseSenstive_PropertiesDict">Case sensitive</label>
-									</div>
-								</div>
+                                <div class="form-check form-check-inline">
+                                    <input type="checkbox" class="form-check-input" id="caseSenstive_PropertiesDict">
+                                    <label class="form-check-label" for="caseSenstive_PropertiesDict">Case sensitive</label>
+                                </div>
+                            </div>
+                            <span class="input-group-text">Filter only in attribute :</span>
+							<input class="form-control" id="FilterPropertiesAttribute" type="search" placeholder="citation.title">
 							<button class="btn btn-success" id="but_FilterPropertiesDict">Go
 								</button>
 						</div>

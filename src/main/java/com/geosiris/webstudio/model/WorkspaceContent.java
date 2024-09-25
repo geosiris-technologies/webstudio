@@ -32,12 +32,14 @@ public class WorkspaceContent {
     private Map<String, Object> readObjects;
     private Map<String, Object> additionalInformation;
     private Map<String, Relationships> parsedRels;
+    private List<String> loadedEpcNames;
 
     public WorkspaceContent() {
         this.notReadObjects = new ArrayList<>();
         this.readObjects = new HashMap<>();
         this.additionalInformation = new HashMap<>();
         this.parsedRels = new HashMap<>();
+        this.loadedEpcNames = new ArrayList<>();
     }
 
     public List<Pair<String, byte[]>> getNotReadObjects() {
@@ -64,6 +66,10 @@ public class WorkspaceContent {
         this.additionalInformation = additionalInformation;
     }
 
+    public List<String> getLoadedEpcNames() {
+        return loadedEpcNames;
+    }
+
     public void putAll(WorkspaceContent rf) {
         if(rf != null){
             if(rf.notReadObjects != null)
@@ -74,6 +80,8 @@ public class WorkspaceContent {
                 this.additionalInformation.putAll(rf.additionalInformation);
             if(rf.parsedRels != null)
                 this.parsedRels.putAll(rf.parsedRels);
+            if(rf.loadedEpcNames != null)
+                this.loadedEpcNames.addAll(rf.loadedEpcNames);
         }
     }
 
@@ -112,6 +120,7 @@ public class WorkspaceContent {
                 .collect(Collectors.toList()));
 
         vue.put("Other objects", notReadObjects.stream().map(Pair::l).collect(Collectors.toList()));
+        vue.put("Imported Epc files", loadedEpcNames);
 
         /*res.append("\"Other information\": [");
         for(String name: additionalInformation.keySet()){
