@@ -142,6 +142,14 @@ public class SessionUtility {
         }
     }
 
+    public static void logToast(HttpSession session, String msg) {
+        SessionUtility.log(session, new ServerLogMessage(MessageType.TOAST, msg, SessionUtility.EDITOR_NAME));
+    }
+
+    public static void logAction(HttpSession session, String msg) {
+        SessionUtility.log(session, new ServerLogMessage(MessageType.ACTION, msg, SessionUtility.EDITOR_NAME));
+    }
+
     public static boolean isConnectedUser(HttpServletRequest request) {
         HttpSession session = request.getSession(false);
         // logger.info(wsProperties);

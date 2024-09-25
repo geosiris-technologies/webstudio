@@ -22,7 +22,7 @@ import {getAllOpendedObjects} from "../requests/uiRequest.js"
 import {sendGetURL_Promise, sendPostForm_Promise, getJsonObjectFromServer} from "../requests/requests.js"
 import {__ENUM_CONSOLE_MSG_SEVERITY_ACTION__, __ID_CONSOLE_MODAL__} from "../common/variables.js"
 import {beginETPRequest, updateGetRelatedETPTableContent, endETPRequest} from "./modals/etp.js";
-import {update_etp_connexion_views} from "../etp/etp_connection.js";
+import {update_etp_connexion_views, update_dataspaces_inputs} from "../etp/etp_connection.js";
 
 
 export let hasBeenDisconnected = false;
@@ -105,6 +105,8 @@ export function initSessionLogEventHandler(console_id){
             if(decodedMsg.severity != null && decodedMsg.severity == __ENUM_CONSOLE_MSG_SEVERITY_ACTION__){
                 if(decodedMsg.message && decodedMsg.message.toLowerCase() == "reload"){
                     refreshWorkspace().catch((error) => console.error(error));
+                }else if(decodedMsg.message && decodedMsg.message.toLowerCase() == "updatedataspace"){
+                    update_dataspaces_inputs(null, true);
                 }
             }else{
                 //console.log("Not an action '" + decodedMsg.severity + "' != '" + __ENUM_CONSOLE_MSG_SEVERITY_ACTION__ + "'")

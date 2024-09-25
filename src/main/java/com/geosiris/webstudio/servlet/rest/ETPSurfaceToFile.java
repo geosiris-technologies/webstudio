@@ -17,6 +17,7 @@ package com.geosiris.webstudio.servlet.rest;
 
 import com.geosiris.etp.utils.ETPUri;
 import com.geosiris.etp.websocket.ETPClient;
+import com.geosiris.webstudio.logs.ServerLogMessage;
 import com.geosiris.webstudio.model.ETP3DObject;
 import com.geosiris.webstudio.utils.ETPUtils;
 import com.geosiris.webstudio.utils.File3DType;
@@ -114,10 +115,17 @@ public class ETPSurfaceToFile extends HttpServlet {
 
         List<ETP3DObject> surfaces = new ArrayList<>();
         for(ETPUri etpUri: mapUri.values()) {
+            String err_msg = "Failed to load 3D surface : " + etpUri;
             try {
-                surfaces.add(ETPUtils.get3DFileFromETP(etpClient, null, etpUri.toString(), fileFormat));
+                ETP3DObject o = ETPUtils.get3DFileFromETP(etpClient, null, etpUri.toString(), fileFormat);
+                if(o == null){
+                    SessionUtility.log(request.getSession(), new ServerLogMessage(ServerLogMessage.MessageType.TOAST, err_msg, "Surface loader"));
+                }else {
+                    surfaces.add(o);
+                }
             } catch (Exception e) {
                 logger.error(e.getMessage(), e);
+                SessionUtility.log(request.getSession(), new ServerLogMessage(ServerLogMessage.MessageType.TOAST, err_msg, "Surface loader"));
             }
         }
         PrintWriter out = response.getWriter();

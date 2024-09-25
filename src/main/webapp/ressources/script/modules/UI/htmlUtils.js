@@ -74,17 +74,20 @@ export function createDropDownDivider(){
     return divider;
 }
 
-export function createHoverableHtmlContent(elt, htmlContent){
+export function createHoverableHtmlContent(elt, htmlContent, propagation=true){
     var divContent = document.createElement("div");
     divContent.className = "typeCommentContainer";
     divContent.innerHTML = htmlContent;
-    elt.onclick = function(){
+    elt.onclick = function(event){
         if (divContent.style.display === "none") {
             divContent.style.display = "block";
             divContent.style.top = elt.offsetTop;
             divContent.style.left = elt.offsetLeft;
         }else{
             divContent.style.display = "none";
+        }
+        if(!propagation){
+            event.stopPropagation();
         }
     }
 

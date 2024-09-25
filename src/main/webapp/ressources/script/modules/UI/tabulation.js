@@ -25,8 +25,8 @@ export function getActiveOpenedObject(idTabHeader){
     var tabHeader = document.getElementById(idTabHeader);
     var navs = tabHeader.getElementsByClassName("nav-link");
     for (var i = navs.length - 1; i >= 0; i--) {
-        if(navs[i].className.includes(" active")){
-          return nav[i].parent;
+        if(navs[i].classList.contains("active")){
+          return navs[i].parentNode;
         }
     }
     return null;
@@ -194,13 +194,21 @@ export function closeTabulation(uuid, idTabHeader){//}, idTabcontent){
     //refreshHighlightedOpenedObjects();
     var foundTab = getTabulation(uuid, idTabHeader);
     if(foundTab != null){
-        if(foundTab.previousSibling != null){
-            foundTab.previousSibling.firstChild.click();
-        }else if(foundTab.nextSibling != null){
-            foundTab.nextSibling.firstChild.click();
+        var isCurrentSelectedTab = foundTab == getActiveOpenedObject(idTabHeader);
+        var tabToSelect = null;
+        if(isCurrentSelectedTab){
+            if(foundTab.previousSibling != null){
+                tabToSelect = foundTab.previousSibling.firstChild;
+            }else if(foundTab.nextSibling != null){
+                tabToSelect = foundTab.nextSibling.firstChild;
+            }
         }
         foundTab.remove();
         document.getElementById("tabulation_id_"+uuid).remove();
+
+        if(tabToSelect != null){
+            tabToSelect.click();
+        }
         
         refreshHighlightedOpenedObjects();
         return true;
