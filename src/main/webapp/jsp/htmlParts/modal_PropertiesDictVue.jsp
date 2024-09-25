@@ -17,24 +17,22 @@ limitations under the License.
 	<script type="module">
 		import {filterJsonDictUI, refreshPropertyDictVue} from "/ressources/script/modules/UI/modals/propertiesVue.js";
 		import {onEnterPressed} from "/ressources/script/modules/UI/htmlUtils.js";
-
-		document.getElementById("FilterPropertiesDict").onkeypress = function(event){
-			onEnterPressed(event, function(){
-									filterJsonDictUI('container_PropertiesDict', 
-															"counter_PropertiesDict", 
-															document.getElementById('FilterPropertiesDict').value, 
-															document.getElementById('caseSenstive_PropertiesDict').checked, 
-															document.getElementById('splitWords_PropertiesDict').checked);
-								});
-		}
-		document.getElementById("but_FilterPropertiesDict").onclick = function(event){
-			filterJsonDictUI('container_PropertiesDict', 
-									"counter_PropertiesDict", 
-									document.getElementById('FilterPropertiesDict').value, 
-									document.getElementById('caseSenstive_PropertiesDict').checked, 
+		function filter_dict(event){
+			filterJsonDictUI('container_PropertiesDict',
+									"counter_PropertiesDict",
+									document.getElementById('FilterPropertiesDict').value,
+									document.getElementById('caseSenstive_PropertiesDict').checked,
 									document.getElementById('splitWords_PropertiesDict').checked,
 									document.getElementById('FilterPropertiesAttribute').value);
 		}
+
+		document.getElementById("FilterPropertiesDict").onkeypress = function(event){
+			onEnterPressed(event, filter_dict);
+		}
+		document.getElementById("FilterPropertiesAttribute").onkeypress = function(event){
+			onEnterPressed(event, filter_dict);
+		}
+		document.getElementById("but_FilterPropertiesDict").onclick = filter_dict;
 		document.getElementById("but_updatePropDict").onclick = function(event){
 			refreshPropertyDictVue();
 		}

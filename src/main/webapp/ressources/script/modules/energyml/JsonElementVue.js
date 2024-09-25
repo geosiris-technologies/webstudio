@@ -95,7 +95,6 @@ export function addJsonData(jsObject, jsonEltVue, printListIdx, f_applyOnKey){
                     }
                 }
             }else{
-                spanTitle._object = jsObject[i];
                 if(spanTitle != null){
                     var boldSpan = document.createElement("b");
                     boldSpan.appendChild(spanTitle.firstChild);
