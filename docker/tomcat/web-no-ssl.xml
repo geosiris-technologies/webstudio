@@ -52,7 +52,7 @@
 	
 	<filter>
 		<filter-name>SameSiteFilter</filter-name>
-		<filter-class>com.geosiris.webstudio.filters.SameSiteFilter</filter-class>
+		<filter-class>com.geosiris.webstudio.servlet.filters.SameSiteFilter</filter-class>
 	</filter>
 	<filter-mapping>
 		<filter-name>SameSiteFilter</filter-name>
