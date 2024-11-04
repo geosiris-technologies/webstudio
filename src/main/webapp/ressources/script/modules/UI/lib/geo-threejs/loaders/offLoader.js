@@ -35,31 +35,39 @@ export class OffLoader extends SurfaceLoader{
 
         for(var lineIdx = 0; lineIdx < fileContentArray.length-1; lineIdx++){
             var line = fileContentArray[lineIdx];
-            if(line.length > 0){
-                if(!sizeFound){
-                    var sizesMatch = __XYZ_POINT_REGEXP__.exec(line);
-                    if(sizesMatch != null){
-                        sizeFound = true;
-                        // console.log(sizeFound)
-                        nbPoints = sizesMatch.groups["x"];
-                    }
-                }else{
-                    var matchPoints = __XYZ_POINT_REGEXP__.exec(line);
-                    // TODO : ça marche pas pour les points !
-                    if(!(pointsFinished) && matchPoints != null && nbPoints > this.points.length){
-                        pointsStart = true;
-                        this.points.push([parseFloat(matchPoints.groups["x"]), parseFloat(matchPoints.groups["y"]), parseFloat(matchPoints.groups["z"])]);
-                    }else if(pointsStart) {
-                        var integers = [...line.matchAll("\\d+")].flat();
-                        var nbFacePoint = Number(integers[0]);
-                        this.trianglesIdx.push(integers.slice(1).map(i => parseInt(i)));
+            try{
+                if(line.length > 0){
+                    if(!sizeFound){
+                        var sizesMatch = __XYZ_POINT_REGEXP__.exec(line);
+                        if(sizesMatch != null){
+                            sizeFound = true;
+                            // console.log(sizeFound)
+                            nbPoints = sizesMatch.groups["x"];
+                        }
                     }else{
-                        /*console.log("===");
-                        console.log("|"+line+"|");
-                        console.log(matchPoints);
-                        console.log("===");*/
+                        var matchPoints = __XYZ_POINT_REGEXP__.exec(line);
+                        // TODO : ça marche pas pour les points !
+                        if(!(pointsFinished) && matchPoints != null && nbPoints > this.points.length){
+                            pointsStart = true;
+                            this.points.push([parseFloat(matchPoints.groups["x"]), parseFloat(matchPoints.groups["y"]), parseFloat(matchPoints.groups["z"])]);
+                        }else if(pointsStart) {
+                            var integers = [...line.matchAll("\\d+")].flat();
+                            if(integers.length > 0){ // TO avoid adding empty value if no match
+                                var nbFacePoint = Number(integers[0]);
+                                this.trianglesIdx.push(integers.slice(1).map(i => parseInt(i)));
+                            }
+                        }else{
+                            /*console.log("===");
+                            console.log("|"+line+"|");
+                            console.log(matchPoints);
+                            console.log("===");*/
+                        }
                     }
                 }
+            }catch(exception){
+                console.log(fileContent);
+                console.log(exception);
+                throw exception;
             }
         }
         /*console.log(this.points);

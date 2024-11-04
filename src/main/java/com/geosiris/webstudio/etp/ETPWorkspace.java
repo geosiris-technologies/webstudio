@@ -139,7 +139,17 @@ public class ETPWorkspace implements EnergymlWorkspace {
                         .lines()
                         .collect(Collectors.joining("\n"));
                 res = gson.fromJson(content, ArrayList.class);
+
+                // Following line to remove "NAN" values
+                res = res.stream().map(x -> x instanceof String ? Double.NaN: x).collect(Collectors.toList());
+//                if(!res.isEmpty() && res.get(0) instanceof String) {
+//                    try {
+//                        Float.parseFloat((String) res.get(0));
+//                        res = res.stream().map(x -> Float.parseFloat((String) x)).collect(Collectors.toList());
+//                    }catch (Exception ignore){}
+//                }
                 logger.info(String.valueOf(res));
+                logger.info("==> " + res.get(0) + " " + res.get(0).getClass());
                 return res;
             } catch (Exception _ignore) {
                 _ignore.printStackTrace();
@@ -215,7 +225,9 @@ public class ETPWorkspace implements EnergymlWorkspace {
         uri.setDomain(epc_pkg.getDomain());
         uri.setDomainVersion(epc_pkg.getVersionNum().replace(".", "").substring(0,2));
         uri.setObjectType(getObjectTypeForFilePath_fromClassName(obj.getClass().getName()));
-        uri.setVersion((String) ObjectController.getObjectAttributeValue(obj, "version"));
+        try {
+            uri.setVersion((String) ObjectController.getObjectAttributeValue(obj, "version"));
+        }catch (Exception ignore){}
         return uri;
     }
 
