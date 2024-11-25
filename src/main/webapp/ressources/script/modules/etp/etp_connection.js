@@ -70,6 +70,14 @@ export function geosiris_createETP_connector_form(fun_isConnected, fun_isDisconn
 
     form.appendChild(inputGroup);
 
+    const headers = document.createElement("textarea");
+    headers.classList.add('form-control');
+    headers.setAttribute('name', 'etp-server-headers');
+    headers.setAttribute('row', '6');
+    headers.value = '{\n\t"data-partition-id": "osdu"\n}';
+    form.appendChild(headers);
+
+
     const connectButton = document.createElement('input');
     connectButton.setAttribute('type', 'button');
     connectButton.setAttribute('name', 'request-type');
@@ -217,7 +225,6 @@ export function create_dataspace_input(callback_func, inputs_classes_to_update){
         }
     });
 
-
     selectDataspace.update = function (dataspacesNamesArray){
         var selectedValue = null;
         // keep previous selected value during updates
@@ -228,6 +235,7 @@ export function create_dataspace_input(callback_func, inputs_classes_to_update){
         while(selectDataspace.firstChild){
             selectDataspace.firstChild.remove();
         }
+
         if(dataspacesNamesArray.length > 0){
             var option = document.createElement("option");
             option.value = "";
@@ -235,6 +243,7 @@ export function create_dataspace_input(callback_func, inputs_classes_to_update){
             selectDataspace.appendChild(option);
         }
 
+        dataspacesNamesArray = dataspacesNamesArray.filter((ds) => ds.length > 0 && ds != "eml:///");
         [].forEach.call(dataspacesNamesArray, (elt, idx) =>{
             var option = document.createElement("option");
             option.value = elt;

@@ -68,6 +68,9 @@ public class ETPListDataspaces extends HttpServlet {
 				dataspacesNames.add(searchDataspaceNameFromUri(ds.getUri()+""));
 			}
 		}
+		if(dataspacesNames.isEmpty()){
+			dataspacesNames.add("eml:///");
+		}
 
 		PrintWriter out = response.getWriter();
         response.setContentType("application/json");

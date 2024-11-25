@@ -46,6 +46,7 @@ import jakarta.servlet.http.HttpServletResponse;
 import jakarta.servlet.http.HttpSession;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.eclipse.jetty.http.HttpURI;
 
 import javax.xml.datatype.XMLGregorianCalendar;
 import java.io.IOException;
@@ -119,6 +120,9 @@ public class ETPRequest extends HttpServlet {
             if(parameterMap.containsKey("dataspace")){
                 dataspace = parameterMap.get("dataspace").get(0);
             }
+            if(dataspace!=null && (dataspace.isEmpty() || dataspace.compareToIgnoreCase("eml:///") == 0)){
+                dataspace = null;
+            }
 
             boolean ask_aknowledge = parameterMap.containsKey("ask_aknowledge");
 
@@ -133,7 +137,7 @@ public class ETPRequest extends HttpServlet {
                 try {
                     StringBuilder req_result = new StringBuilder();
                     if (request.toLowerCase().startsWith("getresource")) {
-
+                        logger.info("Getting resources : " + new ETPUri(dataspace));
                         GetResources getRess = ETPDefaultProtocolBuilder.buildGetResources(new ETPUri(dataspace).toString(),
                                 ContextScopeKind.self, new ArrayList<>());
 
@@ -406,4 +410,5 @@ public class ETPRequest extends HttpServlet {
         }
         return new Pair<>(mapResult, logs.toString());
     }
+
 }

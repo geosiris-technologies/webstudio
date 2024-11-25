@@ -15,9 +15,8 @@ limitations under the License.
 */
 package com.geosiris.webstudio.utils;
 
-import Energistics.Etp.v12.Datatypes.DataValue;
+import Energistics.Etp.v12.Datatypes.*;
 import Energistics.Etp.v12.Datatypes.Object.*;
-import Energistics.Etp.v12.Datatypes.ServerCapabilities;
 import Energistics.Etp.v12.Protocol.Discovery.GetResources;
 import Energistics.Etp.v12.Protocol.Discovery.GetResourcesResponse;
 import Energistics.Etp.v12.Protocol.Store.PutDataObjects;
@@ -138,16 +137,16 @@ public class ETPUtils {
             Boolean askConnection
     ) {
         Map<String, String> parsedHeaders = new HashMap<>();
-		try{
-			Gson gson = new Gson();
-			parsedHeaders = gson.fromJson(headers, HashMap.class);
-		}catch (Exception ignore){}
+        try{
+            Gson gson = new Gson();
+            parsedHeaders = gson.fromJson(headers, HashMap.class);
+        }catch (Exception ignore){}
         if(parsedHeaders == null){
             parsedHeaders = new HashMap<>();
         }
-		for(Map.Entry<String, String> he: parsedHeaders.entrySet()){
-			logger.info("Headers " + he.getKey() + " " + he.getValue());
-		}
+        for(Map.Entry<String, String> he: parsedHeaders.entrySet()){
+            logger.info("Headers " + he.getKey() + " " + he.getValue());
+        }
         return establishConnexion(session, host, userName, password, token, parsedHeaders, askConnection);
     }
 
@@ -302,6 +301,19 @@ public class ETPUtils {
         return result;
     }
 
+    public static List<SupportedProtocol> computeSupportedProtocols(Map<CommunicationProtocol, ProtocolHandler> protocolHandlers){
+        List<SupportedProtocol> supported = new ArrayList<>();
+        for(Map.Entry<CommunicationProtocol, ProtocolHandler> ph: protocolHandlers.entrySet()){
+            supported.add(new SupportedProtocol(
+                    ph.getKey().id,
+                    Version.newBuilder().setMajor(1).setMinor(2).build(), // TODO: change version when etp changes
+                    "store",
+                    new HashMap<>()
+            ));
+        }
+
+        return supported;
+    }
 
     private static ETPClient establishConnexionForClient(
             HttpSession session,
@@ -318,27 +330,41 @@ public class ETPUtils {
 //        mapCaps.put("MaxWebSocketMessagePayloadSize", DataValue.newBuilder().setItem(40000).build());
         ServerCapabilities caps = new ServerCapabilities();
         caps.setEndpointCapabilities(mapCaps);
+
+//        List<SupportedDataObject> sdo = new ArrayList<>();
+//        Map<CharSequence, DataValue> doc_eml = new HashMap<>();
+//        doc_eml.put("SupportsDelete", DataValue.newBuilder().setItem(true).build());
+//        doc_eml.put("SupportsPut", DataValue.newBuilder().setItem(true).build());
+//        doc_eml.put("SupportsGet", DataValue.newBuilder().setItem(true).build());
+//        sdo.add(SupportedDataObject.newBuilder().setQualifiedType("eml20.*").setDataObjectCapabilities(doc_eml).build());
+//        caps.setSupportedDataObjects(sdo);
+
         Map<CommunicationProtocol, ProtocolHandler> protocolHandlers = new HashMap<>();
         if(useDefaultHandler){
             protocolHandlers.put(CoreHandler_WebStudio.protocol, new CoreHandler_WebStudio());
-            protocolHandlers.put(StoreHandler.protocol, new StoreHandler());
-            protocolHandlers.put(DataspaceHandler.protocol, new DataspaceHandler());
             protocolHandlers.put(DiscoveryHandler.protocol, new DiscoveryHandler());
+            protocolHandlers.put(StoreHandler.protocol, new StoreHandler());
+            if(host.getHost().contains("geosiris"))
+                protocolHandlers.put(DataspaceHandler.protocol, new DataspaceHandler());
             protocolHandlers.put(DataArrayHandler.protocol, new DataArrayHandler_WebStudio());
 
         }else{
             protocolHandlers.put(CoreHandler_WebStudio.protocol, new CoreHandler_WebStudio());
-            protocolHandlers.put(StoreHandler_WebStudio.protocol, new StoreHandler_WebStudio(session));
-            protocolHandlers.put(DataspaceHandler_WebStudio.protocol, new DataspaceHandler_WebStudio(session));
             protocolHandlers.put(DiscoveryHandler_WebStudio.protocol, new DiscoveryHandler_WebStudio());
+            protocolHandlers.put(StoreHandler_WebStudio.protocol, new StoreHandler_WebStudio(session));
+            if(host.getHost().contains("geosiris"))
+                protocolHandlers.put(DataspaceHandler_WebStudio.protocol, new DataspaceHandler_WebStudio(session));
             protocolHandlers.put(DataArrayHandler.protocol, new DataArrayHandler_WebStudio());
         }
+
+		caps.setSupportedProtocols(computeSupportedProtocols(protocolHandlers)); // TODO : remove when etpproto-java is updated
+
         ETPConnection etpConnection = new ETPConnection(ConnectionType.CLIENT, caps, clientInfo, protocolHandlers);
 
         if(token != null && !token.trim().isEmpty()){
-            return ETPClient.getInstanceWithAuth_Token(host, etpConnection, 5000, token, headers);
+            return ETPClient.getInstanceWithAuth_Token(host, etpConnection, 5000, token, 1 << 22, headers);
         }else {
-            return ETPClient.getInstanceWithAuth_Basic(host, etpConnection, 5000, userName, password, headers);
+            return ETPClient.getInstanceWithAuth_Basic(host, etpConnection, 5000, userName, password, 1 << 22, headers);
         }
     }
 
