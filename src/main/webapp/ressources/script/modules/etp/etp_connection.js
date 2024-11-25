@@ -124,6 +124,8 @@ export function geosiris_createETP_connector_form(fun_isConnected, fun_isDisconn
                         }catch(jsonFailed){
                             console.log(jsonFailed);
                         }
+
+                        update_dataspaces_inputs(cst_callback_func);
                     }
                 );
 
@@ -133,6 +135,7 @@ export function geosiris_createETP_connector_form(fun_isConnected, fun_isDisconn
                 btnConn.className = "btn btn-danger";
                 input_req.value = "disconnect";
                 inputGroup.style.display = 'none';
+                headers.style.display = 'none';
                 if(cst_fun_isConnected != null){
                     cst_fun_isConnected();
                 }
@@ -146,11 +149,12 @@ export function geosiris_createETP_connector_form(fun_isConnected, fun_isDisconn
                 btnConn.className = "btn btn-primary mt-2";
                 input_req.value = "connect";
                 inputGroup.style.display = '';
+                headers.style.display = '';
                 if(HAS_BEEN_CONNECTED_ONCE && cst_fun_isDisconnected != null){
                     cst_fun_isDisconnected();
                 }
+            update_dataspaces_inputs(cst_callback_func);
             }
-        update_dataspaces_inputs(cst_callback_func);
     }
     form.updateView = function(isConnected){
         func_update_btn_view(connectButton, inreq, isConnected);

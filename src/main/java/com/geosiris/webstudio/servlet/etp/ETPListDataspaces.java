@@ -27,6 +27,8 @@ import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 import java.io.IOException;
 import java.io.PrintWriter;
@@ -39,6 +41,7 @@ import java.util.List;
 @WebServlet("/ETPListDataspaces")
 public class ETPListDataspaces extends HttpServlet {
 	private static final long serialVersionUID = 1L;
+	public static Logger logger = LogManager.getLogger(ETPListDataspaces.class);
 
 	/**
 	 * @see HttpServlet#HttpServlet()
@@ -63,10 +66,12 @@ public class ETPListDataspaces extends HttpServlet {
 		if(isConnected){
 			GetDataspaces getRess = GetDataspaces.newBuilder().setStoreLastWriteFilter(0L).build();
 			long id = etpClient.send(getRess);
-			List<Message> ressResp_l = etpClient.getEtpClientSession().waitForResponse(id, 100000);
-			for(Dataspace ds : ((GetDataspacesResponse)ressResp_l.get(0).getBody()).getDataspaces()){
-				dataspacesNames.add(searchDataspaceNameFromUri(ds.getUri()+""));
-			}
+			try {
+				List<Message> ressResp_l = etpClient.getEtpClientSession().waitForResponse(id, 5000);
+				for (Dataspace ds : ((GetDataspacesResponse) ressResp_l.get(0).getBody()).getDataspaces()) {
+					dataspacesNames.add(searchDataspaceNameFromUri(ds.getUri() + ""));
+				}
+			}catch (Exception e){logger.error(e);}
 		}
 		if(dataspacesNames.isEmpty()){
 			dataspacesNames.add("eml:///");
