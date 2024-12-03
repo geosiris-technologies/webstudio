@@ -51,10 +51,20 @@ export class OffLoader extends SurfaceLoader{
                             pointsStart = true;
                             this.points.push([parseFloat(matchPoints.groups["x"]), parseFloat(matchPoints.groups["y"]), parseFloat(matchPoints.groups["z"])]);
                         }else if(pointsStart) {
-                            var integers = [...line.matchAll("\\d+")].flat();
-                            if(integers.length > 0){ // TO avoid adding empty value if no match
-                                var nbFacePoint = Number(integers[0]);
-                                this.trianglesIdx.push(integers.slice(1).map(i => parseInt(i)));
+                            var indices = [...line.matchAll("\\d+")].flat();
+//                            if(integers.length > 0){ // To avoid adding empty value if no match
+//                                var nbFacePoint = Number(integers[0]);
+//                                this.trianglesIdx.push(integers.slice(1).map(i => parseInt(i)));
+//
+//                            }
+                            // first is face vertice count
+                            for(var i=2; i<indices.length - 1; i++){
+                                if(indices[1] < this.points.length && indices[i] < this.points.length && indices[i + 1] < this.points.length){
+                                    this.trianglesIdx.push([indices[1], indices[i], indices[i+1]]);
+                                }else{
+                                    console.log([indices[1], indices[i], indices[i+1]])
+                                }
+                                //console.log([indices[0], indices[i], indices[i+1]]);
                             }
                         }else{
                             /*console.log("===");
