@@ -33,7 +33,7 @@ export class ObjLoader extends SurfaceLoader{
         var pointsStart = false;
         var pointsFinished = false;
 
-        for(var lineIdx = 0; lineIdx < fileContentArray.length-1; lineIdx++){
+        for(var lineIdx = 0; lineIdx < fileContentArray.length; lineIdx++){
             var line = fileContentArray[lineIdx].trim();
             if(line.length > 0 && !line.startsWith("#") && !line.startsWith("g") && !line.startsWith("o")){
                 if(line.startsWith("v") || line.startsWith("V")){
@@ -42,7 +42,7 @@ export class ObjLoader extends SurfaceLoader{
                 else if(line.startsWith("f") || line.startsWith("F")){
                     var indices = line.split(/\s+/).slice(1).map((x) => parseInt(x.split("/")[0]));
                     // triangle Fan
-                    for(var i=1; i<indices.length - 1; i++){
+                    for(var i=1; i<indices.length; i++){
                         if(indices[0] - 1 < this.points.length && indices[i] - 1 < this.points.length && indices[i + 1] - 1 < this.points.length){
                             this.trianglesIdx.push([indices[0] - 1, indices[i] - 1, indices[i+1] - 1]);
                         }else{
@@ -53,7 +53,7 @@ export class ObjLoader extends SurfaceLoader{
                     }
                 } else if(line.startsWith("l") || line.startsWith("L")){
                     var indices = line.split(/\s+/).slice(1).map((x) => parseInt(x.split("/")[0]));
-                    for(var i=0; i<indices.length - 1; i++){
+                    for(var i=0; i<indices.length; i++){
                         if(indices[i] - 1 < this.points.length && indices[i+1] - 1 < this.points.length){
                             this.lines.push(this.points[indices[i] - 1]);
                             this.lines.push(this.points[indices[i+1] - 1]);
