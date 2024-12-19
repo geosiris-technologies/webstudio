@@ -141,12 +141,13 @@ public class ETPSurfaceToFile extends HttpServlet {
     }
 
     public static void main(String[] argv) throws IOException, InvocationTargetException, IllegalAccessException {
-        String serverUrl = "http://rdms.geosiris.com/etp";
+        String serverUrl = "https://rdms.geosiris.com:443/etp";
         String username = "FAKE";
         String password = "FAKE";
         ETPClient etpClient = ETPUtils.establishConnexion(null, ETPUtils.getHttpUriETP(serverUrl), username, password, null, new HashMap<>(), true);
 
-        ETPUri etpuri = ETPUri.parse("eml:///dataspace('brgm')/resqml22.PointSetRepresentation(c26dfedf-c354-4263-9219-97797638beef)");
+        ETPUri etpuri = ETPUri.parse("eml:///dataspace('brgm')/resqml22.TriangulatedSetRepresentation(ffbf9912-c2d2-489f-a924-7d14e2627134)");
+//        ETPUri etpuri = ETPUri.parse("eml:///dataspace('brgm')/resqml22.PointSetRepresentation(c26dfedf-c354-4263-9219-97797638beef)");
 //        ETPUri etpuri = ETPUri.parse("eml:///dataspace('brgm')/resqml22.TriangulatedSetRepresentation(e648b1d0-70a3-46c6-9be8-b12625661c2b)");
 //        ETPUri etpuri = ETPUri.parse("eml:///dataspace('brgm')/resqml22.TriangulatedSetRepresentation(16ca92d0-912b-4c3d-a8d5-86378c9e8be5)");
 //        ETPUri etpuri = ETPUri.parse("eml:///dataspace('brgm')/resqml22.PolylineSetRepresentation(2ab8076e-a9cd-4e4b-b9af-a32f8f434f43)");
@@ -159,7 +160,7 @@ public class ETPSurfaceToFile extends HttpServlet {
         Object obj = workspace.getEnergisticsObject(etpuri.toString());
         System.out.println(obj);
         exportObj(Mesh.readMeshObject(obj, workspace),
-                new FileOutputStream("D:/Geosiris/Cloud/Geo-Workflow/BRGM/BRGM_RESQML_PROJECT/AVRE/results/poly_" + ObjectController.getObjectAttributeValue(obj, "uuid")
+                new FileOutputStream("D:/Geosiris/Cloud/Geo-Workflow/BRGM/BRGM_RESQML_PROJECT/AVRE/results/" + etpuri.getObjectType() + "_" + etpuri.getUuid()
                         + ObjectController.getObjectAttributeValue(obj, "citation.Title") + ".obj"), "test", false);
 
         etpClient.closeClient();

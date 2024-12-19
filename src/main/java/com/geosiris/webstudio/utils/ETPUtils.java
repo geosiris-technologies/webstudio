@@ -80,12 +80,18 @@ public class ETPUtils {
 
 
     public static HttpURI getHttpUriETP(String serverUrl){
+        HttpURI uri = null;
         if(serverUrl.toLowerCase(Locale.ROOT).startsWith("http:")) {
-            serverUrl = "ws" + serverUrl.substring(4);
+            uri = new HttpURI("ws" + serverUrl.substring(4));
+        }else if(serverUrl.toLowerCase(Locale.ROOT).startsWith("https:")) {
+            uri = new HttpURI("wss" + serverUrl.substring(5));
         }else if(!serverUrl.toLowerCase(Locale.ROOT).startsWith("ws") && !serverUrl.toLowerCase(Locale.ROOT).startsWith("wss") ){
-            serverUrl = "ws://" + serverUrl;
+            uri = new HttpURI("ws://" + serverUrl);
+        }else{
+            uri = new HttpURI(serverUrl);
         }
-        return new HttpURI(serverUrl);
+        logger.info(uri);
+        return uri;
     }
 
     public static List<Message> sendETPRequest(HttpSession session, ETPClient etpClient, SpecificRecordBase msg,

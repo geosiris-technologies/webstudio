@@ -35,12 +35,21 @@ import org.apache.http.client.HttpClient;
 import org.apache.http.client.methods.HttpPost;
 import org.apache.http.entity.StringEntity;
 import org.apache.http.impl.client.HttpClientBuilder;
+import org.eclipse.jetty.util.ssl.SslContextFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import javax.net.ssl.SSLContext;
+import javax.net.ssl.SSLEngine;
+import javax.net.ssl.TrustManager;
+import javax.net.ssl.X509ExtendedTrustManager;
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
+import java.net.Socket;
 import java.nio.charset.StandardCharsets;
+import java.security.SecureRandom;
+import java.security.cert.CertificateException;
+import java.security.cert.X509Certificate;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -127,17 +136,22 @@ public class ETPWorkspace implements EnergymlWorkspace {
                 map.put("0", DataArrayIdentifier.newBuilder().setUri(uri).setPathInResource(pathInExternal).build());
 
                 List<?> res = new ArrayList<>();
-                HttpPost send_req = new HttpPost("http://" + client.getServerUri().getAuthority() + (client.getServerUri().getPath() != null ? "/" + client.getServerUri().getPath() : "") + "/data-array/raw/get");
+                logger.info(client.getServerUri().toString().replace("ws", "http"));
+                HttpPost send_req = new HttpPost(client.getServerUri().toString().replace("ws", "http") + "/data-array/raw/get");
                 send_req.addHeader("content-type", "application/json");
                 StringEntity params = new StringEntity(GetDataArrays.newBuilder().setDataArrays(map).build().toString());
                 send_req.setEntity(params);
-                HttpClient httpClient = HttpClientBuilder.create().build();
+
+                SSLContext sslContext = SSLContext.getInstance("SSL"); // OR TLS
+                sslContext.init(null, new TrustManager[]{MOCK_TRUST_MANAGER }, new SecureRandom());
+                HttpClient httpClient = HttpClientBuilder.create().setSSLContext(sslContext).build();
                 HttpResponse answer = httpClient.execute(send_req);
                 Gson gson = new Gson();
                 String content = new BufferedReader(
                         new InputStreamReader(answer.getEntity().getContent(), StandardCharsets.UTF_8))
                         .lines()
                         .collect(Collectors.joining("\n"));
+                logger.info(content);
                 res = gson.fromJson(content, ArrayList.class);
 
                 // Following line to remove "NAN" values
@@ -252,4 +266,41 @@ public class ETPWorkspace implements EnergymlWorkspace {
                 .flatMap(List::stream).collect(Collectors.toList());
     }
 
+    private static final TrustManager MOCK_TRUST_MANAGER = new X509ExtendedTrustManager() {
+        @Override
+        public void checkClientTrusted(X509Certificate[] x509Certificates, String s, Socket socket) throws CertificateException {
+
+        }
+
+        @Override
+        public void checkServerTrusted(X509Certificate[] x509Certificates, String s, Socket socket) throws CertificateException {
+
+        }
+
+        @Override
+        public void checkClientTrusted(X509Certificate[] x509Certificates, String s, SSLEngine sslEngine) throws CertificateException {
+
+        }
+
+        @Override
+        public void checkServerTrusted(X509Certificate[] x509Certificates, String s, SSLEngine sslEngine) throws CertificateException {
+
+        }
+
+        @Override
+        public java.security.cert.X509Certificate[] getAcceptedIssuers() {
+            return new java.security.cert.X509Certificate[0];
+        }
+
+        @Override
+        public void checkClientTrusted(X509Certificate[] x509Certificates, String s) throws CertificateException {
+
+        }
+
+        @Override
+        public void checkServerTrusted(java.security.cert.X509Certificate[] chain, String authType) throws CertificateException {
+            // empty method
+        }
+        // ... Other void methods
+    };
 }
