@@ -248,6 +248,8 @@ public class ObjectEdit extends HttpServlet {
                                 Object newObj = Editor.pkgManager.createInstance(type, map, null, userName, false);
                                 String objUuid = ObjectController.getObjectAttributeValue(newObj, "Uuid") + "";
                                 map.put(objUuid, newObj);
+                                // Applying default values
+                                ResqmlObjectControler.applyDefaultValues(newObj);
                                 SessionUtility.getWorkspaceContent(session).setReadObjects(map);
                                 response = "Object created with uuid " + objUuid;
                                 LoadWorkspace.updateWorkspace(session, objUuid);

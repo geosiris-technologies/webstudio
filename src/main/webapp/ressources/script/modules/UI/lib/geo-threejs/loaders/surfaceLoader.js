@@ -32,7 +32,9 @@ export class SurfaceLoader {
     }
 
     computeLines(){
-        this.lines = [];
+        if(this.lines == null){
+            this.lines = [];
+        }
 
         for(var ti=0; ti<this.trianglesIdx.length; ti++){
             this.lines.push(this.points[this.trianglesIdx[ti][0]]);

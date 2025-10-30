@@ -15,10 +15,9 @@ limitations under the License.
 */
 package com.geosiris.webstudio.servlet.etp;
 
-import Energistics.Etp.v12.Datatypes.Object.ActiveStatusKind;
-import Energistics.Etp.v12.Datatypes.Object.ContextScopeKind;
-import Energistics.Etp.v12.Datatypes.Object.DataObject;
-import Energistics.Etp.v12.Datatypes.Object.Resource;
+import Energistics.Etp.v12.Datatypes.Object.*;
+import Energistics.Etp.v12.Protocol.Dataspace.PutDataspaces;
+import Energistics.Etp.v12.Protocol.Dataspace.PutDataspacesResponse;
 import Energistics.Etp.v12.Protocol.Discovery.GetResources;
 import Energistics.Etp.v12.Protocol.Discovery.GetResourcesResponse;
 import Energistics.Etp.v12.Protocol.Store.*;
@@ -47,6 +46,7 @@ import jakarta.servlet.http.HttpServletResponse;
 import jakarta.servlet.http.HttpSession;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.eclipse.jetty.http.HttpURI;
 
 import javax.xml.datatype.XMLGregorianCalendar;
 import java.io.IOException;
@@ -81,7 +81,7 @@ public class ETPRequest extends HttpServlet {
             return;
         }
 
-		PrintWriter out = response.getWriter();
+        PrintWriter out = response.getWriter();
         response.setContentType("application/json");
         response.setCharacterEncoding("UTF-8");
         out.write(ETPRequestUtils.getAllBuildableMessages());
@@ -120,6 +120,9 @@ public class ETPRequest extends HttpServlet {
             if(parameterMap.containsKey("dataspace")){
                 dataspace = parameterMap.get("dataspace").get(0);
             }
+            if(dataspace!=null && (dataspace.isEmpty() || dataspace.compareToIgnoreCase("eml:///") == 0)){
+                dataspace = null;
+            }
 
             boolean ask_aknowledge = parameterMap.containsKey("ask_aknowledge");
 
@@ -134,7 +137,7 @@ public class ETPRequest extends HttpServlet {
                 try {
                     StringBuilder req_result = new StringBuilder();
                     if (request.toLowerCase().startsWith("getresource")) {
-
+                        logger.info("Getting resources : " + new ETPUri(dataspace));
                         GetResources getRess = ETPDefaultProtocolBuilder.buildGetResources(new ETPUri(dataspace).toString(),
                                 ContextScopeKind.self, new ArrayList<>());
 
@@ -169,6 +172,18 @@ public class ETPRequest extends HttpServlet {
                                 logger.info("null GetResourcesResponse ");
                             }
                         }
+                    } else if (request.toLowerCase().startsWith("putdataspace")) {
+                        String newDataspace = parameterMap.get("newDataspace").get(0);
+                        PutDataspaces pds = PutDataspaces.newBuilder()
+                                .setDataspaces(Map.of("0", Dataspace.newBuilder()
+                                        .setUri(new ETPUri(newDataspace).toString())
+                                        .setStoreLastWrite(0)
+                                        .setStoreCreated(0)
+                                        .setPath(dataspace)
+                                        .setCustomData(new HashMap<>())
+                                        .build())
+                                ).build();
+                        ETPUtils.sendETPRequest(session, etpClient, pds, ask_aknowledge, ETPUtils.waitingForResponseTime);
                     } else if (request.toLowerCase().startsWith("deletedataobject")) {
                         Map<CharSequence, CharSequence> mapUri = new HashMap<>();
                         for (String uri : parameterMap.get("etp_uri")) {
@@ -209,8 +224,8 @@ public class ETPRequest extends HttpServlet {
                                 etpuri.setDataspace(dataspace);
                             }
                             SessionUtility.log(session, new ServerLogMessage(MessageType.LOG,
-                                        "ETP request import on " + etpuri + " == " + etpuri.hasDataspace() + " --- " + etpuri.getDataspace(),
-                                        SessionUtility.EDITOR_NAME));
+                                    "ETP request import on " + etpuri + " == " + etpuri.hasDataspace() + " --- " + etpuri.getDataspace(),
+                                    SessionUtility.EDITOR_NAME));
                             mapUri.put(mapUri.size()+"", etpuri.toString());
                         }
 
@@ -369,7 +384,7 @@ public class ETPRequest extends HttpServlet {
                 } catch (Exception ignore){}
 
                 String uri = new ETPUri(dataspace, EPCGenericManager.getPackageDomain_fromClassName(epc_obj.getClass().getName()),
-                                        EPCGenericManager.getSchemaVersion(epc_obj, false).replace(".", ""), EPCGenericManager.getObjectTypeForFilePath(epc_obj), uuid, null ).toString();
+                        EPCGenericManager.getSchemaVersion(epc_obj, false).replace(".", ""), EPCGenericManager.getObjectTypeForFilePath(epc_obj), uuid, null ).toString();
 
                 logger.error("lastUpdate : " + lastUpdate);
                 logger.error("uri : " + uri);
@@ -395,4 +410,5 @@ public class ETPRequest extends HttpServlet {
         }
         return new Pair<>(mapResult, logs.toString());
     }
+
 }

@@ -1,0 +1,65 @@
+# .github/workflows/version-setup.yml
+name: Maven Version Setup
+
+on:
+    workflow_call:
+        outputs:
+            revision:
+                description: "Revision"
+                value: ${{ jobs.version.outputs.revision }}
+            sha1:
+                description: "SHA1"
+                value: ${{ jobs.version.outputs.sha1 }}
+            changelist:
+                description: "Changelist"
+                value: ${{ jobs.version.outputs.changelist }}
+            flattened_version:
+                description: "Flattened Version"
+                value: ${{ jobs.version.outputs.flattened_version }}
+
+jobs:
+    version:
+        runs-on: ubuntu-latest
+        outputs:
+            revision: ${{ steps.setver.outputs.revision }}
+            sha1: ${{ steps.setver.outputs.sha1 }}
+            changelist: ${{ steps.setver.outputs.changelist }}
+            flattened_version: ${{ steps.setver.outputs.flattened_version }}
+        steps:
+            - uses: actions/checkout@v4
+              with:
+                  fetch-depth: 0
+            - id: setver
+              run: |
+                  COMMIT_SHA_LONG="${{ github.sha }}"
+                  COMMIT_SHA_SHORT="${COMMIT_SHA_LONG:0:7}"
+
+                  REVISION_VAR=""
+                  SHA1_VAR=""
+                  CHANGELIST_VAR=""
+
+                  if [[ "${{ github.ref_type }}" == "tag" ]]; then
+                      TAG_NAME="${{ github.ref_name }}"
+                      TAG_CLEAN=$(echo "$TAG_NAME" | sed 's/^v//')
+
+                      REVISION_VAR="$TAG_CLEAN"
+                      SHA1_VAR=""
+                      CHANGELIST_VAR=""
+                      echo "🏗️ Version de Release (Tag) détectée : $TAG_CLEAN"
+                  else
+                      LAST_TAG=$(git describe --tags --abbrev=0 2>/dev/null || echo "v0.0.0") 
+                      VERSION_BASE=$(echo "$LAST_TAG" | sed 's/^v//')
+                      IFS='.' read -r MAJOR MINOR PATCH <<< "$VERSION_BASE"
+                      NEXT_PATCH=$((PATCH + 1))
+                      
+                      REVISION_VAR="$MAJOR.$MINOR.$NEXT_PATCH"
+                      SHA1_VAR="-$COMMIT_SHA_SHORT" 
+                      CHANGELIST_VAR="-SNAPSHOT"
+                      echo "🧪 Version Snapshot détectée (basée sur $LAST_TAG) : ${REVISION_VAR}${SHA1_VAR}${CHANGELIST_VAR}"
+                  fi
+
+                  echo "revision=$REVISION_VAR" >> "$GITHUB_OUTPUT"
+                  echo "sha1=$SHA1_VAR" >> "$GITHUB_OUTPUT"
+                  echo "changelist=$CHANGELIST_VAR" >> "$GITHUB_OUTPUT"
+                  echo "flattened_version=${REVISION_VAR}${SHA1_VAR}${CHANGELIST_VAR}" >> "$GITHUB_OUTPUT"
+                  echo "➡️ Variables de sortie définies : revision='$REVISION_VAR', sha1='$SHA1_VAR', changelist='$CHANGELIST_VAR'"

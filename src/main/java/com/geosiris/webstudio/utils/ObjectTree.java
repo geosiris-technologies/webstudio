@@ -20,6 +20,7 @@ import com.geosiris.energyml.utils.Pair;
 import com.geosiris.webstudio.property.ConfigurationType;
 import com.geosiris.webstudio.servlet.Editor;
 import com.google.gson.Gson;
+import energyml.relationships.Relationships;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -351,7 +352,8 @@ public class ObjectTree {
 
         StringBuilder jsonValue = new StringBuilder();
         jsonValue.append("  { \"name\" : \"").append(name).append("\",\n");
-        jsonValue.append("   \"type\" : \"").append(dataClass.getCanonicalName()).append("\",\n");
+        if(dataClass != null)
+            jsonValue.append("   \"type\" : \"").append(dataClass.getCanonicalName()).append("\",\n");
         jsonValue.append("   \"mandatory\" : \"").append(isMandatory).append("\",\n");
 
         if (dataClassTemplatedList != null && dataClassTemplatedList.size() > 0) {
@@ -402,7 +404,7 @@ public class ObjectTree {
 //        }else {
             // On met une valeur si ce n'est pas un array et si c'est un type modifiable
             // directement (comme les proprietes)
-            if (data != null && !dataClass.getName().toLowerCase().endsWith("array")
+            if (data != null && dataClass != null && !dataClass.getName().toLowerCase().endsWith("array")
                     && ObjectController.isPropertyClass(data.getClass())) {
                 String dataAsString = data + "";
                 if (data.getClass().isEnum()) {
@@ -416,7 +418,7 @@ public class ObjectTree {
                 }
                 dataAsString = Utility.transformStringForJsonCompatibility(dataAsString);
                 jsonValue.append("  \"value\" : ").append(dataAsString).append("\n");
-            } else if (data == null && ObjectController.isPrimitiveClass(dataClass)) {
+            } else if (data == null && dataClass != null && ObjectController.isPrimitiveClass(dataClass)) {
                 jsonValue.append("  \"value\" : \"\"\n");
             } else {
                 jsonValue = new StringBuilder(jsonValue.substring(0, jsonValue.lastIndexOf(",")) + " ");
@@ -464,5 +466,9 @@ public class ObjectTree {
 
     public ObjectTree getParent() {
         return parent;
+    }
+
+    public static void main(String[] argv){
+        System.out.println(createTree(new Relationships()).toJSON());
     }
 }

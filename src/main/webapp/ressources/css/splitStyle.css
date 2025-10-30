@@ -10,30 +10,34 @@
 	background-color: #ccc;
 	background-repeat: no-repeat;
 	background-position: 50%;
-	/*height : 100%;
-	/*border:2px solid #000;*/ 
-    /* outline: 2px solid #000;
-    outline-offset: -8px;  */
+    position: relative;
+
+	border: 1px solid #212529;
+    margin: 3px;
+    padding: 6px;
+    border-radius: 8px;
 }
 
 .gutter.gutter-horizontal {
 	cursor: col-resize;
-	/* background-image: url("ressources/img/ellipsis-v.png"); */
 	background-image: url("ressources/img/rectangle-v.png");
-	background-size: 10px 40px; 
-	border : 1px solid #212529;
-	/*border-left : 1px solid #212529;*/
-	/*border-right: 1px solid #212529;*/
+    background-size: 5px 100px;
+    width: 8px !important;
+    height: calc(100% - 30px) !important;
+    top: 50%;
+    -ms-transform: translateY(-50%);
+    transform: translateY(-50%);
 }
 
 .gutter.gutter-vertical {
 	cursor: row-resize; 
-	/* background-image: url("ressources/img/ellipsis-h.png"); */
 	background-image: url("ressources/img/rectangle-h.png");
-	background-size: 40px 10px;
-	/*transform: rotate(90deg);*/
-	border-top : 1px solid #212529;
-	border-bottom: 1px solid #212529;
+	background-size: 100px 5px;
+    height: 8px !important;
+    width: calc(100% - 30px) !important;
+    left: 50%;
+    -ms-transform: translateX(-50%);
+    transform: translateX(-50%);
 }
 
 .split.split-horizontal, .gutter.gutter-horizontal {

@@ -70,6 +70,14 @@ export function geosiris_createETP_connector_form(fun_isConnected, fun_isDisconn
 
     form.appendChild(inputGroup);
 
+    const headers = document.createElement("textarea");
+    headers.classList.add('form-control');
+    headers.setAttribute('name', 'etp-server-headers');
+    headers.setAttribute('row', '6');
+    headers.value = '{\n\t"data-partition-id": "osdu"\n}';
+    form.appendChild(headers);
+
+
     const connectButton = document.createElement('input');
     connectButton.setAttribute('type', 'button');
     connectButton.setAttribute('name', 'request-type');
@@ -116,6 +124,8 @@ export function geosiris_createETP_connector_form(fun_isConnected, fun_isDisconn
                         }catch(jsonFailed){
                             console.log(jsonFailed);
                         }
+
+                        update_dataspaces_inputs(cst_callback_func);
                     }
                 );
 
@@ -125,6 +135,7 @@ export function geosiris_createETP_connector_form(fun_isConnected, fun_isDisconn
                 btnConn.className = "btn btn-danger";
                 input_req.value = "disconnect";
                 inputGroup.style.display = 'none';
+                headers.style.display = 'none';
                 if(cst_fun_isConnected != null){
                     cst_fun_isConnected();
                 }
@@ -138,11 +149,12 @@ export function geosiris_createETP_connector_form(fun_isConnected, fun_isDisconn
                 btnConn.className = "btn btn-primary mt-2";
                 input_req.value = "connect";
                 inputGroup.style.display = '';
+                headers.style.display = '';
                 if(HAS_BEEN_CONNECTED_ONCE && cst_fun_isDisconnected != null){
                     cst_fun_isDisconnected();
                 }
+            update_dataspaces_inputs(cst_callback_func);
             }
-        update_dataspaces_inputs(cst_callback_func);
     }
     form.updateView = function(isConnected){
         func_update_btn_view(connectButton, inreq, isConnected);
@@ -199,6 +211,13 @@ export function create_dataspace_input(callback_func, inputs_classes_to_update){
 
     const const_inputs_classes_to_update = inputs_classes_to_update;
 
+    var but_refresh_dataspaces = document.createElement('i');
+    but_refresh_dataspaces.className = "btn btn-info fas fa-sync-alt";
+    but_refresh_dataspaces.title = "Refresh dataspace list";
+    but_refresh_dataspaces.addEventListener("click", function(event){
+         update_dataspaces_inputs(null, true);
+    });
+
 
     selectDataspace.addEventListener("change", function(event){
          if(const_inputs_classes_to_update != null){
@@ -210,7 +229,6 @@ export function create_dataspace_input(callback_func, inputs_classes_to_update){
         }
     });
 
-
     selectDataspace.update = function (dataspacesNamesArray){
         var selectedValue = null;
         // keep previous selected value during updates
@@ -221,6 +239,7 @@ export function create_dataspace_input(callback_func, inputs_classes_to_update){
         while(selectDataspace.firstChild){
             selectDataspace.firstChild.remove();
         }
+
         if(dataspacesNamesArray.length > 0){
             var option = document.createElement("option");
             option.value = "";
@@ -228,6 +247,7 @@ export function create_dataspace_input(callback_func, inputs_classes_to_update){
             selectDataspace.appendChild(option);
         }
 
+        dataspacesNamesArray = dataspacesNamesArray.filter((ds) => ds.length > 0 && ds != "eml:///");
         [].forEach.call(dataspacesNamesArray, (elt, idx) =>{
             var option = document.createElement("option");
             option.value = elt;
@@ -248,6 +268,7 @@ export function create_dataspace_input(callback_func, inputs_classes_to_update){
     };
     selectDataspace.update([]);
     div.appendChild(selectDataspace);
+    div.appendChild(but_refresh_dataspaces);
 
     return div;
 }

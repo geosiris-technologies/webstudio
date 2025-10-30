@@ -15,9 +15,13 @@ limitations under the License.
 */
 package com.geosiris.webstudio.servlet.etp;
 
+import Energistics.Etp.v12.Datatypes.Object.ContextScopeKind;
+import com.geosiris.etp.utils.ETPHelper;
 import com.geosiris.etp.websocket.ETPClient;
+import com.geosiris.webstudio.utils.ETPRequestUtils;
 import com.geosiris.webstudio.utils.ETPUtils;
 import com.geosiris.webstudio.utils.SessionUtility;
+import com.google.gson.Gson;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.HttpServlet;
@@ -37,6 +41,7 @@ import java.io.InputStream;
 import java.io.PrintWriter;
 import java.util.HashMap;
 import java.util.Locale;
+import java.util.Map;
 
 /**
  * Servlet implementation class ETPConnexion
@@ -44,7 +49,7 @@ import java.util.Locale;
 @WebServlet("/ETPConnexion")
 public class ETPConnexion extends HttpServlet {
 	private static final long serialVersionUID = 1L;
-    public static Logger logger = LogManager.getLogger(ETPConnexion.class);
+	public static Logger logger = LogManager.getLogger(ETPConnexion.class);
 
 	/**
 	 * @see HttpServlet#HttpServlet()
@@ -73,10 +78,10 @@ public class ETPConnexion extends HttpServlet {
 			answer = "unkown request";
 		}
 		PrintWriter out = response.getWriter();
-        response.setContentType("application/text");
-        response.setCharacterEncoding("UTF-8");
-        out.write(answer);
-        out.flush();
+		response.setContentType("application/text");
+		response.setCharacterEncoding("UTF-8");
+		out.write(answer);
+		out.flush();
 	}
 
 	/**
@@ -91,6 +96,7 @@ public class ETPConnexion extends HttpServlet {
 
 		String userName = null;
 		String password = null;
+		Map<String, String> headers = new HashMap<>();
 		boolean askConnection = true;
 		HttpURI host_uri = null;
 
@@ -123,6 +129,9 @@ public class ETPConnexion extends HttpServlet {
 							if (value.compareToIgnoreCase("disconnect") == 0) {
 								askConnection = false;
 							}
+						}else if ("etp-server-headers".compareToIgnoreCase(item.getFieldName()) == 0) {
+							Gson gson = new Gson();
+							headers.putAll(gson.fromJson(value, HashMap.class));
 						}
 					}
 				}
@@ -146,20 +155,22 @@ public class ETPConnexion extends HttpServlet {
 					if (value.compareToIgnoreCase("disconnect") == 0) {
 						askConnection = false;
 					}
+				}else if ("etp-server-headers".compareToIgnoreCase(k) == 0) {
+					Gson gson = new Gson();
+					headers.putAll(gson.fromJson(value, HashMap.class));
 				}
 			}
 		}
 
 		logger.info("#ETP : host " + host_uri);
 		logger.info(request.getSession(false));
-		ETPClient client = ETPUtils.establishConnexion(request.getSession(false), host_uri, userName, password, null, new HashMap<>(), askConnection);
+		ETPClient client = ETPUtils.establishConnexion(request.getSession(false), host_uri, userName, password, null, headers, askConnection);
 
 		PrintWriter out = response.getWriter();
-        response.setContentType("application/text");
-        response.setCharacterEncoding("UTF-8");
-        out.write(String.valueOf(client != null));
-        out.flush();
+		response.setContentType("application/text");
+		response.setCharacterEncoding("UTF-8");
+		out.write(String.valueOf(client != null));
+		out.flush();
 	}
-
 
 }

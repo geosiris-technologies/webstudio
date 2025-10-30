@@ -28,6 +28,7 @@ import {refreshHighlightedOpenedObjects} from "../ui.js";
 import {REGEX_ETP_URI, __ENUM_CONSOLE_MSG_SEVERITY_TOAST__, __ID_CONSOLE__, __RWS_CLIENT_NAME__, CLASS_TABLE_FIXED} from "../../common/variables.js";
 import {removeListDuplicatesByObjectKey, getAttribute} from "../../common/utils.js";
 import {geo3DVue, openResqmlObjectContentByUUID} from "../../main.js";
+import {createToast} from "../snackbar.js";
 
 
 var ETP_REQUEST_LAUNCH = 0
@@ -159,6 +160,7 @@ export function loadUrisIn3DVue(){
 
     if(checkedUris != null && checkedUris.length > 0){
         importObjectIn3DView(checkedUris).then(fileContent => {
+            var loadedSurfaces = [];
             try{
                 var jsonValueList = JSON.parse(fileContent);
                 console.log("3D vue is Loading " + jsonValueList.length + " entities");
@@ -178,6 +180,7 @@ export function loadUrisIn3DVue(){
                           obj["faceColor"],
                           obj["epsgCode"]
                         );
+                        loadedSurfaces.push(obj["title"] + " : " + obj["uuid"]);
                     }catch(exception){
                         console.log(fileContent);
                         console.log(exception);
@@ -188,9 +191,31 @@ export function loadUrisIn3DVue(){
                         });
                     }
                 });
+                if(loadedSurfaces.length > 0){
+                    createToast({
+                        title: "Mesh loader",
+                        time: (new Date(Date.now())).toLocaleTimeString('en-US'),
+                        body: "Loaded surfaces : " + loadedSurfaces.map(x => "<br/>- " + x),
+                        option: {
+                          animation: true,
+                          autohide: true,
+                          delay: 10000
+                        }
+                    })
+                }
             }catch(exception){
                 console.log(fileContent);
                 console.log(exception);
+                createToast({
+                        title: "Mesh loader",
+                        time: (new Date(Date.now())).toLocaleTimeString('en-US'),
+                        body: "Failed to import 3D surface : " + exception,
+                        option: {
+                          animation: true,
+                          autohide: true,
+                          delay: 10000
+                        }
+                });
             }
         }).catch((error) => console.error(error));
     }
@@ -263,6 +288,10 @@ export function loadETPObjectList(eltId_objectList, eltId_formRequest){
             }
         );
 
+        var div_but_import = document.createElement("div");
+        div_but_import.className = "input-group";
+        formImportETPobjects.appendChild(div_but_import);
+
         const formSubmit_import = document.createElement("input");
         formSubmit_import.value = "ImportDataObject";
         formSubmit_import.type = "button";
@@ -273,7 +302,7 @@ export function loadETPObjectList(eltId_objectList, eltId_formRequest){
                                         function(){resquestValidation(__ID_CONSOLE__, null);});
                             }
         formSubmit_import.appendChild(document.createTextNode("import"));
-        formImportETPobjects.appendChild(formSubmit_import);
+        div_but_import.appendChild(formSubmit_import);
 
 
         
@@ -293,7 +322,7 @@ export function loadETPObjectList(eltId_objectList, eltId_formRequest){
                                     );
                             }
         formSubmit_delete.appendChild(document.createTextNode("Delete data object"));
-        formImportETPobjects.appendChild(formSubmit_delete);
+        div_but_import.appendChild(formSubmit_delete);
 
 
         const formSubmit_visualize = document.createElement("input");
@@ -304,7 +333,7 @@ export function loadETPObjectList(eltId_objectList, eltId_formRequest){
                                 loadUrisIn3DVue();
                             }
         formSubmit_visualize.appendChild(document.createTextNode("Visualize data object"));
-        formImportETPobjects.appendChild(formSubmit_visualize);
+        div_but_import.appendChild(formSubmit_visualize);
 
         // activity launcher
         const launch_select_id = "etp_select_activity_type";
@@ -491,7 +520,7 @@ export function updateExportToETPTableContent(relations){
         );
         f_cols.push(col_check);
 
-        ["num", "type", "uuid", "schemaVersion"].forEach(
+        ["title", "type", "uuid", "schemaVersion"].forEach(
             (attrib) => {
                 f_cols.push(
                     new JsonTableColumnizer_DotAttrib(

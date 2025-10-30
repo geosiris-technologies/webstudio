@@ -59,6 +59,7 @@ export function fun_import_surface(
         geotjs.geoScene.addObject(new GeoObject(new PolylineLoader(data), name, pointColor, lineColor, faceColor, epsgCode));
     }else{
         console.log("reading obj");
+        console.log(data);
         geotjs.geoScene.addObject(new GeoObject(new ObjLoader(data), name, pointColor, lineColor, faceColor, epsgCode));
     }
     geotjs.animate();

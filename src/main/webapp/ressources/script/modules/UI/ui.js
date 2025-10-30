@@ -435,8 +435,8 @@ export function initRootEltSelector(typeSelector){
     for(var typeIdx=0; typeIdx<energymlRootTypes.length; typeIdx++){
         // On recupere tout sauf le nom de la classe
         var versionNum = energymlRootTypes[typeIdx].substring(0, energymlRootTypes[typeIdx].lastIndexOf(".")); 
-        // on cherche la deniere partie du nom de package, qui contient le numero de version
-        versionNum = versionNum.substring(versionNum.lastIndexOf(".")+1).replace(/([\w\d\.]+)(_|[a-zA-Z])(\d[\d\_\\.]+$)/g, '$3');
+        // on cherche la derniere partie du nom de package, qui contient le numero de version
+        versionNum = versionNum.substring(versionNum.lastIndexOf(".")+1).replace(/(resqml|witsml|prodml|eml|common)_?(?<version>((?<dev>dev[\d]+)x_)?(?<versionNum>([\d]+[_\.])*\d))$/g, '$<versionNum>');
 
         if(versionNum.length > 0 && versionNum.match(/(\d[\d\_\\.]+$)/g)){
             var packageName = energymlRootTypes[typeIdx].substring(0, energymlRootTypes[typeIdx].lastIndexOf("."));
@@ -445,7 +445,7 @@ export function initRootEltSelector(typeSelector){
                 || packageName.slice(-1) == "_" ){
                 packageName = packageName.substring(0, packageName.length - 1);
             }
-    //        console.log(energymlRootTypes[typeIdx] +" version '" + versionNum + "' pkg '" + packageName + "'")
+            // console.log(energymlRootTypes[typeIdx] +" version '" + versionNum + "' pkg '" + packageName + "'")
 
             if(mapPackageToVersionToTypes[packageName]==null){
                 mapPackageToVersionToTypes[packageName] = {};
@@ -455,8 +455,8 @@ export function initRootEltSelector(typeSelector){
             }
             mapPackageToVersionToTypes[packageName][versionNum].push(energymlRootTypes[typeIdx]);
         }else{
-//            console.log("empty version for '" + energymlRootTypes[typeIdx] + "' -- " );
-//            console.log(energymlRootTypes[typeIdx].match(rgxPkg));
+            // console.log("empty version for '" + energymlRootTypes[typeIdx] + "' -- " );
+            // console.log(energymlRootTypes[typeIdx].match(rgxPkg));
         }
     }
 
@@ -483,7 +483,7 @@ export function initRootEltSelector(typeSelector){
             const constVersion = version;
             var found = version.match(rgxPkg);
             if(found != null){
-                var versionVue = found.groups["versionNum"].replace("_", ".")
+                var versionVue = found.groups["versionNum"].replaceAll("_", ".")
                 if(found.groups["dev"]!=null){
                     versionVue += "(" + found.groups["dev"] +")";
                 }

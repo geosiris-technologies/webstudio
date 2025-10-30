@@ -54,6 +54,9 @@ export function addJsonData(jsObject, jsonEltVue, printListIdx, f_applyOnKey){
                 eltToPutChildIn.style.paddingLeft = "20px";
                 eltToPutChildIn.style.borderLeft = "1px dashed black";
                 eltToPutChildIn.className = 'jsonTreeDiv';
+
+                eltToPutChildIn._object = jsObject[i];
+
                 var collapser = null;
                 if(spanTitle != null){
                     collapser = createCollapser(spanTitle, eltToPutChildIn);

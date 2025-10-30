@@ -183,6 +183,7 @@ public class FileReciever extends HttpServlet {
                 FileItemIterator iterator = upload.getItemIterator(request);
                 while (iterator.hasNext()) {
                     FileItemStream item = iterator.next();
+                    String inputFileName = item.getName();
                     InputStream stream = item.openStream();
 
                     if (item.isFormField() && item.getFieldName().compareTo("epcInputURL") == 0) {
@@ -236,6 +237,9 @@ public class FileReciever extends HttpServlet {
                                 }
                             } else {
                                 WorkspaceContent currentFile = HttpSender.readFile(session, stream, item.getName());
+                                if(inputFileName.toLowerCase().endsWith(".epc")) {
+                                    currentFile.getLoadedEpcNames().add(inputFileName);
+                                }
                                 loadedEPC.putAll(currentFile);
                             }
                         }
@@ -260,6 +264,9 @@ public class FileReciever extends HttpServlet {
                                 URL epcURL = new URL(SessionUtility.wsProperties.getDefaultDataEPCUrl());
                                 InputStream epcFile = new BufferedInputStream(epcURL.openStream());
                                 WorkspaceContent currentFile = HttpSender.readFile(session, epcFile, "");
+                                if(inputFileName.toLowerCase().endsWith(".epc")) {
+                                    currentFile.getLoadedEpcNames().add(inputFileName);
+                                }
                                 loadedEPC.putAll(currentFile);
                             } catch (Exception e) {
                                 logger.error(e.getMessage(), e);

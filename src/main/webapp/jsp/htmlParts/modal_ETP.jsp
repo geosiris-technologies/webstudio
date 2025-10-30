@@ -33,6 +33,12 @@ limitations under the License.
         document.getElementById("submit_getDataArray").onclick = function(){
             sendForm('ETPRequest_getDataArray_Form', 'modal_ETP', 'rolling_ETP', false, false, false);
         }
+        document.getElementById("submit_putDataspace").onclick = function(){
+            sendForm('ETPRequest_putDataspace_Form', 'modal_ETP', 'rolling_ETP', false, false, false);
+            // $('form#ETPRequest_putDataspace_Form').submit(function(e){
+            //     e.preventDefault();
+            // });
+        }
     </script>
 
     <div class="modal-dialog modal-dialog-centered modal-xl-customGeosiris">
@@ -58,6 +64,9 @@ limitations under the License.
                     </li>
                     <li class="nav-item">
                         <a class="nav-link" data-bs-toggle="tab" href="#ETPRequest_getRelated">Get related resources</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" data-bs-toggle="tab" href="#ETPRequest_putDataspace">Put dataspace</a>
                     </li>
                 </ul>
 
@@ -129,6 +138,26 @@ limitations under the License.
                         </form>
                         <input class="btn btn-primary geosiris-btn-etp" name="submit" type="submit" 
                                 value="Export (PutDataObjects)" id="submit_PutDataObject"/>
+                    </div>
+
+<!--
+
+-->
+
+                    <div id="ETPRequest_putDataspace" class="container tab-pane"><br>
+                        <form id="ETPRequest_putDataspace_Form" name="ETPRequest_putDataspace_Form" method="POST" action="ETPRequest" enctype="multipart/form-data">
+                            <input class="form-control" type="text" required name="request" value="putdataspace" hidden="hidden" />
+                            <div class="input-group">
+                                <label class="input-group-text" type="label">Dataspace name</label>
+                                <input class="form-control" type="text" name="newDataspace" >
+                            </div>
+                        </form>
+                        <div class="input-group">
+                            <button class="btn btn-primary geosiris-btn-etp" value="Create Dataspace"
+                                id="submit_putDataspace">Send</button>
+                        </div>
+                        <!-- <input class="btn btn-primary geosiris-btn-etp" name="submit" type="submit"
+                            value="Create Dataspace" id="submit_putDataspace"/> -->
                     </div>
 
 <!-- 

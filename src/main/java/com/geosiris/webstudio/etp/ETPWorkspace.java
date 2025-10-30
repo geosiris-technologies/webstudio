@@ -16,25 +16,44 @@ limitations under the License.
 package com.geosiris.webstudio.etp;
 
 import Energistics.Etp.v12.Datatypes.DataArrayTypes.DataArray;
+import Energistics.Etp.v12.Datatypes.DataArrayTypes.DataArrayIdentifier;
 import Energistics.Etp.v12.Datatypes.Object.ContextScopeKind;
-import Energistics.Etp.v12.Protocol.DataArray.GetDataArraysResponse;
+import Energistics.Etp.v12.Protocol.DataArray.GetDataArrays;
 import com.geosiris.energyml.exception.ObjectNotFoundNotError;
 import com.geosiris.energyml.pkg.EPCFile;
 import com.geosiris.energyml.pkg.EPCPackage;
 import com.geosiris.energyml.utils.EnergymlWorkspace;
 import com.geosiris.energyml.utils.ObjectController;
 import com.geosiris.etp.utils.ETPHelper;
-import com.geosiris.etp.utils.ETPHelperREST;
 import com.geosiris.etp.utils.ETPUri;
 import com.geosiris.etp.websocket.ETPClient;
 import com.geosiris.webstudio.servlet.Editor;
+import com.google.gson.Gson;
 import jakarta.xml.bind.JAXBElement;
+import org.apache.http.HttpResponse;
+import org.apache.http.client.HttpClient;
+import org.apache.http.client.methods.HttpPost;
+import org.apache.http.entity.StringEntity;
+import org.apache.http.impl.client.HttpClientBuilder;
+import org.eclipse.jetty.util.ssl.SslContextFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import javax.net.ssl.SSLContext;
+import javax.net.ssl.SSLEngine;
+import javax.net.ssl.TrustManager;
+import javax.net.ssl.X509ExtendedTrustManager;
+import java.io.BufferedReader;
+import java.io.InputStreamReader;
+import java.net.Socket;
+import java.nio.charset.StandardCharsets;
+import java.security.SecureRandom;
+import java.security.cert.CertificateException;
+import java.security.cert.X509Certificate;
 import java.util.*;
 import java.util.stream.Collectors;
 
+import static com.geosiris.energyml.utils.EPCGenericManager.getObjectTypeForFilePath_fromClassName;
 import static com.geosiris.energyml.utils.EnergymlWorkspaceHelper.getHdfReference;
 
 public class ETPWorkspace implements EnergymlWorkspace {
@@ -67,6 +86,7 @@ public class ETPWorkspace implements EnergymlWorkspace {
         this.dataspace = dataspace;
         this.client = client;
         this.uuidUri_cache = new HashMap<>();
+        updateUuidCache();
     }
 
     public String getDataspace() {
@@ -97,16 +117,64 @@ public class ETPWorkspace implements EnergymlWorkspace {
     public List<?> readExternalArray(Object energymlArray, Object rootObj, String pathInRoot) throws ObjectNotFoundNotError {
         String pathInExternal = getHdfReference(energymlArray).get(0);
         String uri = getUriFromObject(rootObj, dataspace).toString();
-        try {
+        /*try {
             GetDataArraysResponse resp = ETPHelperREST.getMultipleDataArrays(client, uri, List.of(pathInExternal));
             List<?> res = dataArraysToNumbers(resp.getDataArrays().entrySet().stream()
-					.sorted(Comparator.comparing(a -> a.getKey().toString()))
+                    .sorted(Comparator.comparing(a -> a.getKey().toString()))
 //					.sorted(Comparator.comparingInt(e -> Integer.getInteger(e.getKey().toString())))
                     .map(Map.Entry::getValue)
                     .collect(Collectors.toList()));
 //            logger.info("@readExternalArray   values {} ", res.subList(0,9));
             return res;
-        } catch (Exception _ignore) {_ignore.printStackTrace();}
+        } catch (Exception _ignore) {_ignore.printStackTrace();}*/
+        logger.info("uri " + uri + " pathInExternal " + pathInExternal);
+        String serverHost = client.getServerUri().getHost();
+        if(serverHost.contains("geosiris.com")) {
+            // Using our own table raw download with http
+            try {
+                Map<CharSequence, DataArrayIdentifier> map = new HashMap<>();
+                map.put("0", DataArrayIdentifier.newBuilder().setUri(uri).setPathInResource(pathInExternal).build());
+
+                List<?> res = new ArrayList<>();
+                logger.info(client.getServerUri().toString().replace("ws", "http"));
+                HttpPost send_req = new HttpPost(client.getServerUri().toString().replace("ws", "http") + "/data-array/raw/get");
+                send_req.addHeader("content-type", "application/json");
+                StringEntity params = new StringEntity(GetDataArrays.newBuilder().setDataArrays(map).build().toString());
+                send_req.setEntity(params);
+
+                SSLContext sslContext = SSLContext.getInstance("SSL"); // OR TLS
+                sslContext.init(null, new TrustManager[]{MOCK_TRUST_MANAGER }, new SecureRandom());
+                HttpClient httpClient = HttpClientBuilder.create().setSSLContext(sslContext).build();
+                HttpResponse answer = httpClient.execute(send_req);
+                Gson gson = new Gson();
+                String content = new BufferedReader(
+                        new InputStreamReader(answer.getEntity().getContent(), StandardCharsets.UTF_8))
+                        .lines()
+                        .collect(Collectors.joining("\n"));
+                logger.info(content);
+                res = gson.fromJson(content, ArrayList.class);
+
+                // Following line to remove "NAN" values
+                res = res.stream().map(x -> x instanceof String ? Double.NaN: x).collect(Collectors.toList());
+//                if(!res.isEmpty() && res.get(0) instanceof String) {
+//                    try {
+//                        Float.parseFloat((String) res.get(0));
+//                        res = res.stream().map(x -> Float.parseFloat((String) x)).collect(Collectors.toList());
+//                    }catch (Exception ignore){}
+//                }
+                logger.info(String.valueOf(res));
+                logger.info("==> " + res.get(0) + " " + res.get(0).getClass());
+                return res;
+            } catch (Exception _ignore) {
+                _ignore.printStackTrace();
+            }
+        }else{
+            try {
+//            List<?> res = ETPHelper.sendGetDataArray_prettier(client, uri, pathInExternal, 50000, true);
+                List<?> res = ETPHelper.getMultipleDataArrays(client, uri, Collections.singletonList(pathInExternal), 500000).values().iterator().next();
+                return res;
+            } catch (Exception _ignore) {_ignore.printStackTrace();}
+        }
         return null;
     }
 
@@ -140,8 +208,8 @@ public class ETPWorkspace implements EnergymlWorkspace {
         if(uuidUri_cache.containsKey(uuid)) {
             return uuidUri_cache.get(uuid).data;
         }else{
-            logger.info("@getObjectUriFromUuid {} {}", uuid);
-            List<String> uris = ETPHelper.sendGetRessources_pretty(client, new ETPUri(dataspace).toString(), 1, ContextScopeKind.self, 5000);
+            logger.info("@getObjectUriFromUuid {} dataspace : {}", uuid, dataspace);
+            List<String> uris = ETPHelper.sendGetRessources_pretty(client, new ETPUri(dataspace).toString(), 1, ContextScopeKind.self, 5000000);
             for (String uri : uris) {
                 if (uri.contains(uuid)) {
                     uuidUri_cache.put(uuid, new CacheData<>(uri));
@@ -152,6 +220,17 @@ public class ETPWorkspace implements EnergymlWorkspace {
         return null;
     }
 
+    public void updateUuidCache(){
+        logger.info("@updateUuidCache");
+        try {
+            List<String> uris = ETPHelper.sendGetRessources_pretty(client, new ETPUri(dataspace).toString(), 1, ContextScopeKind.self, 5000000);
+            for (String uri : uris) {
+                ETPUri etpuri = ETPUri.parse(uri);
+                uuidUri_cache.put(etpuri.getUuid(), new CacheData<>(uri));
+            }
+        }catch (Exception e){logger.error("{}", e);}
+    }
+
     public static ETPUri getUriFromObject(Object obj, String dataspace){
         EPCPackage epc_pkg = Editor.pkgManager.getMatchingPackage(obj.getClass());
         ETPUri uri = new ETPUri();
@@ -159,46 +238,69 @@ public class ETPWorkspace implements EnergymlWorkspace {
         uri.setUuid((String) ObjectController.getObjectAttributeValue(obj, "uuid"));
         uri.setDomain(epc_pkg.getDomain());
         uri.setDomainVersion(epc_pkg.getVersionNum().replace(".", "").substring(0,2));
-        uri.setObjectType(obj.getClass().getSimpleName());
-        uri.setVersion((String) ObjectController.getObjectAttributeValue(obj, "version"));
+        uri.setObjectType(getObjectTypeForFilePath_fromClassName(obj.getClass().getName()));
+        try {
+            uri.setVersion((String) ObjectController.getObjectAttributeValue(obj, "version"));
+        }catch (Exception ignore){}
         return uri;
     }
 
 
     public static List<?> dataArraysToNumbers(List<DataArray> das){
         return das.stream()
-					.map(da -> {
-                        try {
-                            List<?> values = ((List<?>) ObjectController.getObjectAttributeValue(da.getData().getItem(), "values"));
-                            if(values == null){
-                                // cas of object filled by json from http and deserialized by Gson :
-                                // [Energistics.Etp.v12.Datatypes.ArrayOfInt, {values=[48.0, ...] } ]
-                                // this is translated by Gson as : [String = "Energistics.Etp.v12.Datatypes.ArrayOfInt", com.google.gson.internal.LinkedTreeMap = {'values': [[48.0, ...]]}]
-                                values = (List<?>) ((com.google.gson.internal.LinkedTreeMap) ((List)da.getData().getItem()).get(1)).get("values");
-                            }
+                .map(da -> {
+                    try {
+                        List<?> values = ((List<?>) ObjectController.getObjectAttributeValue(da.getData().getItem(), "values"));
+                        if(values == null){
+                            // cas of object filled by json from http and deserialized by Gson :
+                            // [Energistics.Etp.v12.Datatypes.ArrayOfInt, {values=[48.0, ...] } ]
+                            // this is translated by Gson as : [String = "Energistics.Etp.v12.Datatypes.ArrayOfInt", com.google.gson.internal.LinkedTreeMap = {'values': [[48.0, ...]]}]
+                            values = (List<?>) ((com.google.gson.internal.LinkedTreeMap) ((List)da.getData().getItem()).get(1)).get("values");
+                        }
 //                            logger.info("@dataArraysToNumbers values {} ", values.subList(0,9));
-                            return values;
-                        } catch (Exception ex) {
-                            throw new RuntimeException(ex);
-                        }
-                    })
-					.flatMap(List::stream).collect(Collectors.toList());
-    /*
-        return das.stream()
-					.map(da -> {
-                        try {
-                            List<?> values = ((List<?>) ObjectController.getObjectAttributeValue(da.getData().getItem(), "values"));
-                            if(values == null){
-                                // cas of object filled by json from http and deserialized by Gson :
-                                // [Energistics.Etp.v12.Datatypes.ArrayOfInt, {values=[48.0, ...] } ]
-                                // this is translated by Gson as : [String = "Energistics.Etp.v12.Datatypes.ArrayOfInt", com.google.gson.internal.LinkedTreeMap = {'values': [[48.0, ...]]}]
-                                values = (List<?>) ((com.google.gson.internal.LinkedTreeMap) ((List)da.getData().getItem()).get(1)).get("values");
-                            }
-                            return values.stream().map(v-> v instanceof String ? Double.parseDouble((String) v) : ((Number)v).doubleValue()).collect(Collectors.toList());
-                        } catch (Exception ex) {
-                            throw new RuntimeException(ex);
-                        }
-                    })
-					.flatMap(List::stream).collect(Collectors.toList());*/
+                        return values;
+                    } catch (Exception ex) {
+                        throw new RuntimeException(ex);
+                    }
+                })
+                .flatMap(List::stream).collect(Collectors.toList());
     }
+
+    private static final TrustManager MOCK_TRUST_MANAGER = new X509ExtendedTrustManager() {
+        @Override
+        public void checkClientTrusted(X509Certificate[] x509Certificates, String s, Socket socket) throws CertificateException {
+
+        }
+
+        @Override
+        public void checkServerTrusted(X509Certificate[] x509Certificates, String s, Socket socket) throws CertificateException {
+
+        }
+
+        @Override
+        public void checkClientTrusted(X509Certificate[] x509Certificates, String s, SSLEngine sslEngine) throws CertificateException {
+
+        }
+
+        @Override
+        public void checkServerTrusted(X509Certificate[] x509Certificates, String s, SSLEngine sslEngine) throws CertificateException {
+
+        }
+
+        @Override
+        public java.security.cert.X509Certificate[] getAcceptedIssuers() {
+            return new java.security.cert.X509Certificate[0];
+        }
+
+        @Override
+        public void checkClientTrusted(X509Certificate[] x509Certificates, String s) throws CertificateException {
+
+        }
+
+        @Override
+        public void checkServerTrusted(java.security.cert.X509Certificate[] chain, String authType) throws CertificateException {
+            // empty method
+        }
+        // ... Other void methods
+    };
 }
