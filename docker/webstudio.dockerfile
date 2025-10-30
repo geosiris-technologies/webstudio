@@ -1,4 +1,4 @@
-FROM tomcat:10.1-jdk11-openjdk-slim as base
+from tomcat:10.1-jdk11-openjdk-slim as base
 # FROM tomcat:10.1-jdk21-openjdk-slim as base
 
 LABEL maintainer="valentin.gauthier@geosiris.com"
@@ -86,7 +86,7 @@ RUN echo "{ \
     \"energyml.prodml2_2\" : \"/config/data/xsd/energyml/prodml/v2.2/xsd_schemas/ProdmlAllObjects.xsd\" \
 }" > /config/data/xsd/xsd_mapping.json
 
-ENV webstudio_fpathToXSDMapping /config/data/xsd/xsd_mapping.json
+ENV webstudio_fpathToXSDMapping=/config/data/xsd/xsd_mapping.json
 
 # Cleaning zips
 RUN rm -rf tmp_ZIP
@@ -95,7 +95,7 @@ RUN rm -rf tmp_ZIP
 RUN mkdir -p /config/data/rc/
 RUN wget http://geosiris.com/wp-content/uploads/2022/09/PropertyKindDictionary_v2.3.xml -P /config/data/rc/
 
-ENV webstudio_pathToAdditionalObjectsDir /config/data/rc/
+ENV webstudio_pathToAdditionalObjectsDir=/config/data/rc/
 
 
 #    ______            _____                        __  _
@@ -105,16 +105,16 @@ ENV webstudio_pathToAdditionalObjectsDir /config/data/rc/
 # \____/\____/_/ /_/_/ /_/\__, /\__,_/_/   \__,_/\__/_/\____/_/ /_/
 #                        /____/
 
-ENV WS_CONFIG_INI_FILE_PATH /config/sample-ws-config.ini
+ENV WS_CONFIG_INI_FILE_PATH=/config/sample-ws-config.ini
 
 COPY ./docker/config/sample-ws-config.ini /config/sample-ws-config.ini
 
 ADD docker/data/ /config/data
 
-ENV webstudio_fpathToEPCPkgGroup /config/data/epcPackagesGroups.json
-ENV webstudio_fpathToAccessibleDORMapping /config/data/resqmlAccessibleDORMapping.json
-ENV webstudio_dirPathToComments /config/data/comments/
-ENV webstudio_dirPathToExtTypes /config/data/extTypesAttributes/
+ENV webstudio_fpathToEPCPkgGroup=/config/data/epcPackagesGroups.json
+ENV webstudio_fpathToAccessibleDORMapping=/config/data/resqmlAccessibleDORMapping.json
+ENV webstudio_dirPathToComments=/config/data/comments/
+ENV webstudio_dirPathToExtTypes=/config/data/extTypesAttributes/
 
 
 #   ______                           __

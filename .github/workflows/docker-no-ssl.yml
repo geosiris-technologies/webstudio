@@ -8,12 +8,12 @@ on:
     branches: [main]
 
 jobs:
-  build-and-deploy:
+  version-checker:
     uses: ./.github/workflows/version-setup.yml
 
   build:
     runs-on: ubuntu-latest
-    needs: build-and-deploy
+    needs: version-checker
 
     permissions:
       contents: read
@@ -37,9 +37,9 @@ jobs:
       - name: Build a package
         run: |
           mvn -B -U --file pom.xml clean package -P release \
-          "-Drevision=${{ needs.build-and-deploy.outputs.revision }}" \
-          "-Dsha1=${{ needs.build-and-deploy.outputs.sha1 }}" \
-          "-Dchangelist=${{ needs.build-and-deploy.outputs.changelist }}"
+          "-Drevision=${{ needs.version-checker.outputs.revision }}" \
+          "-Dsha1=${{ needs.version-checker.outputs.sha1 }}" \
+          "-Dchangelist=${{ needs.version-checker.outputs.changelist }}"
 
       - name: Temporarily save jar artifact
         uses: actions/upload-artifact@v4
@@ -50,7 +50,7 @@ jobs:
 
   deploy:
     runs-on: ubuntu-latest
-    needs: [build, build-and-deploy]
+    needs: [build, version-checker]
 
     steps:
       - uses: actions/checkout@v4
@@ -62,9 +62,9 @@ jobs:
       - name: Docker build
         run: |
           docker build . --file docker/webstudio.dockerfile --target image-no-ssl \
-            -t ${{ secrets.DOCKER_HUB_REPO }}/${{ secrets.DOCKER_HUB_REPO }}-webstudio-no-ssl:${{ needs.build-and-deploy.outputs.flattened_version }} \
+            -t ${{ secrets.DOCKER_HUB_REPO }}/${{ secrets.DOCKER_HUB_REPO }}-webstudio-no-ssl:${{ needs.version-checker.outputs.flattened_version }} \
             -t ${{ secrets.DOCKER_HUB_REPO }}/${{ secrets.DOCKER_HUB_REPO }}-webstudio-no-ssl:latest \
-            --build-arg WEBSTUDIO_WAR_PATH=target/webstudio-${{ needs.build-and-deploy.outputs.flattened_version }}war
+            --build-arg WEBSTUDIO_WAR_PATH=target/webstudio-${{ needs.version-checker.outputs.flattened_version }}.war
 
       - name: Login to DockerHub
         uses: docker/login-action@v2
@@ -74,7 +74,7 @@ jobs:
 
       - name: Docker push
         run: |
-          docker push ${{ secrets.DOCKER_HUB_REPO }}/${{ secrets.DOCKER_HUB_REPO }}-webstudio-no-ssl:${{ needs.build-and-deploy.outputs.flattened_version }}
+          docker push ${{ secrets.DOCKER_HUB_REPO }}/${{ secrets.DOCKER_HUB_REPO }}-webstudio-no-ssl:${{ needs.version-checker.outputs.flattened_version }}
 
   # run:
   #   runs-on: ubuntu-18.04
@@ -83,4 +83,4 @@ jobs:
   #   steps:
   #   - name: Run container
   #     run: |
-  #       docker run ${{ secrets.DOCKER_HUB_REPO }}/${{ secrets.DOCKER_HUB_REPO }}-webstudio-no-ssl:${{ needs.build-and-deploy.outputs.flattened_version }}
+  #       docker run ${{ secrets.DOCKER_HUB_REPO }}/${{ secrets.DOCKER_HUB_REPO }}-webstudio-no-ssl:${{ needs.version-checker.outputs.flattened_version }}

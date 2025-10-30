@@ -26,6 +26,9 @@ jobs:
             changelist: ${{ steps.setver.outputs.changelist }}
             flattened_version: ${{ steps.setver.outputs.flattened_version }}
         steps:
+            - uses: actions/checkout@v4
+              with:
+                  fetch-depth: 0
             - id: setver
               run: |
                   COMMIT_SHA_LONG="${{ github.sha }}"
