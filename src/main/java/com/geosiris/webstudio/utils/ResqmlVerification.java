@@ -17,10 +17,16 @@ package com.geosiris.webstudio.utils;
 
 import com.geosiris.energyml.utils.EPCGenericManager;
 import com.geosiris.energyml.utils.ObjectController;
+import com.geosiris.energyml.utils.Utils;
 import com.geosiris.webstudio.logs.LogResqmlVerification;
 import com.geosiris.webstudio.logs.ServerLogMessage;
 import com.geosiris.webstudio.servlet.Editor;
 import com.geosiris.webstudio.servlet.global.GetAdditionalObjects;
+
+import energyml.common2_3.Citation;
+import energyml.common2_3.DataObjectReference;
+import energyml.resqml2_2.TriangulatedSetRepresentation;
+
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -353,6 +359,9 @@ public class ResqmlVerification {
                 } else {
                     Object referencedObj = resqmlObjects.get(refUuid);
                     String refObjVersion = (String) ObjectController.getObjectAttributeValue(referencedObj, "ObjectVersion");
+                    if(refObjVersion == null){
+                        refObjVersion = (String) ObjectController.getObjectAttributeValue(referencedObj, "Citation.VersionString");
+                    }
                     String refObjTitle = (String) ObjectController.getObjectAttributeValue(referencedObj, "Citation.Title");
                     String refObjContentType = EPCGenericManager.getObjectContentType(referencedObj);
                     String refObjQualifiedType = EPCGenericManager.getObjectQualifiedType(referencedObj);
@@ -491,7 +500,7 @@ public class ResqmlVerification {
             Editor.pkgManager.validate(resqmlObject);
         }catch (Exception e){
             messages.add(new LogResqmlVerification("XSD validation fail",
-                    "[" + objUuid + "] xsd validation failed : '" + e.getCause() + "'\n" + e.getMessage(),
+                    "[" + objUuid + "] xsd validation failed : '" + e.getCause() + "'" + e.getMessage(),
                     objUuid, objTitle, objType,
                     ServerLogMessage.MessageType.INFO));
         }
@@ -530,6 +539,9 @@ public class ResqmlVerification {
                 // DOR infos
                 String dorTitle = (String) ObjectController.getObjectAttributeValue(dor, "Title");
                 String dorVersion = (String) ObjectController.getObjectAttributeValue(dor, "ObjectVersion");
+                if(dorVersion == null){
+                    dorVersion = (String) ObjectController.getObjectAttributeValue(dor, "VersionString");
+                }
 
                 // Target object infos
                 Object dorTarget;
@@ -542,6 +554,9 @@ public class ResqmlVerification {
 
                 String targetTitle = (String) ObjectController.getObjectAttributeValue(dorTarget, "Citation.Title");
                 String targetVersion = (String) ObjectController.getObjectAttributeValue(dorTarget, "ObjectVersion");
+                if(targetVersion == null){
+                    targetVersion = (String) ObjectController.getObjectAttributeValue(dorTarget, "Citation.VersionString");
+                }
 
                 if(ObjectController.hasAttribute(dor, "ContentType")){
                     String dorType = (String) ObjectController.getObjectAttributeValue(dor, "ContentType");
@@ -572,6 +587,10 @@ public class ResqmlVerification {
                 if(targetVersion != null && (dorVersion == null || dorVersion.compareTo(targetVersion) != 0)){
                     try {
                         ObjectController.editObjectAttribute(dor, "ObjectVersion", targetVersion);
+                        modificationOccured = true;
+                    } catch (Exception ignore){}
+                    try {
+                        ObjectController.editObjectAttribute(dor, "Citation.VersionString", targetVersion);
                         modificationOccured = true;
                     } catch (Exception ignore){}
                 }
@@ -773,5 +792,31 @@ public class ResqmlVerification {
             messages.addAll(doCorrectSchemaVersion(rootUUID, resqmlObjects));
         }
         return messages;
+    }
+
+    public static void main(String[] args) {
+        TriangulatedSetRepresentation tr = new TriangulatedSetRepresentation();
+        tr.setUuid("00000000-0000-0000-0000-000000000001");
+        tr.setSchemaVersion("2.2");
+        DataObjectReference dor = new DataObjectReference();
+        dor.setUuid("00000000-0000-0000-0000-000000000002");
+        dor.setTitle("Test DOR");
+        dor.setQualifiedType("22resqml20.obj_RockFluidUnitInterpretation");
+        tr.setRepresentedObject(dor);
+        Citation cit = new Citation();
+        cit.setTitle("Test title");
+        cit.setCreation(Utils.getCalendarForNow());
+        cit.setLastUpdate(Utils.getCalendarForNow());
+        cit.setFormat("cc");
+        cit.setOriginator("coucou");
+
+
+        tr.setCitation(cit);
+        
+        System.out.println("-------------------------------------------------");
+        for (LogResqmlVerification message : verifyWithXSDSchema(tr)) {
+            System.out.println(message.getMsg());
+        }
+        System.out.println("-------------------------------------------------");
     }
 }

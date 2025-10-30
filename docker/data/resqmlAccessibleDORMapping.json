@@ -19,7 +19,7 @@
 	"Seismic2dPostStackRepresentation"			: ["PolylineRepresentation", "AbstractLocal3Dcrs"],
 	"Seismic3dPostStackRepresentation"			: ["Grid2DRepresentation", "AbstractLocal3Dcrs"],
 	"StratigraphicColumn"						: ["StratigraphicColumnRankInterpretation"],
-	"StratigraphicColumnRankInterpretation"		: ["StratigraphicUnitInterpretation" , "AbstractContactInterpretationPart" , "AbstractGeologicFeature"],
+	"StratigraphicColumnRankInterpretation"		: ["StratigraphicUnitInterpretation" , "AbstractContactInterpretationPart" , "AbstractGeologicFeature", "Model"],
 	"StratigraphicOccurenceInterpretation"		: ["GeologicUnitInterpretation" , "AbstractContactInterpretationPart" , "AbstractGeologicFeature"],
 	"StreamlinesRepresentation"					: ["WellboreTrajectoryRepresentation"],
 	"StructuralOrganizationInterpretation"		: ["AbstractFeatureInterpretation" , "AbstractGeologicFeature" , "Model" , "InterpretationSet" , "AbstractContactInterpretationPart"],

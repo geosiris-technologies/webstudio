@@ -4,7 +4,7 @@
     <groupId>com.geosiris</groupId>
     <artifactId>webstudio</artifactId>
     <name>${project.groupId}:${project.artifactId}</name>
-    <version>1.0.17</version>
+    <version>${revision}${sha1}${changelist}</version>
     <organization>
         <name>Geosiris</name>
         <url>http://www.geosiris.com</url>
@@ -43,6 +43,10 @@
 <!--        <maven.compiler.source>20</maven.compiler.source>-->
 <!--        <maven.compiler.target>20</maven.compiler.target>-->
 <!--        <java.version>20</java.version>-->
+        <revision>0.0.0</revision> 
+        <changelist/>
+        <sha1/>
+        <energyml.utils.version>[1.0.20,)</energyml.utils.version>
         <webapp.dir>${project.basedir}/src/main/webapp</webapp.dir>
         <tomcat.version>10.1.0-M15</tomcat.version>
         <failOnMissingWebXml>true</failOnMissingWebXml>
@@ -66,7 +70,7 @@
         <dependency>
             <groupId>com.geosiris</groupId>
             <artifactId>energyml-utils</artifactId>
-            <version>1.0.16</version>
+            <version>${energyml.utils.version}</version>
         </dependency>
         <dependency>
             <groupId>com.geosiris</groupId>

@@ -1,24 +1,72 @@
-/build
-*.class
-/bin/
-.settings
-settings.xml
+# === Java build ===
 target/
-target/*
-*.venv
-*/venv
-.vscode/
-.vscode/*
-*__pycache__*
+*.class
+*.jar
+*.war
+*.ear
+build/
+bin/
+
+# === Maven/Gradle ===
+.settings/
 .classpath
 .project
-.idea
 .factorypath
-docker/tomcat_old/
-/todo.txt
-docker/compose/docker-compose-local-test.yml
-docker/compose
+settings.xml
+mvnw
+mvnw.cmd
+.mvn/
+gradle/
+build.gradle
+build.gradle.kts
+gradlew
+gradlew.bat
 
-*package-lock.json
-*package.json
+# === Python ===
+__pycache__/
+*.py[cod]
+*.venv/
+venv/
+*/venv/
+.env
+.env.*
+
+# === Node.js ===
+node_modules/
+package-lock.json
+yarn.lock
+pnpm-lock.yaml
+package.json
+
+# === IDEs and Editors ===
+.idea/
+.vscode/
+.vscode/*
+.DS_Store
+Thumbs.db
+
+# === OS files ===
+.DS_Store
+Thumbs.db
+ehthumbs.db
+Desktop.ini
+
+# === Docker ===
+docker/tomcat_old/
+docker/compose/
+docker/compose/docker-compose-local-test.yml
+
+# === Logs and temp ===
+*.log
+*.tmp
+*.swp
+*.swo
+
+# === Project-specific ===
+todo.txt
 manip.txt
+manip.md
+xsd_mapping.json
+
+# === Misc ===
+!README.md

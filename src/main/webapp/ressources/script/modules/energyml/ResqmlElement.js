@@ -991,55 +991,56 @@ export class ResqmlElement {
 
                     this.htmlAttributeElt.appendChild(this.htmlTitleElt);
 
-                    if (constThis.type.toLowerCase().includes("datasetpart") ||
-                        constThis.type.toLowerCase().includes("hdf5dataset")) {
-                        var butOpenHDFView = document.createElement("img");
-                        butOpenHDFView.src = "ressources/img/HDF_logo.png";
-                        butOpenHDFView.alt = "[ HDFView ]";
-                        butOpenHDFView.className = "hdfViewIcon"
-                        butOpenHDFView.title = "Open in HDFView"
-                        //var butOpenHDFView = document.createElement("span");
-                        //butOpenHDFView.appendChild(document.createTextNode("[[HDFView]]"));
-                        //butOpenHDFView.appendChild(document.createTextNode(""));
-                        butOpenHDFView.onclick = function() {
-                            //console.log(constThis);
-                            var pathInHDF = "";
-                            for (var propIdx = 0; propIdx < constThis.properties.length; propIdx++) {
-                                if (constThis.properties[propIdx].name.toLowerCase().endsWith("pathinhdffile") ||
-                                    constThis.properties[propIdx].name.toLowerCase().endsWith("pathinexternalfile")) {
-                                    //console.log(constThis.properties[propIdx]);
-                                    pathInHDF = constThis.properties[propIdx].value;
-                                    break;
-                                }
-                            }
+                    // HDF Button doesn't work anymore
+                    // if (constThis.type.toLowerCase().includes("datasetpart") ||
+                    //     constThis.type.toLowerCase().includes("hdf5dataset")) {
+                    //     var butOpenHDFView = document.createElement("img");
+                    //     butOpenHDFView.src = "ressources/img/HDF_logo.png";
+                    //     butOpenHDFView.alt = "[ HDFView ]";
+                    //     butOpenHDFView.className = "hdfViewIcon"
+                    //     butOpenHDFView.title = "Open in HDFView"
+                    //     //var butOpenHDFView = document.createElement("span");
+                    //     //butOpenHDFView.appendChild(document.createTextNode("[[HDFView]]"));
+                    //     //butOpenHDFView.appendChild(document.createTextNode(""));
+                    //     butOpenHDFView.onclick = function() {
+                    //         //console.log(constThis);
+                    //         var pathInHDF = "";
+                    //         for (var propIdx = 0; propIdx < constThis.properties.length; propIdx++) {
+                    //             if (constThis.properties[propIdx].name.toLowerCase().endsWith("pathinhdffile") ||
+                    //                 constThis.properties[propIdx].name.toLowerCase().endsWith("pathinexternalfile")) {
+                    //                 //console.log(constThis.properties[propIdx]);
+                    //                 pathInHDF = constThis.properties[propIdx].value;
+                    //                 break;
+                    //             }
+                    //         }
 
-                            for (var attIdx = 0; attIdx < constThis.attributes.length; attIdx++) {
-                                var cur_attrib = constThis.attributes[attIdx];
-                                if (cur_attrib.name.toLowerCase().endsWith("epcexternalpartreference")) {
-                                    var extUuid = ""
-                                    for (var propIdx = 0; propIdx < cur_attrib.properties.length; propIdx++) {
-                                        if (cur_attrib.properties[propIdx].name.toLowerCase().endsWith(".uuid")) {
-                                            //console.log("uuid found")
-                                            extUuid = cur_attrib.properties[propIdx].value;
-                                            break;
-                                        }
-                                    }
-                                    try {
-                                        cur_attrib.getResqmlObjectJson(extUuid, "Filename").then(
-                                            res => {
-                                                openHDFViewAskH5Location(res.value, pathInHDF);
-                                            });
-                                    } catch (e) {
-                                        console.log(e);
-                                    }
-                                }
-                            }
-                            /*openHDFViewAskH5Location(pathInHDF);
-                            console.log("===> HDF5 open")
-                            console.log(constThis.attributes)*/
-                        };
-                        this.htmlAttributeElt.appendChild(butOpenHDFView);
-                    }
+                    //         for (var attIdx = 0; attIdx < constThis.attributes.length; attIdx++) {
+                    //             var cur_attrib = constThis.attributes[attIdx];
+                    //             if (cur_attrib.name.toLowerCase().endsWith("epcexternalpartreference")) {
+                    //                 var extUuid = ""
+                    //                 for (var propIdx = 0; propIdx < cur_attrib.properties.length; propIdx++) {
+                    //                     if (cur_attrib.properties[propIdx].name.toLowerCase().endsWith(".uuid")) {
+                    //                         //console.log("uuid found")
+                    //                         extUuid = cur_attrib.properties[propIdx].value;
+                    //                         break;
+                    //                     }
+                    //                 }
+                    //                 try {
+                    //                     cur_attrib.getResqmlObjectJson(extUuid, "Filename").then(
+                    //                         res => {
+                    //                             openHDFViewAskH5Location(res.value, pathInHDF);
+                    //                         });
+                    //                 } catch (e) {
+                    //                     console.log(e);
+                    //                 }
+                    //             }
+                    //         }
+                    //         /*openHDFViewAskH5Location(pathInHDF);
+                    //         console.log("===> HDF5 open")
+                    //         console.log(constThis.attributes)*/
+                    //     };
+                    //     this.htmlAttributeElt.appendChild(butOpenHDFView);
+                    // }
 
 
                     // Si il y a des sous-element a creer
